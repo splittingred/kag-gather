@@ -1,0 +1,26 @@
+# mac / IDE
+.project
+.settings
+nbproject
+.idea
+.DS_Store
+
+# config files
+config/config.json
+
+# other files
+tmp
+logs
+
+# other ruby-specific files
+*.gem
+coverage/
+doc
+rdoc
+pkg/
+.yardoc
+.bundle
+Gemfile.lock
+.autotest
+rspec_results.html
+spec/rspec_results.html

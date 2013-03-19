@@ -19,20 +19,18 @@ module KAG
       @matches = {}
     end
 
-    listen_to :channel, method: :channel_listen
-    def channel_listen(m)
+    #listen_to :channel, method: :channel_listen
+    #def channel_listen(m)
+    #end
 
+    listen_to :leaving, method: :on_leaving
+    def on_leaving(m,user)
+      remove_user_from_queue(user) if @queue.key?(user)
+      remove_user_from_match(user) if in_match(user)
     end
 
-    listen_to :leaving, method: :leaving
-    def leaving(m)
-      if @queue.key?(m.user.nick)
-        remove_from_queue(m)
-      end
-    end
-
-    listen_to :nick, method: :handle_nick_change
-    def handle_nick_change(m)
+    listen_to :nick, method: :on_nick
+    def on_nick(m)
       if @queue.key?(m.user.last_nick)
         @queue[m.user.nick] = @queue[m.user.last_nick]
         @queue.delete(m.user.last_nick)
@@ -52,8 +50,8 @@ module KAG
       end
     end
 
-    match "add", method: :add_to_queue
-    def add_to_queue(m)
+    match "add", method: :evt_add
+    def evt_add(m)
       unless @queue.key?(m.user.nick) or in_match(m.user.nick)
         @queue[m.user.nick] = SymbolTable.new({
             :user => m.user,
@@ -66,22 +64,14 @@ module KAG
       end
     end
 
-    match "rem", method: :remove_from_queue
-    def remove_from_queue(m)
-      if @queue.key?(m.user.nick)
-        @queue.delete(m.user.nick)
-        send_channels_msg "Removed #{m.user.nick} from queue (#{get_match_type_as_string}) [#{@queue.length}]"
-      end
+    match "rem", method: :evt_rem
+    def evt_rem(m)
+      remove_user_from_match(m.user.nick)
+      remove_user_from_queue(m.user.nick)
     end
 
-    def get_match_type_as_string
-      ms = KAG::Config.instance[:match_size]
-      ts = (ms / 2).ceil
-      "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
-    end
-
-    match "list", method: :list_queue
-    def list_queue(m)
+    match "list", method: :evt_list
+    def evt_list(m)
       users = []
       @queue.each do |n,u|
         users << n
@@ -89,13 +79,13 @@ module KAG
       m.user.send "Queue (#{get_match_type_as_string}) [#{@queue.length}] #{users.join(", ")}"
     end
 
-    match "status", method: :status
-    def status(m)
+    match "status", method: :evt_status
+    def evt_status(m)
       m.reply "Matches in progress: #{@matches.length.to_s}"
     end
 
-    match "end", method: :end_match
-    def end_match(m)
+    match "end", method: :evt_end
+    def evt_end(m)
       @matches.each do |k,match|
         info = match[:server].info
         if info
@@ -110,16 +100,40 @@ module KAG
       end
     end
 
+    def remove_user_from_queue(nick)
+      if @queue.key?(nick)
+        @queue.delete(nick)
+        send_channels_msg "Removed #{nick} from queue (#{get_match_type_as_string}) [#{@queue.length}]"
+      end
+    end
+
+    def remove_user_from_match(nick)
+      match = get_match_in(nick)
+      if match
+        send_channels_msg "#{user} has left the match at #{match[:key]}! Find a sub!"
+      end
+    end
+
     def in_match(nick)
-      playing = false
+      get_match_in(nick)
+    end
+
+    def get_match_in(nick)
+      m = false
       @matches.each do |k,match|
         if match[:team1] and match[:team1].include?(nick)
-          playing = true
+          m = match
         elsif match[:team2] and match[:team2].include?(nick)
-          playing = true
+          m = match
         end
       end
-      playing
+      m
+    end
+
+    def get_match_type_as_string
+      ms = KAG::Config.instance[:match_size]
+      ts = (ms / 2).ceil
+      "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
 
     def check_for_new_match(m)
@@ -189,6 +203,13 @@ module KAG
       false
     end
 
+    match "help", method: :evt_help
+    def evt_help(m)
+      msg = "Commands: !add, !rem, !list, !status, !help, !end"
+      msg = msg + ", !rem [nick], !clear, !quit" if is_admin(m.user)
+      User(m.user.nick).send(msg)
+    end
+
     # admin methods
 
     def debug(msg)
@@ -203,8 +224,23 @@ module KAG
       o.include?(user.authname)
     end
 
-    match "quit", method: :quit
-    def quit(m)
+    match "clear", method: :evt_clear
+    def evt_clear(m)
+      if is_admin(m.user)
+        send_channels_msg "Match queue cleared."
+        @queue = {}
+      end
+    end
+
+    match /rem (.+)/, method: :evt_rem_admin
+    def evt_rem_admin(m, arg)
+      if is_admin(m.user)
+        remove_user_from_queue(arg)
+      end
+    end
+
+    match "quit", method: :evt_quit
+    def evt_quit(m)
       if is_admin(m.user)
         m.bot.quit("Shutting down...")
       end

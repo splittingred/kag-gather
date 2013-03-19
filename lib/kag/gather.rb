@@ -1,6 +1,7 @@
 require 'cinch'
 require File.dirname(__FILE__)+'/bot'
 require File.dirname(__FILE__)+'/config'
+require File.dirname(__FILE__)+'/server'
 
 module KAG
   class Gather
@@ -15,7 +16,7 @@ module KAG
     def initialize(*args)
       super
       @queue = {}
-      @matches = []
+      @matches = {}
     end
 
     listen_to :channel, method: :channel_listen
@@ -102,32 +103,48 @@ module KAG
     end
 
     def check_for_new_match(m)
-      if @queue.length > KAG::Config.instance[:match_size]
+      if @queue.length >= KAG::Config.instance[:match_size]
         playing = []
         @queue.each do |n,i|
           playing << n
         end
 
-        9.times { |x| playing << "player#{(x+1).to_s}" } if KAG::Config.instance[:debug]
+        server = get_unused_server
+        unless server
+          m.reply("Could not find any available servers!")
+          puts "FAILED TO FIND UNUSED SERVER"
+          return false
+        end
+
 
         @queue = {}
         playing.shuffle!
-        team1 = playing.slice(0..4)
-        team2 = playing.slice(5..9)
+        match_size = KAG::Config.instance[:match_size].to_i
+        match_size = 2 if match_size < 2
+
+        lb = (match_size / 2).ceil.to_i - 1
+        lb = 1 if lb < 1
+
+        (match_size-1).times { |x| playing << "player#{(x+1).to_s}" } if KAG::Config.instance[:debug]
+
+        puts "MATCH SIZE #{match_size.to_s}"
+        puts "LOWER BOUND: #{lb.to_s}"
+        puts "PLAYERS: #{playing.join(",")}"
+
+        team1 = playing.slice(0,lb)
+        team2 = playing.slice(lb,match_size)
+
         m.reply("MATCH: #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
 
-        server = get_unused_server
-        return false unless server
-
-        msg = "Join \x0307#{server} \x0310| Visit \x0307kag://#{server}/ \x0310| "
+        msg = "Join \x0307#{server[:ip]}:#{server[:port]} password #{server[:password]} \x0310| Visit \x0307kag://#{server[:ip]}/#{server[:password]} \x0310| "
         team1.each do |p|
-          User(p).send(msg+" - Blue Team #{team1.join(", ")}") unless p.include?("player")
+          User(p).send(msg+" Blue Team #{team1.join(", ")}") unless p.include?("player")
         end
         team2.each do |p|
-          User(p).send(msg+" - Red Team #{team2.join(", ")}") unless p.include?("player")
+          User(p).send(msg+" Red Team #{team2.join(", ")}") unless p.include?("player")
         end
 
-        @matches << {
+        @matches[server[:key]] = {
             :team1 => team1,
             :team2 => team2,
             :server => {}
@@ -137,12 +154,16 @@ module KAG
 
     def get_unused_server
       used_servers = []
-      @matches.each do |m|
-        used_servers << m[:server]
+      @matches.each do |k,m|
+        used_servers << k
       end
+      puts used_servers.join(",")
       available_servers = KAG::Config.instance[:servers]
-      available_servers.each do |s|
-        return s unless used_servers.include?(s)
+      available_servers.each do |k,s|
+        unless used_servers.include?(k)
+          s[:key] = k
+          return s
+        end
       end
       false
     end

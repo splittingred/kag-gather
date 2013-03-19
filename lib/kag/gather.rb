@@ -61,24 +61,16 @@ module KAG
             :message => m.message,
             :joined_at => Time.now
         })
-        m.reply "Added #{m.user.nick} to queue (5v5 CTF) [#{@queue.length}]"
+        send_channels_msg "Added #{m.user.nick} to queue (5v5 CTF) [#{@queue.length}]"
         check_for_new_match(m)
       end
-    end
-
-    def in_match(nick)
-      playing = false
-      @matches.each do |m|
-        playing = true if (m[:team1].include?(nick) or m[:team2].include?(nick))
-      end
-      playing
     end
 
     match "rem", method: :remove_from_queue
     def remove_from_queue(m)
       if @queue.key?(m.user.nick)
         @queue.delete(m.user.nick)
-        m.reply "Removed #{m.user.nick} from queue (5v5 CTF) [#{@queue.length}]"
+        send_channels_msg "Removed #{m.user.nick} from queue (5v5 CTF) [#{@queue.length}]"
       end
     end
 
@@ -98,8 +90,16 @@ module KAG
 
     match "end", method: :end_match
     def end_match(m)
-      @matches.shift
-      m.reply "Match finished!"
+      m = @matches.shift
+      send_channels_msg("Match at #{m[:server]} finished!")
+    end
+
+    def in_match(nick)
+      playing = false
+      @matches.each do |m|
+        playing = true if (m[:team1].include?(nick) or m[:team2].include?(nick))
+      end
+      playing
     end
 
     def check_for_new_match(m)
@@ -134,8 +134,7 @@ module KAG
         team1 = playing.slice(0,lb)
         team2 = playing.slice(lb,match_size)
 
-        m.reply("MATCH: #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
-
+        send_channels_msg("MATCH: #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
         msg = "Join \x0307#{server[:ip]}:#{server[:port]} password #{server[:password]} \x0310| Visit \x0307kag://#{server[:ip]}/#{server[:password]} \x0310| "
         team1.each do |p|
           User(p).send(msg+" Blue Team #{team1.join(", ")}") unless p.include?("player")
@@ -147,8 +146,14 @@ module KAG
         @matches[server[:key]] = {
             :team1 => team1,
             :team2 => team2,
-            :server => {}
+            :server => server
         }
+      end
+    end
+
+    def send_channels_msg(msg)
+      KAG::Config.instance[:channels].each do |c|
+        Channel(c).send(msg)
       end
     end
 
@@ -162,7 +167,7 @@ module KAG
       available_servers.each do |k,s|
         unless used_servers.include?(k)
           s[:key] = k
-          return s
+          return KAG::Server.new(s)
         end
       end
       false

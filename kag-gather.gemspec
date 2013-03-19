@@ -3,7 +3,7 @@ require 'lib/kag/gather/version'
 
 Gem::Specification.new do |gem|
   gem.name        = 'kag-gather'
-  gem.version     = KAG::Gather::VERSION
+  gem.version     = KAG::VERSION
   gem.platform    = Gem::Platform::RUBY
   gem.summary     = 'KAG Gather IRC Bot'
   gem.description = ''

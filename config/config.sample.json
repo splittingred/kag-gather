@@ -1,5 +1,12 @@
 {
   "server": "irc.quakenet.org"
-  ,"channels": ["#kag.gather"]
+  ,"channels": ["#kag.gather2"]
+  ,"nick": "KAGatherer"
+  ,"realname": "KAG Gatherer"
+  ,"ssl": false
 
+  ,"owners": ["splittingred"]
+  ,"match_size": 10
+  ,"servers":["5.39.93.105:10001","5.39.93.105:20002"]
+  ,"debug": false
 }

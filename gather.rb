@@ -1,3 +1,3 @@
 require 'lib/kag/gather'
 
-g = KAG::Gather::Bot.new
+g = KAG::Bot.new

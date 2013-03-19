@@ -61,7 +61,7 @@ module KAG
             :message => m.message,
             :joined_at => Time.now
         })
-        send_channels_msg "Added #{m.user.nick} to queue (5v5 CTF) [#{@queue.length}]"
+        send_channels_msg "Added #{m.user.nick} to queue (#{get_match_type_as_string}) [#{@queue.length}]"
         check_for_new_match(m)
       end
     end
@@ -70,8 +70,14 @@ module KAG
     def remove_from_queue(m)
       if @queue.key?(m.user.nick)
         @queue.delete(m.user.nick)
-        send_channels_msg "Removed #{m.user.nick} from queue (5v5 CTF) [#{@queue.length}]"
+        send_channels_msg "Removed #{m.user.nick} from queue (#{get_match_type_as_string}) [#{@queue.length}]"
       end
+    end
+
+    def get_match_type_as_string
+      ms = KAG::Config.instance[:match_size]
+      ts = (ms / 2).ceil
+      "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
 
     match "list", method: :list_queue
@@ -80,7 +86,7 @@ module KAG
       @queue.each do |n,u|
         users << n
       end
-      m.user.send "Queue (5v5 CTF) [#{@queue.length}] #{users.join(", ")}"
+      m.user.send "Queue (#{get_match_type_as_string}) [#{@queue.length}] #{users.join(", ")}"
     end
 
     match "status", method: :status
@@ -95,10 +101,10 @@ module KAG
         if info
           players_on = info[:serverStatus][:playerList].length
           if players_on > 0
-            m.reply "Cannot end a match for #{match[:server][:ip]} in progress, there are #{players_on.to_s} players still playing!"
+            m.reply "Cannot end a match for #{match[:server][:key]} in progress, there are #{players_on.to_s} players still playing!"
           else
-            @matches.shift
-            send_channels_msg("Match at #{match[:server][:ip]} finished!")
+            @matches.delete(k)
+            send_channels_msg("Match at #{match[:server][:key]} finished!")
           end
         end
       end
@@ -106,8 +112,12 @@ module KAG
 
     def in_match(nick)
       playing = false
-      @matches.each do |m|
-        playing = true if (m[:team1].include?(nick) or m[:team2].include?(nick))
+      @matches.each do |k,match|
+        if match[:team1] and match[:team1].include?(nick)
+          playing = true
+        elsif match[:team2] and match[:team2].include?(nick)
+          playing = true
+        end
       end
       playing
     end
@@ -131,10 +141,8 @@ module KAG
         match_size = KAG::Config.instance[:match_size].to_i
         match_size = 2 if match_size < 2
 
-        lb = (match_size / 2).ceil.to_i - 1
+        lb = (match_size / 2).ceil.to_i
         lb = 1 if lb < 1
-
-        (match_size-1).times { |x| playing << "player#{(x+1).to_s}" } if KAG::Config.instance[:debug]
 
         debug "MATCH SIZE #{match_size.to_s}"
         debug "LOWER BOUND: #{lb.to_s}"
@@ -143,8 +151,8 @@ module KAG
         team1 = playing.slice(0,lb)
         team2 = playing.slice(lb,match_size)
 
-        send_channels_msg("MATCH: #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
-        msg = "Join \x0307#{server[:ip]}:#{server[:port]} password #{server[:password]} \x0310| Visit \x0307kag://#{server[:ip]}/#{server[:password]} \x0310| "
+        send_channels_msg("MATCH: #{get_match_type_as_string} - #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
+        msg = "Join #{server[:key]} - #{server[:ip]}:#{server[:port]} password #{server[:password]} | Visit kag://#{server[:ip]}/#{server[:password]} | "
         team1.each do |p|
           User(p).send(msg+" Blue Team #{team1.join(", ")}") unless p.include?("player")
         end

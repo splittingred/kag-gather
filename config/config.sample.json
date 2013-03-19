@@ -7,6 +7,7 @@
 
   ,"owners": ["splittingred","tmewett","Kalikst","Downburst","SirSalami","Furai","Geti"]
   ,"match_size": 10
+  ,"match_type": "CTF"
   ,"servers":{
     "server1": {
       "ip":"5.39.93.105"

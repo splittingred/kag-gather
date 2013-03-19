@@ -90,8 +90,18 @@ module KAG
 
     match "end", method: :end_match
     def end_match(m)
-      m = @matches.shift
-      send_channels_msg("Match at #{m[:server]} finished!")
+      @matches.each do |k,match|
+        info = match[:server].info
+        if info
+          players_on = info[:serverStatus][:playerList].length
+          if players_on > 0
+            m.reply "Cannot end a match for #{match[:server][:ip]} in progress, there are #{players_on.to_s} players still playing!"
+          else
+            @matches.shift
+            send_channels_msg("Match at #{match[:server][:ip]} finished!")
+          end
+        end
+      end
     end
 
     def in_match(nick)
@@ -111,11 +121,10 @@ module KAG
 
         server = get_unused_server
         unless server
-          m.reply("Could not find any available servers!")
-          puts "FAILED TO FIND UNUSED SERVER"
+          send_channels_msg "Could not find any available servers!"
+          debug "FAILED TO FIND UNUSED SERVER"
           return false
         end
-
 
         @queue = {}
         playing.shuffle!
@@ -127,9 +136,9 @@ module KAG
 
         (match_size-1).times { |x| playing << "player#{(x+1).to_s}" } if KAG::Config.instance[:debug]
 
-        puts "MATCH SIZE #{match_size.to_s}"
-        puts "LOWER BOUND: #{lb.to_s}"
-        puts "PLAYERS: #{playing.join(",")}"
+        debug "MATCH SIZE #{match_size.to_s}"
+        debug "LOWER BOUND: #{lb.to_s}"
+        debug "PLAYERS: #{playing.join(",")}"
 
         team1 = playing.slice(0,lb)
         team2 = playing.slice(lb,match_size)
@@ -162,7 +171,6 @@ module KAG
       @matches.each do |k,m|
         used_servers << k
       end
-      puts used_servers.join(",")
       available_servers = KAG::Config.instance[:servers]
       available_servers.each do |k,s|
         unless used_servers.include?(k)
@@ -174,6 +182,12 @@ module KAG
     end
 
     # admin methods
+
+    def debug(msg)
+      if KAG::Config.instance[:debug]
+        puts msg
+      end
+    end
 
     def is_admin(user)
       user.refresh

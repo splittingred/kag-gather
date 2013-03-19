@@ -1,12 +1,25 @@
 {
   "server": "irc.quakenet.org"
-  ,"channels": ["#kag.gather2"]
+  ,"channels": ["#kag.gather"]
   ,"nick": "KAGatherer"
   ,"realname": "KAG Gatherer"
   ,"ssl": false
 
-  ,"owners": ["splittingred"]
+  ,"owners": ["splittingred","tmewett","Kalikst","Downburst","SirSalami","Furai","Geti"]
   ,"match_size": 10
-  ,"servers":["5.39.93.105:10001","5.39.93.105:20002"]
-  ,"debug": false
+  ,"servers":{
+    "server1": {
+      "ip":"5.39.93.105"
+      ,"port": "10001"
+      ,"password": "1"
+      ,"rcon_password": ""
+    }
+    ,"server2":{
+      "ip":"5.39.93.105"
+      ,"port": "20002"
+      ,"password": "2"
+      ,"rcon_password": ""
+    }
+  }
+  ,"debug": true
 }

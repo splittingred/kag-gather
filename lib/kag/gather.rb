@@ -167,10 +167,17 @@ module KAG
 
         send_channels_msg("MATCH: #{get_match_type_as_string} - #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
         msg = "Join #{server[:key]} - #{server[:ip]}:#{server[:port]} password #{server[:password]} | Visit kag://#{server[:ip]}/#{server[:password]} | "
+
+        msg = msg + " Class: " if KAG::Config.instance[:pick_classes]
+        classes_t1 = get_team_classes(1)
+        classes_t2 = get_team_classes(2)
+
         team1.each do |p|
+          msg = msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
           User(p).send(msg+" Blue Team #{team1.join(", ")}") unless p.include?("player")
         end
         team2.each do |p|
+          msg = msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
           User(p).send(msg+" Red Team #{team2.join(", ")}") unless p.include?("player")
         end
 
@@ -244,6 +251,13 @@ module KAG
       if is_admin(m.user)
         m.bot.quit("Shutting down...")
       end
+    end
+
+
+    def get_team_classes(team)
+      classes = KAG::Config.instance[:classes]
+      classes.shuffle!
+      classes
     end
 
   end

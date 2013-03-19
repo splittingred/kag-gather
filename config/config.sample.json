@@ -8,6 +8,9 @@
   ,"owners": ["splittingred","tmewett","Kalikst","Downburst","SirSalami","Furai","Geti"]
   ,"match_size": 10
   ,"match_type": "CTF"
+  ,"pick_classes": true
+  ,"classes": ["Knight","Knight","Knight","Archer","Builder"]
+  ,"debug": true
   ,"servers":{
     "server1": {
       "ip":"5.39.93.105"
@@ -22,5 +25,4 @@
       ,"rcon_password": ""
     }
   }
-  ,"debug": true
 }

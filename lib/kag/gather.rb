@@ -182,7 +182,7 @@ module KAG
         team1 = playing.slice(0,lb)
         team2 = playing.slice(lb,match_size)
 
-        send_channels_msg("MATCH: #{get_match_type_as_string} - \x0312#{team1.join(", ")} (Blue) \x0310vs \x0304#{team2.join(", ")} (Red)",false)
+        send_channels_msg("MATCH: #{get_match_type_as_string} - \x0312#{team1.join(", ")} (Blue) \x0310vs \x0304#{team2.join(", ")} (Red) \x0301(!end when done)",false)
         msg = "Join \x0305#{server[:key]} - #{server[:ip]}:#{server[:port]} \x0306password #{server[:password]}\x0301 | Visit kag://#{server[:ip]}/#{server[:password]} | "
 
         msg = msg + " \x0303Class: " if KAG::Config.instance[:pick_classes]
@@ -191,10 +191,12 @@ module KAG
 
         team1.each do |p|
           msg = msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
+          sleep(.5)
           User(p).send(msg+" \x0312Blue Team with: #{team1.join(", ")}") unless p.include?("player")
         end
         team2.each do |p|
           msg = msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
+          sleep(.5)
           User(p).send(msg+" \x0304Red Team with: #{team2.join(", ")}") unless p.include?("player")
         end
 

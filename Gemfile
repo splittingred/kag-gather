@@ -1,6 +1,6 @@
 source :rubygems
 gemspec
 
-platforms :jruby do
-  gem "jruby-openssl"
-end
+#platforms :jruby do
+  #gem "jruby-openssl"
+#end

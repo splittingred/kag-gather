@@ -12,6 +12,7 @@
   ,"classes": ["Knight","Knight","Knight","Archer","Builder"]
   ,"debug": true
   ,"end_vote_threshold": 3
+  ,"restart_method": "nohup sh gather.sh &"
   ,"servers":{
     "server1": {
       "ip":"5.39.93.105"

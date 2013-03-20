@@ -274,6 +274,17 @@ module KAG
       end
     end
 
+    match "restart", method: :evt_restart
+    def evt_restart(m)
+      if is_admin(m.user)
+        cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
+        puts cmd
+        pid = spawn cmd
+        debug "Restarting bot, new process ID is #{pid.to_s} ..."
+        exit
+      end
+    end
+
 
     def get_team_classes(team)
       classes = KAG::Config.instance[:classes]

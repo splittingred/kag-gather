@@ -23,18 +23,27 @@ module KAG
     end
 
     def connect
-      return false unless self.socket
+      return true if self.connected?
+      unless self.socket
+        puts "Could not establish TCP socket to connect"
+        return false
+      end
       self.socket.puts self[:rcon_password]
       z = self.socket.gets
       z.include?("now authenticated")
       self[:_connected] = true
+      true
     end
 
     def disconnect
       if self[:_socket]
+        puts "[RCON] Closing socket..."
+        self.socket.puts "/quit"
         self[:_socket].close
         self[:_connected] = false
+        self.delete(:_socket)
       end
+      true
     end
 
     def connected?
@@ -53,6 +62,7 @@ module KAG
     end
 
     def players
+      return false unless self.connect
       _command "/players"
 
       players = []
@@ -89,16 +99,18 @@ module KAG
 
         players << player
       end
+      _cycle
       players
     end
 
     def kick(nick)
-      return false unless self.connected?
+      return false unless self.connect
       self.socket.puts "/kick #{nick}"
       _cycle
     end
 
     def kick_all
+      return false unless self.connect
       ps = self.players
       if ps
         ps.each do |player|
@@ -111,11 +123,13 @@ module KAG
     end
 
     def restart_map
+      return false unless self.connect
       _command "/restartmap"
       _cycle
     end
 
     def next_map
+      return false unless self.connect
       _command "/nextmap"
       _cycle
     end

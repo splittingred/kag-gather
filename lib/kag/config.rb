@@ -18,5 +18,10 @@ module KAG
         raise 'Error loading config file from config/config.json'
       end
     end
+
+    def reload
+      puts "Reloading configuration file..."
+      self.merge!(self._get_config)
+    end
   end
 end

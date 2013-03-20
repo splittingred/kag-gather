@@ -115,8 +115,12 @@ module KAG
 
     def end_match(match)
       if match[:server].has_rcon?
-        match[:server].kick_all
-        match[:server].disconnect
+        begin
+          match[:server].kick_all
+        rescue Exception => e
+          debug e.message
+          debug e.backtrace.join("\n")
+        end
       else
         debug "NO RCON, so could not kick!"
       end
@@ -137,7 +141,9 @@ module KAG
 
     def get_match_in(nick)
       m = false
+      puts "looking for #{nick} in a match"
       @matches.each do |k,match|
+        puts match.inspect
         if match[:team1] and match[:team1].include?(nick)
           m = match
         elsif match[:team2] and match[:team2].include?(nick)
@@ -190,21 +196,31 @@ module KAG
         classes_t2 = get_team_classes(2)
 
         team1.each do |p|
-          msg = msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
-          sleep(0.5)
-          User(p).send(msg+" \x0312Blue Team with: #{team1.join(", ")}") unless p.include?("player")
+          player_msg = msg.clone
+          player_msg = player_msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
+          player_msg = player_msg+" \x0312Blue Team with: #{team1.join(", ")}"
+          User(p).send(player_msg) unless p.include?("player")
+          debug "Sent to #{p.to_s}: "+player_msg
+          sleep(1)
         end
         team2.each do |p|
-          msg = msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
-          sleep(0.5)
-          User(p).send(msg+" \x0304Red Team with: #{team2.join(", ")}") unless p.include?("player")
+          player_msg = msg.clone
+          player_msg = player_msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
+          player_msg = player_msg+" \x0304Red Team with: #{team2.join(", ")}"
+          User(p).send(player_msg) unless p.include?("player")
+          debug "Sent to #{p.to_s}: "+player_msg
+          sleep(1)
         end
 
-        if server.has_rcon?
-          server.connect
-          server.restart_map
-        else
-          debug "Cannot restart map, no RCON!"
+        begin
+          if server.has_rcon?
+            server.restart_map
+          else
+            debug "Cannot restart map, no RCON!"
+          end
+        rescue Exception => e
+          debug e.message
+          debug e.backtrace.join("\n")
         end
 
         @matches[server[:key]] = {
@@ -316,6 +332,14 @@ module KAG
         pid = spawn cmd
         debug "Restarting bot, new process ID is #{pid.to_s} ..."
         exit
+      end
+    end
+
+    match "reload_config", method: :evt_reload_config
+    def evt_reload_config(m)
+      if is_admin(m.user)
+        KAG::Config.instance.reload
+        m.reply "Configuration reloaded."
       end
     end
     

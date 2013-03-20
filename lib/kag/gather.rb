@@ -181,6 +181,12 @@ module KAG
           User(p).send(msg+" Red Team #{team2.join(", ")}") unless p.include?("player")
         end
 
+        if server.has_rcon?
+          server.connect
+          server.restart_map
+          server.disconnect
+        end
+
         @matches[server[:key]] = {
             :team1 => team1,
             :team2 => team2,

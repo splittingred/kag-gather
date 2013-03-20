@@ -26,7 +26,7 @@ Gem::Specification.new do |gem|
   #gem.add_runtime_dependency 'timers', '>= 1.0.0'
 
   if RUBY_PLATFORM =~ /java/
-    s.add_dependency "jruby-openssl"
+    gem.add_runtime_dependency "jruby-openssl"
   end
 
   gem.add_development_dependency 'rake'

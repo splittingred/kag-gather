@@ -88,19 +88,14 @@ module KAG
     def evt_end(m)
       match_in = get_match_in(m.user.nick)
       if match_in
-        puts match_in.inspect
         match_in[:end_votes] = match_in[:end_votes] + 1
         evt = KAG::Config.instance[:end_vote_threshold].to_i
         evt = 3 if evt < 1
         if match_in[:end_votes] >= evt
-          if match_in[:server].has_rcon?
-            match_in[:server].kick_all
-            match_in[:server].disconnect
-          else
-            debug "NO RCON, so could not kick!"
-          end
-          @matches.delete(match_in[:server][:key])
-          send_channels_msg("Match at #{match_in[:server][:key]} finished!")
+          end_match(match_in)
+        else
+          needed = evt - match_in[:end_votes]
+          m.reply "End vote started, #{needed} more votes to end match at #{match_in[:server][:key]}"
         end
       else
         m.reply "You're not in a match, silly! Stop trying to hack me."
@@ -112,6 +107,17 @@ module KAG
         @queue.delete(nick)
         send_channels_msg "Removed #{nick} from queue (#{get_match_type_as_string}) [#{@queue.length}]"
       end
+    end
+
+    def end_match(match)
+      if match[:server].has_rcon?
+        match[:server].kick_all
+        match[:server].disconnect
+      else
+        debug "NO RCON, so could not kick!"
+      end
+      @matches.delete(match[:server][:key])
+      send_channels_msg("Match at #{match[:server][:key]} finished!")
     end
 
     def remove_user_from_match(nick)

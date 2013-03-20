@@ -11,6 +11,7 @@ config/config.json
 # other files
 tmp
 logs
+nohup*
 
 # other ruby-specific files
 *.gem

@@ -191,12 +191,12 @@ module KAG
 
         team1.each do |p|
           msg = msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
-          sleep(.5)
+          sleep(0.5)
           User(p).send(msg+" \x0312Blue Team with: #{team1.join(", ")}") unless p.include?("player")
         end
         team2.each do |p|
           msg = msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
-          sleep(.5)
+          sleep(0.5)
           User(p).send(msg+" \x0304Red Team with: #{team2.join(", ")}") unless p.include?("player")
         end
 

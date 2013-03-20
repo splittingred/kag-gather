@@ -116,7 +116,12 @@ module KAG
     def end_match(match)
       if match[:server].has_rcon?
         begin
-          match[:server].kick_all
+          match[:team1].each do |p|
+            match[:server].kick(p)
+          end
+          match[:team2].each do |p|
+            match[:server].kick(p)
+          end
         rescue Exception => e
           debug e.message
           debug e.backtrace.join("\n")
@@ -124,14 +129,15 @@ module KAG
       else
         debug "NO RCON, so could not kick!"
       end
+      match[:server].disconnect
       @matches.delete(match[:server][:key])
       send_channels_msg("Match at #{match[:server][:key]} finished!")
     end
 
-    def remove_user_from_match(nick)
+    def remove_user_from_match(nick,send_msg = true)
       match = get_match_in(nick)
-      if match
-        send_channels_msg "#{user} has left the match at #{match[:key]}! Find a sub!"
+      if match and send_msg
+        send_channels_msg "#{nick} has left the match at #{match[:server][:key]}! Find a sub!"
       end
     end
 
@@ -197,7 +203,10 @@ module KAG
 
         team1.each do |p|
           player_msg = msg.clone
-          player_msg = player_msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
+          if KAG::Config.instance[:pick_classes]
+            cls = classes_t1.shift
+            player_msg = player_msg+cls if cls and !cls.empty?
+          end
           player_msg = player_msg+" \x0312Blue Team with: #{team1.join(", ")}"
           User(p).send(player_msg) unless p.include?("player")
           debug "Sent to #{p.to_s}: "+player_msg
@@ -205,7 +214,10 @@ module KAG
         end
         team2.each do |p|
           player_msg = msg.clone
-          player_msg = player_msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
+          if KAG::Config.instance[:pick_classes]
+            cls = classes_t2.shift
+            player_msg = player_msg+cls if cls and !cls.empty?
+          end
           player_msg = player_msg+" \x0304Red Team with: #{team2.join(", ")}"
           User(p).send(player_msg) unless p.include?("player")
           debug "Sent to #{p.to_s}: "+player_msg
@@ -341,6 +353,71 @@ module KAG
       end
     end
 
+    match "restart_map", method: :evt_restart_map
+    def evt_restart_map(m)
+      if is_admin(m.user)
+        match = get_match_in(m.user.nick)
+        if match
+          match[:server].restart_map
+        end
+      end
+    end
+
+    match /restart_map (.+)/, method: :evt_restart_map_specify
+    def evt_restart_map_specify(m,arg)
+      if is_admin(m.user)
+        server = get_server(arg)
+        if server
+          server.next_map
+        else
+          m.reply "No server found with key #{arg}"
+        end
+      end
+    end
+
+    match "next_map", method: :evt_next_map
+    def evt_next_map(m)
+      if is_admin(m.user)
+        match = get_match_in(m.user.nick)
+        if match
+          match[:server].restart_map
+        end
+      end
+    end
+
+    match /next_map (.+)/, method: :evt_next_map_specify
+    def evt_next_map_specify(m,arg)
+      if is_admin(m.user)
+        server = get_server(arg)
+        if server
+          server.next_map
+        else
+          m.reply "No server found with key #{arg}"
+        end
+      end
+    end
+
+    match /kick_from_match (.+)/, method: :evt_kick_from_match
+    def evt_kick_from_match(m,nick)
+      if is_admin(m.user)
+        match = get_match_in(nick)
+        if match[:server]
+          match[:server].kick(nick)
+          remove_user_from_match(nick,false)
+          m.reply "#{nick} has been kicked from the match"
+        else
+          m.reply "#{nick} is not in a match!"
+        end
+      end
+    end
+
+    def get_server(key)
+      @matches.each do |k,m|
+        return m[:server] if k.to_s == key
+      end
+      false
+    end
+
     match "reload_config", method: :evt_reload_config
     def evt_reload_config(m)
       if is_admin(m.user)
@@ -352,7 +429,7 @@ module KAG
     def get_team_classes(team)
       classes = KAG::Config.instance[:classes]
       classes.shuffle!
-      classes
+      classes.clone
     end
   end
 end

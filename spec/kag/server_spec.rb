@@ -24,6 +24,22 @@ describe KAG::Server do
     subject.disconnect
   end
 
+  it "test restart_map()" do
+    subject.connect.should eq(true)
+    i = subject.restart_map
+    #i.should_not eq("")
+    subject.disconnect
+  end
+
+  it "test restart_map then players()" do
+    subject.connect.should eq(true)
+    i = subject.restart_map
+    i = subject.next_map
+    ps = subject.players
+    #i.should_not eq("")
+    subject.disconnect
+  end
+
   #it "test kick()" do
     #subject.connect.should eq(true)
     #subject.kick("splittingred")

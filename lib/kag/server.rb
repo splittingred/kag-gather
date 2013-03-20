@@ -19,17 +19,20 @@ module KAG
       unless self[:_socket]
         self[:_socket] = TCPSocket.new(self[:ip],self[:port])
       end
+      puts self[:_]
       self[:_socket]
     end
 
     def connect
       return true if self.connected?
+      puts "[RCON] Attempting to get socket"
       unless self.socket
-        puts "Could not establish TCP socket to connect"
+        puts "[RCON] Could not establish TCP socket to connect"
         return false
       end
       self.socket.puts self[:rcon_password]
       z = self.socket.gets
+      puts "[RCON] "+z.to_s
       z.include?("now authenticated")
       self[:_connected] = true
       true
@@ -38,7 +41,7 @@ module KAG
     def disconnect
       if self[:_socket]
         puts "[RCON] Closing socket..."
-        self.socket.puts "/quit"
+        #self.socket.puts "/quit"
         self[:_socket].close
         self[:_connected] = false
         self.delete(:_socket)
@@ -51,27 +54,47 @@ module KAG
     end
 
     def _is_newline?(line)
-      line[10..line.length].rstrip.empty?
+      line.empty?
+    end
+
+    def _parse_line(line)
+      line.gsub!(/\r/,"")
+      line.gsub!(/\n/,"")
+      line = line.strip
+      ep = line.index(']')
+      if ep
+        line = line[(ep+1)..line.length].strip
+      else
+        line = line[10..line.length].strip
+      end
+      line.gsub!(/\r/,"")
+      line.gsub!(/\n/,"")
+      line
     end
 
     def _cycle
       while (line = self.socket.gets)
-        puts line
-        break if _is_newline?(line)
+        line = _parse_line(line)
+        puts "[RCON] "+line
+        break if (_is_newline?(line) or line.empty?)
       end
     end
 
+    ##
+    # broken
+    #
     def players
       return false unless self.connect
-      _command "/players"
+      _command "/rcon /players"
 
       players = []
       while (line = self.socket.gets)
-        puts line
-        break if _is_newline?(line)
+        puts "[RCONPRIOR] '"+line+"'"
+        line = _parse_line(line)
+        puts "[RCON] '"+line+"'"
+        break if (line.empty? or line == '' or line == "\n")
 
         player = SymbolTable.new
-        line = line[10..line.length].strip
 
         # get nick
         sp = line.index("[")
@@ -99,7 +122,6 @@ module KAG
 
         players << player
       end
-      _cycle
       players
     end
 

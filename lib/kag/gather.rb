@@ -291,17 +291,23 @@ module KAG
     match /rem (.+)/, method: :evt_rem_admin
     def evt_rem_admin(m, arg)
       if is_admin(m.user)
-        remove_user_from_queue(arg)
+        arg = arg.split(" ")
+        arg.each do |nick|
+          remove_user_from_queue(nick)
+        end
       end
     end
 
     match /add (.+)/, method: :evt_add_admin
     def evt_add_admin(m, arg)
       if is_admin(m.user)
-        if m.channel.has_user?(arg)
-          add_user_to_queue(m,arg)
-        else
-          reply m,"User is not in this channel!"
+        arg = arg.split(" ")
+        arg.each do |nick|
+          if m.channel.has_user?(nick)
+            add_user_to_queue(m,nick)
+          else
+            reply m,"User #{nick} is not in this channel!"
+          end
         end
       end
     end

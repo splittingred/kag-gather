@@ -185,6 +185,8 @@ module KAG
           server.connect
           server.restart_map
           server.disconnect
+        else
+          debug "Cannot restart map, no RCON!"
         end
 
         @matches[server[:key]] = {

@@ -11,7 +11,7 @@ module KAG
       Kagerator.server(self[:ip],self[:port])
     end
 
-    def has_rcon
+    def has_rcon?
       self[:rcon_password] and !self[:rcon_password].empty?
     end
 
@@ -45,7 +45,6 @@ module KAG
         break if line[10..line.length].rstrip.empty?
 
         player = SymbolTable.new
-        "[splittingred] (id 33) (ip 70.116.65.128) (hwid 420661495)"
         line = line[10..line.length].strip
 
         # get nick

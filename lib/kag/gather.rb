@@ -282,6 +282,17 @@ module KAG
       end
     end
 
+    match /is_admin (.+)/, method: :evt_am_i_admin
+    def evt_am_i_admin(m,nick)
+      u = User(nick)
+      if is_admin(u)
+        m.reply "Yes, #{nick} is an admin!"
+      else
+        m.reply "No, #{nick} is not an admin."
+      end
+    end
+
+
     match "quit", method: :evt_quit
     def evt_quit(m)
       if is_admin(m.user)
@@ -305,6 +316,5 @@ module KAG
       classes.shuffle!
       classes
     end
-
   end
 end

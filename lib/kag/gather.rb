@@ -86,17 +86,24 @@ module KAG
 
     match "end", method: :evt_end
     def evt_end(m)
-      @matches.each do |k,match|
-        info = match[:server].info
-        if info
-          players_on = info[:serverStatus][:playerList].length
-          if players_on > 0
-            m.reply "Cannot end a match for #{match[:server][:key]} in progress, there are #{players_on.to_s} players still playing!"
+      match_in = get_match_in(m.user.nick)
+      if match_in
+        puts match_in.inspect
+        match_in[:end_votes] = match_in[:end_votes] + 1
+        evt = KAG::Config.instance[:end_vote_threshold].to_i
+        evt = 3 if evt < 1
+        if match_in[:end_votes] >= evt
+          if match_in[:server].has_rcon?
+            match_in[:server].kick_all
+            match_in[:server].disconnect
           else
-            @matches.delete(k)
-            send_channels_msg("Match at #{match[:server][:key]} finished!")
+            debug "NO RCON, so could not kick!"
           end
+          @matches.delete(match_in[:server][:key])
+          send_channels_msg("Match at #{match_in[:server][:key]} finished!")
         end
+      else
+        m.reply "You're not in a match, silly! Stop trying to hack me."
       end
     end
 
@@ -184,7 +191,6 @@ module KAG
         if server.has_rcon?
           server.connect
           server.restart_map
-          server.disconnect
         else
           debug "Cannot restart map, no RCON!"
         end
@@ -192,7 +198,8 @@ module KAG
         @matches[server[:key]] = {
             :team1 => team1,
             :team2 => team2,
-            :server => server
+            :server => server,
+            :end_votes => 0
         }
       end
     end

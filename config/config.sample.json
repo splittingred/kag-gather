@@ -11,6 +11,7 @@
   ,"pick_classes": true
   ,"classes": ["Knight","Knight","Knight","Archer","Builder"]
   ,"debug": true
+  ,"end_vote_threshold": 3
   ,"servers":{
     "server1": {
       "ip":"5.39.93.105"

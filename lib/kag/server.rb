@@ -26,23 +26,39 @@ module KAG
       return false unless self.socket
       self.socket.puts self[:rcon_password]
       z = self.socket.gets
-      puts z
       z.include?("now authenticated")
+      self[:_connected] = true
     end
 
     def disconnect
       if self[:_socket]
         self[:_socket].close
+        self[:_connected] = false
+      end
+    end
+
+    def connected?
+      self[:_connected]
+    end
+
+    def _is_newline?(line)
+      line[10..line.length].rstrip.empty?
+    end
+
+    def _cycle
+      while (line = self.socket.gets)
+        puts line
+        break if _is_newline?(line)
       end
     end
 
     def players
-      self.socket.puts "/players"
+      _command "/players"
 
       players = []
       while (line = self.socket.gets)
         puts line
-        break if line[10..line.length].rstrip.empty?
+        break if _is_newline?(line)
 
         player = SymbolTable.new
         line = line[10..line.length].strip
@@ -77,22 +93,39 @@ module KAG
     end
 
     def kick(nick)
+      return false unless self.connected?
       self.socket.puts "/kick #{nick}"
+      _cycle
     end
 
     def kick_all
       ps = self.players
-      ps.each do |player|
-        self.socket.puts "/kick #{player[:nick]}"
+      if ps
+        ps.each do |player|
+          _command "/kick #{player[:nick]}"
+        end
+      else
+        puts "No Players found on Server #{self[:ip]}!"
       end
+      _cycle
     end
 
     def restart_map
-      self.socket.puts "/restartmap"
+      _command "/restartmap"
+      _cycle
     end
 
     def next_map
-      self.socket.puts "/nextmap"
+      _command "/nextmap"
+      _cycle
+    end
+
+    protected
+
+    def _command(cmd)
+      return false unless self.connected?
+      puts "[RCON] #{cmd.to_s}"
+      self.socket.puts cmd
     end
   end
 end

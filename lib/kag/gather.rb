@@ -52,16 +52,7 @@ module KAG
 
     match "add", method: :evt_add
     def evt_add(m)
-      unless @queue.key?(m.user.nick) or in_match(m.user.nick)
-        @queue[m.user.nick] = SymbolTable.new({
-            :user => m.user,
-            :channel => m.channel,
-            :message => m.message,
-            :joined_at => Time.now
-        })
-        send_channels_msg "Added #{m.user.nick} to queue (#{get_match_type_as_string}) [#{@queue.length}]"
-        check_for_new_match(m)
-      end
+      add_user_to_queue(m,m.user.nick)
     end
 
     match "rem", method: :evt_rem
@@ -99,6 +90,19 @@ module KAG
         end
       else
         m.reply "You're not in a match, silly! Stop trying to hack me."
+      end
+    end
+
+    def add_user_to_queue(m,nick)
+      unless @queue.key?(nick) or in_match(nick)
+        @queue[nick] = SymbolTable.new({
+            :user => User(nick),
+            :channel => m.channel,
+            :message => m.message,
+            :joined_at => Time.now
+        })
+        send_channels_msg "Added #{nick} to queue (#{get_match_type_as_string}) [#{@queue.length}]"
+        check_for_new_match
       end
     end
 
@@ -149,7 +153,7 @@ module KAG
       "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
 
-    def check_for_new_match(m)
+    def check_for_new_match
       if @queue.length >= KAG::Config.instance[:match_size]
         playing = []
         @queue.each do |n,i|
@@ -267,6 +271,17 @@ module KAG
       end
     end
 
+    match /add (.+)/, method: :evt_add_admin
+    def evt_add_admin(m, arg)
+      if is_admin(m.user)
+        if m.channel.has_user?(arg)
+          add_user_to_queue(m,arg)
+        else
+          m.reply "User is not in this channel!"
+        end
+      end
+    end
+
     match "quit", method: :evt_quit
     def evt_quit(m)
       if is_admin(m.user)
@@ -284,8 +299,7 @@ module KAG
         exit
       end
     end
-
-
+    
     def get_team_classes(team)
       classes = KAG::Config.instance[:classes]
       classes.shuffle!

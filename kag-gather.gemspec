@@ -25,6 +25,10 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "kagerator", "1.0.3"
   #gem.add_runtime_dependency 'timers', '>= 1.0.0'
 
+  if RUBY_PLATFORM =~ /java/
+    s.add_dependency "jruby-openssl"
+  end
+
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'guard-rspec'

@@ -1,5 +1,5 @@
 $:.push File.expand_path('../lib', __FILE__)
-require 'lib/kag/version'
+require 'kag/version'
 
 Gem::Specification.new do |gem|
   gem.name        = 'kag-gather'
@@ -16,14 +16,13 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version     = '>= 1.9.2'
   gem.required_rubygems_version = '>= 1.3.6'
 
-  gem.files        = Dir['README.md', 'lib/**/*']
+  gem.files        = Dir['readme.md', 'lib/**/*', 'config/config.sample.json']
   gem.require_path = 'lib'
 
   gem.add_runtime_dependency "cinch", "2.0.4"
-  gem.add_runtime_dependency "json", "1.7.6"
+  gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "symboltable", "1.0.2"
-  gem.add_runtime_dependency "jruby-openssl"
-  gem.add_runtime_dependency "kagerator", "1.0.2"
+  gem.add_runtime_dependency "kagerator", "1.0.3"
   #gem.add_runtime_dependency 'timers', '>= 1.0.0'
 
   gem.add_development_dependency 'rake'

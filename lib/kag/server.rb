@@ -2,7 +2,7 @@ require 'cinch'
 require 'symboltable'
 require 'json'
 require 'kagerator'
-require File.dirname(__FILE__)+'/config'
+require 'kag/config'
 
 module KAG
   class Server < SymbolTable

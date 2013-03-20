@@ -1,6 +1,6 @@
 require 'cinch'
-require File.dirname(__FILE__)+'/config'
-require File.dirname(__FILE__)+'/gather'
+require 'kag/config'
+require 'kag/gather'
 
 module KAG
   class Bot

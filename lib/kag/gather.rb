@@ -1,7 +1,7 @@
 require 'cinch'
-require File.dirname(__FILE__)+'/bot'
-require File.dirname(__FILE__)+'/config'
-require File.dirname(__FILE__)+'/server'
+require 'kag/bot'
+require 'kag/config'
+require 'kag/server'
 
 module KAG
   class Gather

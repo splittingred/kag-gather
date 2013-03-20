@@ -72,7 +72,7 @@ module KAG
 
     match "status", method: :evt_status
     def evt_status(m)
-      m.reply "Matches in progress: #{@matches.length.to_s}"
+      reply m,"Matches in progress: #{@matches.length.to_s}"
     end
 
     match "end", method: :evt_end
@@ -86,10 +86,10 @@ module KAG
           end_match(match_in)
         else
           needed = evt - match_in[:end_votes]
-          m.reply "End vote started, #{needed} more votes to end match at #{match_in[:server][:key]}"
+          reply m,"End vote started, #{needed} more votes to end match at #{match_in[:server][:key]}"
         end
       else
-        m.reply "You're not in a match, silly! Stop trying to hack me."
+        reply m,"You're not in a match, silly! Stop trying to hack me."
       end
     end
 
@@ -182,20 +182,20 @@ module KAG
         team1 = playing.slice(0,lb)
         team2 = playing.slice(lb,match_size)
 
-        send_channels_msg("MATCH: #{get_match_type_as_string} - #{team1.join(", ")} (Blue) vs #{team2.join(", ")} (Red)")
-        msg = "Join #{server[:key]} - #{server[:ip]}:#{server[:port]} password #{server[:password]} | Visit kag://#{server[:ip]}/#{server[:password]} | "
+        send_channels_msg("MATCH: #{get_match_type_as_string} - \x0312#{team1.join(", ")} (Blue) \x0310vs \x0304#{team2.join(", ")} (Red)",false)
+        msg = "Join \x0305#{server[:key]} - #{server[:ip]}:#{server[:port]} \x0306password #{server[:password]}\x0301 | Visit kag://#{server[:ip]}/#{server[:password]} | "
 
-        msg = msg + " Class: " if KAG::Config.instance[:pick_classes]
+        msg = msg + " \x0303Class: " if KAG::Config.instance[:pick_classes]
         classes_t1 = get_team_classes(1)
         classes_t2 = get_team_classes(2)
 
         team1.each do |p|
           msg = msg+classes_t1.shift if KAG::Config.instance[:pick_classes]
-          User(p).send(msg+" Blue Team #{team1.join(", ")}") unless p.include?("player")
+          User(p).send(msg+" \x0312Blue Team with: #{team1.join(", ")}") unless p.include?("player")
         end
         team2.each do |p|
           msg = msg+classes_t2.shift if KAG::Config.instance[:pick_classes]
-          User(p).send(msg+" Red Team #{team2.join(", ")}") unless p.include?("player")
+          User(p).send(msg+" \x0304Red Team with: #{team2.join(", ")}") unless p.include?("player")
         end
 
         if server.has_rcon?
@@ -214,10 +214,16 @@ module KAG
       end
     end
 
-    def send_channels_msg(msg)
+    def send_channels_msg(msg,colorize = true)
       KAG::Config.instance[:channels].each do |c|
+        msg = Format(:grey,msg) if colorize
         Channel(c).send(msg)
       end
+    end
+
+    def reply(m,msg,colorize = true)
+      msg = Format(:grey,msg) if colorize
+      m.reply msg
     end
 
     def get_unused_server
@@ -238,7 +244,7 @@ module KAG
     match "help", method: :evt_help
     def evt_help(m)
       msg = "Commands: !add, !rem, !list, !status, !help, !end"
-      msg = msg + ", !rem [nick], !clear, !quit" if is_admin(m.user)
+      msg = msg + ", !rem [nick], !add [nick], !clear, !restart, !quit" if is_admin(m.user)
       User(m.user.nick).send(msg)
     end
 
@@ -277,7 +283,7 @@ module KAG
         if m.channel.has_user?(arg)
           add_user_to_queue(m,arg)
         else
-          m.reply "User is not in this channel!"
+          reply m,"User is not in this channel!"
         end
       end
     end
@@ -286,9 +292,9 @@ module KAG
     def evt_am_i_admin(m,nick)
       u = User(nick)
       if is_admin(u)
-        m.reply "Yes, #{nick} is an admin!"
+        reply m,"Yes, #{nick} is an admin!"
       else
-        m.reply "No, #{nick} is not an admin."
+        reply m,"No, #{nick} is not an admin."
       end
     end
 

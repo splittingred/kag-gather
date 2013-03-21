@@ -15,7 +15,12 @@ module KAG
           c.nick = config[:nick].to_s != "" ? config[:nick] : "KAGatherer"
           c.realname = config[:realname].to_s != "" ? config[:realname] : "KAG Gatherer"
           c.messages_per_second = 1
+          c.server_queue_size = 1
           c.plugins.plugins = [KAG::Gather]
+          if config[:sasl]
+            c.sasl.username = config[:sasl][:username]
+            c.sasl.password = config[:sasl][:password]
+          end
         end
       end
 

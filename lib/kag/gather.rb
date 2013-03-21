@@ -65,8 +65,10 @@ module KAG
       if match
         match.remove_player(m.user.nick)
         send_channels_msg "#{nick} has left the match at #{match.server[:key]}! Find a sub!"
-      elsif @queue.key?(user)
-        remove_user_from_queue(m.user.nick)
+      elsif @queue.key?(m.user.nick)
+        unless remove_user_from_queue(m.user.nick)
+          debug "#{nick} is not in the queue."
+        end
       end
     end
 
@@ -118,6 +120,9 @@ module KAG
       if @queue.key?(nick)
         @queue.delete(nick)
         send_channels_msg "Removed #{nick} from queue (#{KAG::Match.type_as_string}) [#{@queue.length}]" if send_msg
+        true
+      else
+        false
       end
     end
 

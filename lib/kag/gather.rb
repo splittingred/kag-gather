@@ -147,7 +147,6 @@ module KAG
 
     def get_match_in(nick)
       m = false
-      puts "looking for #{nick} in a match"
       @matches.each do |k,match|
         puts match.inspect
         if match[:team1] and match[:team1].include?(nick)

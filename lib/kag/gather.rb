@@ -8,10 +8,6 @@ module KAG
   class Gather
     include Cinch::Plugin
 
-    def config
-      KAG::Config.instance
-    end
-
     attr_accessor :queue,:servers
 
     def initialize(*args)
@@ -33,8 +29,9 @@ module KAG
     #def channel_listen(m)
     #end
 
-    listen_to :leaving, method: :on_leaving
+    listen_to :leaving, :method => :on_leaving
     def on_leaving(m,nick)
+      nick = nick.to_s
       match = get_match_in(nick)
       if match
         match.remove_player(nick)
@@ -43,7 +40,7 @@ module KAG
       end
     end
 
-    listen_to :nick, method: :on_nick
+    listen_to :nick, :method => :on_nick
     def on_nick(m)
       match = get_match_in(m.user.last_nick)
       if match
@@ -54,7 +51,7 @@ module KAG
       end
     end
 
-    match "add", method: :evt_add
+    match "add", :method => :evt_add
     def evt_add(m)
       add_user_to_queue(m,m.user.nick)
     end
@@ -72,7 +69,7 @@ module KAG
       end
     end
 
-    match "list", method: :evt_list
+    match "list", :method => :evt_list
     def evt_list(m)
       users = []
       @queue.each do |n,u|
@@ -81,12 +78,12 @@ module KAG
       m.user.send "Queue (#{KAG::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
     end
 
-    match "status", method: :evt_status
+    match "status", :method => :evt_status
     def evt_status(m)
       reply m,"Matches in progress: #{@matches.length.to_s}"
     end
 
-    match "end", method: :evt_end
+    match "end", :method => :evt_end
     def evt_end(m)
       match = get_match_in(m.user.nick)
       if match
@@ -104,7 +101,11 @@ module KAG
     end
 
     def add_user_to_queue(m,nick,send_msg = true)
-      unless @queue.key?(nick) or get_match_in(nick)
+      if @queue.key?(nick)
+        reply m,"#{nick} is already in the queue!"
+      elsif get_match_in(nick)
+        reply m,"#{nick} is already in a match!"
+      else
         @queue[nick] = SymbolTable.new({
             :user => User(nick),
             :channel => m.channel,
@@ -187,10 +188,10 @@ module KAG
       server
     end
 
-    match "help", method: :evt_help
+    match "help", :method => :evt_help
     def evt_help(m)
       msg = "Commands: !add, !rem, !list, !status, !help, !end"
-      msg = msg + ", !rem [nick], !add [nick], !clear, !restart, !quit" if is_admin(m.user)
+      msg = msg + ", !rem [nick], !add [nick], !add_silent, !rem_silent, !clear, !restart, !quit" if is_admin(m.user)
       User(m.user.nick).send(msg)
     end
 
@@ -208,7 +209,7 @@ module KAG
       o.include?(user.authname)
     end
 
-    match "clear", method: :evt_clear
+    match "clear", :method => :evt_clear
     def evt_clear(m)
       if is_admin(m.user)
         send_channels_msg "Match queue cleared."
@@ -216,7 +217,7 @@ module KAG
       end
     end
 
-    match /rem (.+)/, method: :evt_rem_admin
+    match /rem (.+)/, :method => :evt_rem_admin
     def evt_rem_admin(m, arg)
       if is_admin(m.user)
         arg = arg.split(" ")
@@ -226,7 +227,7 @@ module KAG
       end
     end
 
-    match /rem_silent (.+)/, method: :evt_rem_silent_admin
+    match /rem_silent (.+)/, :method => :evt_rem_silent_admin
     def evt_rem_silent_admin(m, arg)
       if is_admin(m.user)
         arg = arg.split(" ")
@@ -236,7 +237,7 @@ module KAG
       end
     end
 
-    match /add (.+)/, method: :evt_add_admin
+    match /add (.+)/, :method => :evt_add_admin
     def evt_add_admin(m, arg)
       if is_admin(m.user)
         arg = arg.split(" ")
@@ -246,7 +247,7 @@ module KAG
       end
     end
 
-    match /add_silent (.+)/, method: :evt_add_silent_admin
+    match /add_silent (.+)/, :method => :evt_add_silent_admin
     def evt_add_silent_admin(m, arg)
       if is_admin(m.user)
         arg = arg.split(" ")
@@ -256,7 +257,7 @@ module KAG
       end
     end
 
-    match /is_admin (.+)/, method: :evt_am_i_admin
+    match /is_admin (.+)/, :method => :evt_am_i_admin
     def evt_am_i_admin(m,nick)
       u = User(nick)
       if is_admin(u)
@@ -267,14 +268,14 @@ module KAG
     end
 
 
-    match "quit", method: :evt_quit
+    match "quit", :method => :evt_quit
     def evt_quit(m)
       if is_admin(m.user)
         m.bot.quit("Shutting down...")
       end
     end
 
-    match "restart", method: :evt_restart
+    match "restart", :method => :evt_restart
     def evt_restart(m)
       if is_admin(m.user)
         cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
@@ -285,7 +286,7 @@ module KAG
       end
     end
 
-    match "restart_map", method: :evt_restart_map
+    match "restart_map", :method => :evt_restart_map
     def evt_restart_map(m)
       if is_admin(m.user)
         match = get_match_in(m.user.nick)
@@ -295,7 +296,7 @@ module KAG
       end
     end
 
-    match /restart_map (.+)/, method: :evt_restart_map_specify
+    match /restart_map (.+)/, :method => :evt_restart_map_specify
     def evt_restart_map_specify(m,arg)
       if is_admin(m.user)
         if @servers[key]
@@ -306,7 +307,7 @@ module KAG
       end
     end
 
-    match "next_map", method: :evt_next_map
+    match "next_map", :method => :evt_next_map
     def evt_next_map(m)
       if is_admin(m.user)
         match = get_match_in(m.user.nick)
@@ -316,7 +317,7 @@ module KAG
       end
     end
 
-    match /next_map (.+)/, method: :evt_next_map_specify
+    match /next_map (.+)/, :method => :evt_next_map_specify
     def evt_next_map_specify(m,arg)
       if is_admin(m.user)
         if @servers[key]
@@ -327,7 +328,7 @@ module KAG
       end
     end
 
-    match /kick_from_match (.+)/, method: :evt_kick_from_match
+    match /kick_from_match (.+)/, :method => :evt_kick_from_match
     def evt_kick_from_match(m,nick)
       if is_admin(m.user)
         match = get_match_in(nick)
@@ -340,7 +341,7 @@ module KAG
       end
     end
 
-    match "reload_config", method: :evt_reload_config
+    match "reload_config", :method => :evt_reload_config
     def evt_reload_config(m)
       if is_admin(m.user)
         KAG::Config.instance.reload

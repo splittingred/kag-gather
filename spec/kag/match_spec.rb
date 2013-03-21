@@ -19,7 +19,8 @@ describe KAG::Server do
   end
 
   it "ensure setup_teams() works" do
-    subject.setup_teams.should_not eq(false)
+    teams = subject.setup_teams
+    teams.should_not eq(false)
   end
 
   it "ensure text_for_match_start works" do

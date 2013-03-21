@@ -8,7 +8,6 @@ module KAG
 
     def setup
       setup_classes
-      puts self[:players].inspect
       self
     end
 
@@ -20,6 +19,7 @@ module KAG
       players.each do |p|
         self[:players][p.to_sym] = classes.shift
       end
+      self
     end
 
     def notify_of_match_start
@@ -31,7 +31,7 @@ module KAG
       self[:players].each do |nick,cls|
         player_msg = msg.clone
         player_msg = player_msg+cls if KAG::Config.instance[:pick_classes] and cls and !cls.empty?
-        player_msg = player_msg+" \x0312Blue Team with: #{self[:players].keys.join(", ")}"
+        player_msg = player_msg+" #{self[:color]}#{self[:name]} with: #{self[:players].keys.join(", ")}"
         messages[nick] = player_msg
       end
       messages

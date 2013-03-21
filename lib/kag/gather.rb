@@ -241,11 +241,7 @@ module KAG
       if is_admin(m.user)
         arg = arg.split(" ")
         arg.each do |nick|
-          if m.channel.has_user?(nick)
-            add_user_to_queue(m,nick)
-          else
-            reply m,"User #{nick} is not in this channel!"
-          end
+          add_user_to_queue(m,nick)
         end
       end
     end
@@ -255,11 +251,7 @@ module KAG
       if is_admin(m.user)
         arg = arg.split(" ")
         arg.each do |nick|
-          if m.channel.has_user?(nick)
-            add_user_to_queue(m,nick,false)
-          else
-            reply m,"User #{nick} is not in this channel!"
-          end
+          add_user_to_queue(m,nick,false)
         end
       end
     end

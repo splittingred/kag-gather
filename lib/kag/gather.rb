@@ -101,7 +101,7 @@ module KAG
       end
     end
 
-    def add_user_to_queue(m,nick)
+    def add_user_to_queue(m,nick,send_msg = true)
       unless @queue.key?(nick) or get_match_in(nick)
         @queue[nick] = SymbolTable.new({
             :user => User(nick),
@@ -109,15 +109,15 @@ module KAG
             :message => m.message,
             :joined_at => Time.now
         })
-        send_channels_msg "Added #{nick} to queue (#{KAG::Match.type_as_string}) [#{@queue.length}]"
+        send_channels_msg "Added #{nick} to queue (#{KAG::Match.type_as_string}) [#{@queue.length}]" if send_msg
         check_for_new_match
       end
     end
 
-    def remove_user_from_queue(nick)
+    def remove_user_from_queue(nick,send_msg = true)
       if @queue.key?(nick)
         @queue.delete(nick)
-        send_channels_msg "Removed #{nick} from queue (#{KAG::Match.type_as_string}) [#{@queue.length}]"
+        send_channels_msg "Removed #{nick} from queue (#{KAG::Match.type_as_string}) [#{@queue.length}]" if send_msg
       end
     end
 
@@ -221,6 +221,16 @@ module KAG
       end
     end
 
+    match /rem_silent (.+)/, method: :evt_rem_silent_admin
+    def evt_rem_silent_admin(m, arg)
+      if is_admin(m.user)
+        arg = arg.split(" ")
+        arg.each do |nick|
+          remove_user_from_queue(nick,false)
+        end
+      end
+    end
+
     match /add (.+)/, method: :evt_add_admin
     def evt_add_admin(m, arg)
       if is_admin(m.user)
@@ -228,6 +238,20 @@ module KAG
         arg.each do |nick|
           if m.channel.has_user?(nick)
             add_user_to_queue(m,nick)
+          else
+            reply m,"User #{nick} is not in this channel!"
+          end
+        end
+      end
+    end
+
+    match /add_silent (.+)/, method: :evt_add_silent_admin
+    def evt_add_silent_admin(m, arg)
+      if is_admin(m.user)
+        arg = arg.split(" ")
+        arg.each do |nick|
+          if m.channel.has_user?(nick)
+            add_user_to_queue(m,nick,false)
           else
             reply m,"User #{nick} is not in this channel!"
           end

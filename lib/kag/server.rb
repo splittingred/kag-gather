@@ -11,6 +11,10 @@ module KAG
       Kagerator.server(self[:ip],self[:port])
     end
 
+    def in_use?
+      self.key?(:match)
+    end
+
     def has_rcon?
       self[:rcon_password] and !self[:rcon_password].empty?
     end

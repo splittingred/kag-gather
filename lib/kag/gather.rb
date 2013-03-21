@@ -2,6 +2,7 @@ require 'cinch'
 require 'kag/bot'
 require 'kag/config'
 require 'kag/server'
+require 'kag/match'
 
 module KAG
   class Gather
@@ -11,12 +12,21 @@ module KAG
       KAG::Config.instance
     end
 
-    attr_accessor :queue
+    attr_accessor :queue,:servers
 
     def initialize(*args)
       super
       @queue = {}
       @matches = {}
+      _load_servers
+    end
+
+    def _load_servers
+      @servers = {}
+      KAG::Config.instance[:servers].each do |k,s|
+        s[:key] = k
+        @servers[k] = KAG::Server.new(s)
+      end
     end
 
     #listen_to :channel, method: :channel_listen
@@ -24,29 +34,23 @@ module KAG
     #end
 
     listen_to :leaving, method: :on_leaving
-    def on_leaving(m,user)
-      remove_user_from_queue(user) if @queue.key?(user)
-      remove_user_from_match(user) if in_match(user)
+    def on_leaving(m,nick)
+      match = get_match_in(nick)
+      if match
+        match.remove_player(nick)
+      elsif @queue.key?(nick)
+        remove_user_from_queue(nick)
+      end
     end
 
     listen_to :nick, method: :on_nick
     def on_nick(m)
-      if @queue.key?(m.user.last_nick)
+      match = get_match_in(m.user.last_nick)
+      if match
+        match.rename_player(m.user.last_nick,m.user.nick)
+      elsif @queue.key?(m.user.last_nick)
         @queue[m.user.nick] = @queue[m.user.last_nick]
         @queue.delete(m.user.last_nick)
-      elsif in_match(m.user.last_nick)
-        @matches.each do |m|
-          i = m[:team1].index(m.user.last_nick)
-          if i != nil
-            m[:team1].delete_at(i)
-            m[:team1] << m.user.nick
-          end
-          i = m[:team2].index(m.user.last_nick)
-          if i != nil
-            m[:team2].delete_at(i)
-            m[:team2] << m.user.nick
-          end
-        end
       end
     end
 
@@ -57,8 +61,13 @@ module KAG
 
     match "rem", method: :evt_rem
     def evt_rem(m)
-      remove_user_from_match(m.user.nick)
-      remove_user_from_queue(m.user.nick)
+      match = get_match_in(m.user.nick)
+      if match
+        match.remove_player(m.user.nick)
+        send_channels_msg "#{nick} has left the match at #{match.server[:key]}! Find a sub!"
+      elsif @queue.key?(user)
+        remove_user_from_queue(m.user.nick)
+      end
     end
 
     match "list", method: :evt_list
@@ -67,7 +76,7 @@ module KAG
       @queue.each do |n,u|
         users << n
       end
-      m.user.send "Queue (#{get_match_type_as_string}) [#{@queue.length}] #{users.join(", ")}"
+      m.user.send "Queue (#{KAG::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
     end
 
     match "status", method: :evt_status
@@ -77,16 +86,15 @@ module KAG
 
     match "end", method: :evt_end
     def evt_end(m)
-      match_in = get_match_in(m.user.nick)
-      if match_in
-        match_in[:end_votes] = match_in[:end_votes] + 1
-        evt = KAG::Config.instance[:end_vote_threshold].to_i
-        evt = 3 if evt < 1
-        if match_in[:end_votes] >= evt
-          end_match(match_in)
+      match = get_match_in(m.user.nick)
+      if match
+        match.add_end_vote
+        if match.voted_to_end?
+          match.cease
+          @matches.delete(match.server[:key])
+          send_channels_msg("Match at #{match.server[:key]} finished!")
         else
-          needed = evt - match_in[:end_votes]
-          reply m,"End vote started, #{needed} more votes to end match at #{match_in[:server][:key]}"
+          reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server[:key]}"
         end
       else
         reply m,"You're not in a match, silly! Stop trying to hack me."
@@ -94,14 +102,14 @@ module KAG
     end
 
     def add_user_to_queue(m,nick)
-      unless @queue.key?(nick) or in_match(nick)
+      unless @queue.key?(nick) or get_match_in(nick)
         @queue[nick] = SymbolTable.new({
             :user => User(nick),
             :channel => m.channel,
             :message => m.message,
             :joined_at => Time.now
         })
-        send_channels_msg "Added #{nick} to queue (#{get_match_type_as_string}) [#{@queue.length}]"
+        send_channels_msg "Added #{nick} to queue (#{KAG::Match.type_as_string}) [#{@queue.length}]"
         check_for_new_match
       end
     end
@@ -109,59 +117,18 @@ module KAG
     def remove_user_from_queue(nick)
       if @queue.key?(nick)
         @queue.delete(nick)
-        send_channels_msg "Removed #{nick} from queue (#{get_match_type_as_string}) [#{@queue.length}]"
+        send_channels_msg "Removed #{nick} from queue (#{KAG::Match.type_as_string}) [#{@queue.length}]"
       end
-    end
-
-    def end_match(match)
-      if match[:server].has_rcon?
-        begin
-          match[:team1].each do |p|
-            match[:server].kick(p)
-          end
-          match[:team2].each do |p|
-            match[:server].kick(p)
-          end
-        rescue Exception => e
-          debug e.message
-          debug e.backtrace.join("\n")
-        end
-      else
-        debug "NO RCON, so could not kick!"
-      end
-      match[:server].disconnect
-      @matches.delete(match[:server][:key])
-      send_channels_msg("Match at #{match[:server][:key]} finished!")
-    end
-
-    def remove_user_from_match(nick,send_msg = true)
-      match = get_match_in(nick)
-      if match and send_msg
-        send_channels_msg "#{nick} has left the match at #{match[:server][:key]}! Find a sub!"
-      end
-    end
-
-    def in_match(nick)
-      get_match_in(nick)
     end
 
     def get_match_in(nick)
       m = false
       @matches.each do |k,match|
-        puts match.inspect
-        if match[:team1] and match[:team1].include?(nick)
-          m = match
-        elsif match[:team2] and match[:team2].include?(nick)
+        if match.has_player?(nick)
           m = match
         end
       end
       m
-    end
-
-    def get_match_type_as_string
-      ms = KAG::Config.instance[:match_size]
-      ts = (ms / 2).ceil
-      "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
 
     def check_for_new_match
@@ -193,7 +160,7 @@ module KAG
         team1 = playing.slice(0,lb)
         team2 = playing.slice(lb,match_size)
 
-        send_channels_msg("MATCH: #{get_match_type_as_string} - \x0312#{team1.join(", ")} (Blue) \x0310vs \x0304#{team2.join(", ")} (Red) \x0301(!end when done)",false)
+        send_channels_msg("MATCH: #{KAG::Match.type_as_string} - \x0312#{team1.join(", ")} (Blue) \x0310vs \x0304#{team2.join(", ")} (Red) \x0301(!end when done)",false)
         msg = "Join \x0305#{server[:key]} - #{server[:ip]}:#{server[:port]} \x0306password #{server[:password]}\x0301 | Visit kag://#{server[:ip]}/#{server[:password]} | "
 
         msg = msg + " \x0303Class: " if KAG::Config.instance[:pick_classes]
@@ -234,13 +201,18 @@ module KAG
           debug e.backtrace.join("\n")
         end
 
-        @matches[server[:key]] = {
+        @matches[server[:key]] = KAG::Match.new({
             :team1 => team1,
             :team2 => team2,
-            :server => server,
-            :end_votes => 0
-        }
+            :server => server
+        })
       end
+    end
+
+    def get_team_classes(team)
+      classes = KAG::Config.instance[:classes]
+      classes.shuffle!
+      classes.clone
     end
 
     def send_channels_msg(msg,colorize = true)
@@ -256,18 +228,11 @@ module KAG
     end
 
     def get_unused_server
-      used_servers = []
-      @matches.each do |k,m|
-        used_servers << k
+      server = false
+      @servers.each do |k,s|
+        server = s unless s.in_use?
       end
-      available_servers = KAG::Config.instance[:servers]
-      available_servers.each do |k,s|
-        unless used_servers.include?(k)
-          s[:key] = k
-          return KAG::Server.new(s)
-        end
-      end
-      false
+      server
     end
 
     match "help", method: :evt_help
@@ -356,8 +321,8 @@ module KAG
     def evt_restart_map(m)
       if is_admin(m.user)
         match = get_match_in(m.user.nick)
-        if match
-          match[:server].restart_map
+        if match and match.server
+          match.server.restart_map
         end
       end
     end
@@ -365,9 +330,8 @@ module KAG
     match /restart_map (.+)/, method: :evt_restart_map_specify
     def evt_restart_map_specify(m,arg)
       if is_admin(m.user)
-        server = get_server(arg)
-        if server
-          server.next_map
+        if @servers[key]
+          @servers[key].restart_map
         else
           m.reply "No server found with key #{arg}"
         end
@@ -378,8 +342,8 @@ module KAG
     def evt_next_map(m)
       if is_admin(m.user)
         match = get_match_in(m.user.nick)
-        if match
-          match[:server].restart_map
+        if match and match.server
+          match.server.next_map
         end
       end
     end
@@ -387,9 +351,8 @@ module KAG
     match /next_map (.+)/, method: :evt_next_map_specify
     def evt_next_map_specify(m,arg)
       if is_admin(m.user)
-        server = get_server(arg)
-        if server
-          server.next_map
+        if @servers[key]
+          @servers[key].next_map
         else
           m.reply "No server found with key #{arg}"
         end
@@ -400,21 +363,13 @@ module KAG
     def evt_kick_from_match(m,nick)
       if is_admin(m.user)
         match = get_match_in(nick)
-        if match[:server]
-          match[:server].kick(nick)
-          remove_user_from_match(nick,false)
+        if match
+          match.remove_player(nick)
           m.reply "#{nick} has been kicked from the match"
         else
           m.reply "#{nick} is not in a match!"
         end
       end
-    end
-
-    def get_server(key)
-      @matches.each do |k,m|
-        return m[:server] if k.to_s == key
-      end
-      false
     end
 
     match "reload_config", method: :evt_reload_config
@@ -423,12 +378,6 @@ module KAG
         KAG::Config.instance.reload
         m.reply "Configuration reloaded."
       end
-    end
-    
-    def get_team_classes(team)
-      classes = KAG::Config.instance[:classes]
-      classes.shuffle!
-      classes.clone
     end
   end
 end

@@ -133,9 +133,9 @@ module KAG
 
     def check_for_new_match
       if @queue.length >= KAG::Config.instance[:match_size]
-        playing = []
+        players = []
         @queue.each do |n,i|
-          playing << n
+          players << n
         end
 
         server = get_unused_server
@@ -145,74 +145,21 @@ module KAG
           return false
         end
 
+        match = KAG::Match.new(SymbolTable.new({
+          :server => server,
+          :players => players
+        }))
+        match.start
+        messages = match.notify_teams_of_match_start
+        messages.each do |nick,msg|
+          User(nick.to_s).send(msg) unless nick.to_s.include?("player")
+          sleep(2)
+        end
+        send_channels_msg(match.text_for_match_start,false)
+
         @queue = {}
-        playing.shuffle!
-        match_size = KAG::Config.instance[:match_size].to_i
-        match_size = 2 if match_size < 2
-
-        lb = (match_size / 2).ceil.to_i
-        lb = 1 if lb < 1
-
-        debug "MATCH SIZE #{match_size.to_s}"
-        debug "LOWER BOUND: #{lb.to_s}"
-        debug "PLAYERS: #{playing.join(",")}"
-
-        team1 = playing.slice(0,lb)
-        team2 = playing.slice(lb,match_size)
-
-        send_channels_msg("MATCH: #{KAG::Match.type_as_string} - \x0312#{team1.join(", ")} (Blue) \x0310vs \x0304#{team2.join(", ")} (Red) \x0301(!end when done)",false)
-        msg = "Join \x0305#{server[:key]} - #{server[:ip]}:#{server[:port]} \x0306password #{server[:password]}\x0301 | Visit kag://#{server[:ip]}/#{server[:password]} | "
-
-        msg = msg + " \x0303Class: " if KAG::Config.instance[:pick_classes]
-        classes_t1 = get_team_classes(1)
-        classes_t2 = get_team_classes(2)
-
-        team1.each do |p|
-          player_msg = msg.clone
-          if KAG::Config.instance[:pick_classes]
-            cls = classes_t1.shift
-            player_msg = player_msg+cls if cls and !cls.empty?
-          end
-          player_msg = player_msg+" \x0312Blue Team with: #{team1.join(", ")}"
-          User(p).send(player_msg) unless p.include?("player")
-          debug "Sent to #{p.to_s}: "+player_msg
-          sleep(1)
-        end
-        team2.each do |p|
-          player_msg = msg.clone
-          if KAG::Config.instance[:pick_classes]
-            cls = classes_t2.shift
-            player_msg = player_msg+cls if cls and !cls.empty?
-          end
-          player_msg = player_msg+" \x0304Red Team with: #{team2.join(", ")}"
-          User(p).send(player_msg) unless p.include?("player")
-          debug "Sent to #{p.to_s}: "+player_msg
-          sleep(1)
-        end
-
-        begin
-          if server.has_rcon?
-            server.restart_map
-          else
-            debug "Cannot restart map, no RCON!"
-          end
-        rescue Exception => e
-          debug e.message
-          debug e.backtrace.join("\n")
-        end
-
-        @matches[server[:key]] = KAG::Match.new({
-            :team1 => team1,
-            :team2 => team2,
-            :server => server
-        })
+        @matches[server[:key]] = match
       end
-    end
-
-    def get_team_classes(team)
-      classes = KAG::Config.instance[:classes]
-      classes.shuffle!
-      classes.clone
     end
 
     def send_channels_msg(msg,colorize = true)

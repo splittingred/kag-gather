@@ -1,5 +1,7 @@
+require 'cinch'
 require 'symboltable'
 require 'kag/config'
+require 'kag/team'
 
 module KAG
   class Match < SymbolTable
@@ -10,9 +12,57 @@ module KAG
       "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
 
-    def initialize(hash = nil)
-      self[:end_votes] = 0 unless hash[:end_votes]
-      super(hash)
+    def setup_teams
+      self[:players].shuffle!
+      match_size = KAG::Config.instance[:match_size].to_i
+      match_size = 2 if match_size < 2
+
+      lb = (match_size / 2).ceil.to_i
+      lb = 1 if lb < 1
+
+      debug "MATCH SIZE #{match_size.to_s}"
+      debug "LOWER BOUND: #{lb.to_s}"
+      debug "PLAYERS: #{self[:players].join(",")}"
+
+      self[:teams] = []
+      self[:teams] << KAG::Team.new({
+        :players => self[:players].slice(0,lb),
+        :match => self,
+        :color => "\x0312",
+        :name => "Blue"
+      }).setup
+      self[:teams] << KAG::Team.new({
+        :players => self[:players].slice(lb,match_size),
+        :match => self,
+        :color => "\x0304",
+        :name => "Red"
+      }).setup
+      self[:teams]
+    end
+
+    def start
+      self[:end_votes] = 0 unless self[:end_votes]
+      setup_teams
+      restart_map
+    end
+
+    def text_for_match_start
+      msg = "MATCH: #{KAG::Match.type_as_string} - "
+      self[:teams].each do |team|
+        msg = msg+" "+team.text_for_match_start
+      end
+      msg+" \x0301(!end when done)"
+    end
+
+    def notify_teams_of_match_start
+      messages = {}
+      self[:teams].each do |t|
+        ms = t.notify_of_match_start
+        ms.each do |nick,msg|
+          messages[nick] = msg
+        end
+      end
+      messages
     end
 
     def add_end_vote
@@ -32,28 +82,18 @@ module KAG
     end
 
     def has_player?(nick)
-      if self[:team1] and self[:team1].include?(nick)
-        true
-      elsif self[:team2] and self[:team2].include?(nick)
-        true
-      else
-        false
+      playing = false
+      self[:teams].each do |team|
+        playing = true if team.has_player?(nick)
       end
+      playing
     end
 
     def cease
       if self.server
         if self.server.has_rcon?
-          begin
-            self[:team1].each do |p|
-              self.server.kick(p)
-            end
-            self[:team2].each do |p|
-              self.server.kick(p)
-            end
-          rescue Exception => e
-            debug e.message
-            debug e.backtrace.join("\n")
+          self[:teams].each do |team|
+            team.kick_all
           end
         else
           debug "NO RCON, so could not kick!"
@@ -82,15 +122,10 @@ module KAG
     end
 
     def rename_player(last_nick,new_nick)
-      i = self[:team1].index(last_nick)
-      if i != nil
-        self[:team1].delete_at(i)
-        self[:team1] << new_nick
-      end
-      i = self[:team2].index(last_nick)
-      if i != nil
-        self[:team2].delete_at(i)
-        self[:team2] << new_nick
+      self[:teams].each do |team|
+        if team.has_player?(last_nick)
+          team.rename_player(last_nick,new_nick)
+        end
       end
     end
 

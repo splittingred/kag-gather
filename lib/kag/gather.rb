@@ -34,7 +34,10 @@ module KAG
       nick = nick.to_s
       match = get_match_in(nick)
       if match
-        match.remove_player(nick)
+        sub = match.remove_player(nick)
+        if sub
+          m.channel.msg sub[:msg]
+        end
       elsif @queue.key?(nick)
         remove_user_from_queue(nick)
       end
@@ -51,6 +54,19 @@ module KAG
       end
     end
 
+    match "sub", :method => :evt_sub
+    def evt_sub(m)
+      @matches.each do |k,match|
+        if match.needs_sub?
+          placement = match.sub_in(m.user.nick)
+          if placement
+            reply m,placement[:channel_msg]
+            User(m.user.nick).send placement[:private_msg]
+          end
+        end
+      end
+    end
+
     match "add", :method => :evt_add
     def evt_add(m)
       add_user_to_queue(m,m.user.nick)
@@ -61,7 +77,7 @@ module KAG
       match = get_match_in(m.user.nick)
       if match
         match.remove_player(m.user.nick)
-        send_channels_msg "#{nick} has left the match at #{match.server[:key]}! Find a sub!"
+        send_channels_msg "#{m.user.nick} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
       elsif @queue.key?(m.user.nick)
         unless remove_user_from_queue(m.user.nick)
           debug "#{nick} is not in the queue."
@@ -279,7 +295,7 @@ module KAG
     def evt_restart(m)
       if is_admin(m.user)
         cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
-        puts cmd
+        debug cmd
         pid = spawn cmd
         debug "Restarting bot, new process ID is #{pid.to_s} ..."
         exit

@@ -42,6 +42,7 @@ module KAG
 
     def start
       self[:end_votes] = 0 unless self[:end_votes]
+      self[:subs_needed] = []
       setup_teams
       restart_map
     end
@@ -115,10 +116,29 @@ module KAG
       end
     end
 
-    def remove_player
-      if match.server
-        match.server.kick(nick)
+    def remove_player(nick)
+      sub = false
+      self[:teams].each do |team|
+        if team.has_player?(nick)
+          sub = team.remove_player(nick)
+        end
       end
+      if sub
+        self[:subs_needed] << sub
+      end
+      sub
+    end
+
+    def needs_sub?
+      self[:subs_needed].length > 0
+    end
+
+    def sub_in(nick)
+      placement = false
+      if needs_sub?
+        placement = self[:subs_needed].shift
+      end
+      placement
     end
 
     def rename_player(last_nick,new_nick)

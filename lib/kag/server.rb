@@ -27,6 +27,10 @@ module KAG
       self[:_socket]
     end
 
+    def text_join
+      "Join \x0305#{self[:key]} - #{self[:ip]}:#{self[:port]} \x0306password #{self[:password]}\x0301 | Visit kag://#{self[:ip]}/#{self[:password]}"
+    end
+
     def connect
       return true if self.connected?
       puts "[RCON] Attempting to get socket"

@@ -357,6 +357,41 @@ module KAG
       end
     end
 
+    match /op (.+)/,:method => :evt_op
+    def evt_op(m,nick)
+      if is_admin(m.user)
+        m.channel.op(nick)
+      end
+    end
+
+    match /deop (.+)/,:method => :evt_deop
+    def evt_deop(m,nick)
+      if is_admin(m.user)
+        m.channel.deop(nick)
+      end
+    end
+
+    match /voice (.+)/,:method => :evt_voice
+    def evt_voice(m,nick)
+      if is_admin(m.user)
+        m.channel.voice(nick)
+      end
+    end
+
+    match /devoice (.+)/,:method => :evt_devoice
+    def evt_devoice(m,nick,reason)
+      if is_admin(m.user)
+        m.channel.devoice(nick)
+      end
+    end
+
+    match /kick (.+) (.+)/,:method => :evt_kick
+    def evt_kick(m,nick,reason)
+      if is_admin(m.user)
+        m.channel.kick(nick,reason)
+      end
+    end
+
     match "reload_config", :method => :evt_reload_config
     def evt_reload_config(m)
       if is_admin(m.user)

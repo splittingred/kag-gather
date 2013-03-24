@@ -137,7 +137,7 @@ module KAG
     match "help", :method => :evt_help
     def evt_help(m)
       unless is_banned?(m.user)
-        msg = "Commands: !add, !rem, !list, !status, !help, !end, !report"
+        msg = "Commands: !add, !rem, !list, !status, !help, !end, !report, !report_count"
         msg = msg + ", !rem [nick], !add [nick], !add_silent, !rem_silent, !unreport, !clear, !restart, !quit" if is_admin(m.user)
         User(m.user.nick).send(msg)
       end
@@ -491,6 +491,21 @@ module KAG
         else
           reply m,"Could not find user #{nick}"
         end
+      end
+    end
+
+    match /reports (.+)/,:method => :reports
+    def reports(m,nick)
+      user = User(nick)
+      if user and !user.unknown
+        count = KAG::Report.report_count(user)
+        if count
+          reply m,"User has been reported #{count.to_s} times."
+        else
+          reply m,"User has not been reported."
+        end
+      else
+        reply m,"Could not find user #{nick}"
       end
     end
 

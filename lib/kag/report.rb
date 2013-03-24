@@ -133,6 +133,14 @@ module KAG
       end
     end
 
+    def self.report_count(user)
+      if KAG::Config.data[:reported] and KAG::Config.data[:reported].key?(user.host.to_sym)
+        KAG::Config.data[:reported][user.host.to_sym][:count]
+      else
+        false
+      end
+    end
+
     protected
 
     def data

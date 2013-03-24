@@ -1,6 +1,7 @@
 # Changelog for KAG Gather Bot
 
 ## 1.3
+* Add !report_count for getting number of times a user has been reported
 * Fix issue where server2 was always picked if no matches started
 * Fix issue where delay in match start was not resetting queue fast enough
 * Add !report [nick] to report abusive/improper players. After X number of reports (default 7), player is ignored in gather

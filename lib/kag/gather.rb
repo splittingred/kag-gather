@@ -2,7 +2,7 @@ require 'cinch'
 require 'kag/bot'
 require 'kag/config'
 require 'kag/data'
-require 'kag/report'
+require 'kag/bans/report'
 require 'kag/server'
 require 'kag/match'
 
@@ -148,7 +148,7 @@ module KAG
       unless is_banned?(m.user)
         u = User(nick)
         if u and !u.unknown
-          KAG::Report.new(self,m,u)
+          KAG::Bans::Report.new(self,m,u)
         else
           reply m,"User #{nick} not found!"
         end
@@ -439,7 +439,7 @@ module KAG
       if is_admin(m.user)
         user = User(nick)
         if user and !user.unknown
-          KAG::Report.remove(self,m,user)
+          KAG::Bans::Report.remove(self,m,user)
         else
           reply m,"Could not find user #{nick}"
         end
@@ -451,7 +451,7 @@ module KAG
       if is_admin(m.user)
         user = User(nick)
         if user and !user.unknown
-          KAG::Report.ignore(self,m,user)
+          KAG::Bans::Report.ignore(self,m,user)
         else
           reply m,"Could not find user #{nick}"
         end
@@ -463,7 +463,7 @@ module KAG
       if is_admin(m.user)
         user = User(nick)
         if user and !user.unknown
-          KAG::Report.unignore(self,m,user)
+          KAG::Bans::Report.unignore(self,m,user)
         else
           reply m,"Could not find user #{nick}"
         end
@@ -511,7 +511,7 @@ module KAG
     def reports(m,nick)
       user = User(nick)
       if user and !user.unknown
-        count = KAG::Report.reports(user)
+        count = KAG::Bans::Report.reports(user)
         if count
           reply m,"User has been reported #{count.to_s} times."
         else
@@ -525,12 +525,12 @@ module KAG
     match "reported",:method => :reported
     def reported(m)
       unless is_banned?(m.user)
-        KAG::Report.list
+        KAG::Bans::Report.list
       end
     end
 
     def is_banned?(user)
-      KAG::Report.is_banned?(user)
+      KAG::Bans::Report.is_banned?(user)
     end
   end
 end

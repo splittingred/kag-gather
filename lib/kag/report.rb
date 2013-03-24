@@ -11,7 +11,7 @@ module KAG
       if reported?
         if can_report?
           if past_threshold?
-            ban
+            ignore
           else
             up_report_count
           end
@@ -35,7 +35,7 @@ module KAG
 
     def _ensure_data
       data[:reported] = {} unless data[:reported]
-      data[:banned] = {} unless data[:banned]
+      data[:ignored] = {} unless data[:ignored]
     end
 
     def reported?
@@ -53,13 +53,13 @@ module KAG
       self[:gather].reply self[:message],"User #{self[:nick]} reported." if self[:gather].class == KAG::Gather
     end
 
-    def ban
+    def ignore
       c = self.clone
       c.delete(:gather)
       c.delete(:message)
-      data[:banned][self[:authname].to_sym] = c
+      data[:ignored][self[:authname].to_sym] = c
       data.save
-      self[:gather].reply self[:message],"User #{self[:nick]} banned." if gather.class == KAG::Gather
+      self[:gather].reply self[:message],"User #{self[:nick]} ignored." if gather.class == KAG::Gather
     end
 
     def past_threshold?
@@ -75,16 +75,51 @@ module KAG
       gather.reply message,"User #{self[:nick]} reported. #{self[:nick]} has now been reported #{data[:reported][self[:authname].to_sym][:count]} times." if gather.class == KAG::Gather
     end
 
+    def self.ignore(user,message,gather)
+      KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
+      if KAG::Config.data[:ignored] and !KAG::Config.data[:ignored].key?(user.authname.to_sym)
+        c = SymbolTable.new({
+          :nick => user.nick,
+          :authname => user.authname,
+          :host => user.host,
+          :realname => user.realname,
+          :gather => gather,
+          :message => message,
+          :reporters => [message.user.authname]
+        })
+        KAG::Config.data[:ignored][user.authname.to_sym] = c
+        KAG::Config.data.save
+
+        gather.reply message,"User #{user.nick} added to ignore list." if gather.class == KAG::Gather
+        true
+      else
+        gather.reply message,"User #{user.nick} already in ignore list!" if gather.class == KAG::Gather
+        false
+      end
+    end
 
     def self.remove(user,message,gather)
-      data = KAG::Config.data
-      if data[:reported] and data[:reported].key?(user.authname.to_sym)
-        data[:reported].delete(user.authname)
+      if KAG::Config.data[:reported] and KAG::Config.data[:reported].key?(user.authname.to_sym)
+        KAG::Config.data[:reported].delete(user.authname.to_sym)
+        KAG::Config.data.save
 
         gather.reply message,"User #{user.nick} removed from report list." if gather.class == KAG::Gather
         true
       else
         gather.reply message,"User #{user.nick} not in report list!" if gather.class == KAG::Gather
+        false
+      end
+    end
+
+    def self.unignore(user,message,gather)
+      if KAG::Config.data[:ignored] and KAG::Config.data[:ignored].key?(user.authname.to_sym)
+        KAG::Config.data[:ignored].delete(user.authname.to_sym)
+        KAG::Config.data.save
+
+        gather.reply message,"User #{user.nick} removed from ignore list." if gather.class == KAG::Gather
+        true
+      else
+        gather.reply message,"User #{user.nick} not in ignore list!" if gather.class == KAG::Gather
         false
       end
     end

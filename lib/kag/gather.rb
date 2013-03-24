@@ -33,37 +33,43 @@ module KAG
 
     listen_to :leaving, :method => :on_leaving
     def on_leaving(m,nick)
-      nick = nick.to_s
-      match = get_match_in(nick)
-      if match
-        sub = match.remove_player(nick)
-        if sub
-          m.channel.msg sub[:msg]
+      unless is_banned?(m.user)
+        nick = nick.to_s
+        match = get_match_in(nick)
+        if match
+          sub = match.remove_player(nick)
+          if sub
+            m.channel.msg sub[:msg]
+          end
+        elsif @queue.key?(nick)
+          remove_user_from_queue(nick)
         end
-      elsif @queue.key?(nick)
-        remove_user_from_queue(nick)
       end
     end
 
     listen_to :nick, :method => :on_nick
     def on_nick(m)
-      match = get_match_in(m.user.last_nick)
-      if match
-        match.rename_player(m.user.last_nick,m.user.nick)
-      elsif @queue.key?(m.user.last_nick)
-        @queue[m.user.nick] = @queue[m.user.last_nick]
-        @queue.delete(m.user.last_nick)
+      unless is_banned?(m.user)
+        match = get_match_in(m.user.last_nick)
+        if match
+          match.rename_player(m.user.last_nick,m.user.nick)
+        elsif @queue.key?(m.user.last_nick)
+          @queue[m.user.nick] = @queue[m.user.last_nick]
+          @queue.delete(m.user.last_nick)
+        end
       end
     end
 
     match "sub", :method => :evt_sub
     def evt_sub(m)
-      @matches.each do |k,match|
-        if match.needs_sub?
-          placement = match.sub_in(m.user.nick)
-          if placement
-            reply m,placement[:channel_msg]
-            User(m.user.nick).send placement[:private_msg]
+      unless is_banned?(m.user)
+        @matches.each do |k,match|
+          if match.needs_sub?
+            placement = match.sub_in(m.user.nick)
+            if placement
+              reply m,placement[:channel_msg]
+              User(m.user.nick).send placement[:private_msg]
+            end
           end
         end
       end
@@ -71,50 +77,89 @@ module KAG
 
     match "add", :method => :evt_add
     def evt_add(m)
-      add_user_to_queue(m,m.user.nick)
+      unless is_banned?(m.user)
+        add_user_to_queue(m,m.user.nick)
+      end
     end
 
     match "rem", method: :evt_rem
     def evt_rem(m)
-      match = get_match_in(m.user.nick)
-      if match
-        match.remove_player(m.user.nick)
-        send_channels_msg "#{m.user.nick} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
-      elsif @queue.key?(m.user.nick)
-        unless remove_user_from_queue(m.user.nick)
-          debug "#{nick} is not in the queue."
+      unless is_banned?(m.user)
+        match = get_match_in(m.user.nick)
+        if match
+          match.remove_player(m.user.nick)
+          send_channels_msg "#{m.user.nick} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
+        elsif @queue.key?(m.user.nick)
+          unless remove_user_from_queue(m.user.nick)
+            debug "#{nick} is not in the queue."
+          end
         end
       end
     end
 
     match "list", :method => :evt_list
     def evt_list(m)
-      users = []
-      @queue.each do |n,u|
-        users << n
+      unless is_banned?(m.user)
+        users = []
+        @queue.each do |n,u|
+          users << n
+        end
+        m.user.send "Queue (#{KAG::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
       end
-      m.user.send "Queue (#{KAG::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
     end
 
     match "status", :method => :evt_status
     def evt_status(m)
-      reply m,"Matches in progress: #{@matches.length.to_s}"
+      unless is_banned?(m.user)
+        reply m,"Matches in progress: #{@matches.length.to_s}"
+      end
     end
 
     match "end", :method => :evt_end
     def evt_end(m)
-      match = get_match_in(m.user.nick)
-      if match
-        match.add_end_vote
-        if match.voted_to_end?
-          match.cease
-          @matches.delete(match.server[:key])
-          send_channels_msg("Match at #{match.server[:key]} finished!")
+      unless is_banned?(m.user)
+        match = get_match_in(m.user.nick)
+        if match
+          match.add_end_vote
+          if match.voted_to_end?
+            match.cease
+            @matches.delete(match.server[:key])
+            send_channels_msg("Match at #{match.server[:key]} finished!")
+          else
+            reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server[:key]}"
+          end
         else
-          reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server[:key]}"
+          reply m,"You're not in a match, silly! Stop trying to hack me."
         end
-      else
-        reply m,"You're not in a match, silly! Stop trying to hack me."
+      end
+    end
+
+    match "help", :method => :evt_help
+    def evt_help(m)
+      unless is_banned?(m.user)
+        msg = "Commands: !add, !rem, !list, !status, !help, !end, !report"
+        msg = msg + ", !rem [nick], !add [nick], !add_silent, !rem_silent, !unreport, !clear, !restart, !quit" if is_admin(m.user)
+        User(m.user.nick).send(msg)
+      end
+    end
+
+    match /report (.+)/,:method => :report
+    def report(m,nick)
+      unless is_banned?(m.user)
+        u = User(nick)
+        if u and !u.unknown
+          KAG::Report.new({
+            :nick => nick,
+            :authname => u.authname,
+            :host => u.host,
+            :realname => u.realname,
+            :gather => self,
+            :message => m,
+            :count => 1
+          })
+        else
+          reply m,"User #{nick} not found!"
+        end
       end
     end
 
@@ -204,13 +249,6 @@ module KAG
         server = s unless s.in_use?
       end
       server
-    end
-
-    match "help", :method => :evt_help
-    def evt_help(m)
-      msg = "Commands: !add, !rem, !list, !status, !help, !end"
-      msg = msg + ", !rem [nick], !add [nick], !add_silent, !rem_silent, !clear, !restart, !quit" if is_admin(m.user)
-      User(m.user.nick).send(msg)
     end
 
     # admin methods
@@ -394,22 +432,11 @@ module KAG
       end
     end
 
-
-    match /report (.+)/,:method => :report
-    def report(m,nick)
-      u = User(nick)
-      if u and !u.unknown
-        KAG::Report.new({
-          :nick => nick,
-          :authname => u.authname,
-          :host => u.host,
-          :realname => u.realname,
-          :gather => self,
-          :message => m,
-          :count => 1
-        })
-      else
-        reply m,"User #{nick} not found!"
+    match "reload_config", :method => :evt_reload_config
+    def evt_reload_config(m)
+      if is_admin(m.user)
+        KAG::Config.instance.reload
+        m.reply "Configuration reloaded."
       end
     end
 
@@ -425,11 +452,36 @@ module KAG
       end
     end
 
-    match "reload_config", :method => :evt_reload_config
-    def evt_reload_config(m)
+    match /ignore (.+)/,:method => :ignore
+    def ignore(m,nick)
       if is_admin(m.user)
-        KAG::Config.instance.reload
-        m.reply "Configuration reloaded."
+        user = User(nick)
+        if user and !user.unknown
+          KAG::Report.ignore(user,m,self)
+        else
+          reply m,"Could not find user #{nick}"
+        end
+      end
+    end
+
+    match /unignore (.+)/,:method => :unignore
+    def unignore(m,nick)
+      if is_admin(m.user)
+        user = User(nick)
+        if user and !user.unknown
+          KAG::Report.unignore(user,m,self)
+        else
+          reply m,"Could not find user #{nick}"
+        end
+      end
+    end
+
+    def is_banned?(user)
+      d = KAG::Config.data
+      if d
+        d[:ignored].key?(user.authname.to_sym)
+      else
+        false
       end
     end
   end

@@ -38,12 +38,19 @@ module KAG
         puts "[RCON] Could not establish TCP socket to connect"
         return false
       end
-      self.socket.puts self[:rcon_password]
-      z = self.socket.gets
-      puts "[RCON] "+z.to_s
-      z.include?("now authenticated")
-      self[:_connected] = true
-      true
+      success = false
+      begin
+        self.socket.puts self[:rcon_password]
+        z = self.socket.gets
+        puts "[RCON] "+z.to_s
+        z.include?("now authenticated")
+        self[:_connected] = true
+        success = true
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+      success
     end
 
     def disconnect

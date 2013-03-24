@@ -214,19 +214,20 @@ module KAG
           return false
         end
 
+        # reset queue first to prevent 11-player load
+        @queue = {}
+
         match = KAG::Match.new(SymbolTable.new({
           :server => server,
           :players => players
         }))
-        match.start
-        messages = match.notify_teams_of_match_start
+        match.start # prepare match data
+        messages = match.notify_teams_of_match_start # gather texts for private messages
+        send_channels_msg(match.text_for_match_start,false) # send channel-wide first
         messages.each do |nick,msg|
           User(nick.to_s).send(msg) unless nick.to_s.include?("player")
-          sleep(2)
+          sleep(2) # prevent excess flood stuff
         end
-        send_channels_msg(match.text_for_match_start,false)
-
-        @queue = {}
         @matches[server[:key]] = match
       end
     end
@@ -245,6 +246,7 @@ module KAG
 
     def get_unused_server
       server = false
+      @servers.shuffle!
       @servers.each do |k,s|
         server = s unless s.in_use?
       end
@@ -470,6 +472,30 @@ module KAG
         user = User(nick)
         if user and !user.unknown
           KAG::Report.unignore(user,m,self)
+        else
+          reply m,"Could not find user #{nick}"
+        end
+      end
+    end
+
+    match /hostname (.+)/,:method => :hostname
+    def hostname(m,nick)
+      if is_admin(m.user)
+        user = User(nick)
+        if user and !user.unknown
+          reply m,"Hostname for #{nick} is #{user.host}"
+        else
+          reply m,"Could not find user #{nick}"
+        end
+      end
+    end
+
+    match /authname (.+)/,:method => :authname
+    def authname(m,nick)
+      if is_admin(m.user)
+        user = User(nick)
+        if user and !user.unknown
+          reply m,"Authname for #{nick} is #{user.authname}"
         else
           reply m,"Could not find user #{nick}"
         end

@@ -9,19 +9,29 @@ module KAG
       super(hash)
       _ensure_data
       if reported?
-        if past_threshold?
-          ban
+        if can_report?
+          if past_threshold?
+            ban
+          else
+            up_report_count
+          end
         else
-          up_report_count
+          self[:gather].reply self[:message],"You have already reported #{self[:nick]}. You can only report a user once."
         end
       else
         report
       end
     end
 
-    def data
-      KAG::Config.data
+    def can_report?
+      r = _report
+      if r and r[:reporters]
+        !r[:reporters].include?(self[:message].user.authname)
+      else
+        true
+      end
     end
+
 
     def _ensure_data
       data[:reported] = {} unless data[:reported]
@@ -36,6 +46,7 @@ module KAG
       c = self.clone
       c.delete(:gather)
       c.delete(:message)
+      c[:reporters] = [self[:message].user[:authname]]
       data[:reported][self[:authname].to_sym] = c
       data.save
 
@@ -52,15 +63,18 @@ module KAG
     end
 
     def past_threshold?
-      data[:reported][self[:authname].to_sym][:count].to_i > KAG::Config.instance[:report_threshold].to_i
+      _report[:count].to_i > KAG::Config.instance[:report_threshold].to_i
     end
 
     def up_report_count
-      data[:reported][self[:authname].to_sym][:count] = data[:reported][self[:authname].to_sym][:count].to_i + 1
+      _report[:count] = _report[:count].to_i + 1
+      _report[:reporters] = [] unless _report[:reporters]
+      _report[:reporters] << self[:message].user.authname
       data.save
 
-      gather.reply message,"User #{user.nick} reported. #{user.nick} has now been reported #{data[:reported][self[:authname].to_sym][:count]} times." if gather.class == KAG::Gather
+      gather.reply message,"User #{self[:nick]} reported. #{self[:nick]} has now been reported #{data[:reported][self[:authname].to_sym][:count]} times." if gather.class == KAG::Gather
     end
+
 
     def self.remove(user,message,gather)
       data = KAG::Config.data
@@ -73,6 +87,16 @@ module KAG
         gather.reply message,"User #{user.nick} not in report list!" if gather.class == KAG::Gather
         false
       end
+    end
+
+    protected
+
+    def data
+      KAG::Config.data
+    end
+
+    def _report
+      data[:reported][self[:authname].to_sym]
     end
   end
 end

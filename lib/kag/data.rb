@@ -10,15 +10,14 @@ module KAG
     end
 
     def _load
-      if File.exists?("config/data.json")
-        f = ::IO.read("config/data.json")
-        if f and !f.empty?
-          SymbolTable.new(JSON.parse(f))
-        else
-          SymbolTable.new
-        end
+      unless File.exists?("config/data.json")
+        File.open("config/data.json","w") {|f| f.write("{}") }
+      end
+      f = ::IO.read("config/data.json")
+      if f and !f.empty?
+        SymbolTable.new(JSON.parse(f))
       else
-        raise 'Error loading config file from config/data.json'
+        SymbolTable.new
       end
     end
 

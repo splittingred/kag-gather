@@ -137,7 +137,7 @@ module KAG
     match "help", :method => :evt_help
     def evt_help(m)
       unless is_banned?(m.user)
-        msg = "Commands: !add, !rem, !list, !status, !help, !end, !report, !report_count"
+        msg = "Commands: !add, !rem, !list, !status, !help, !end, !report, !reports [nick]"
         msg = msg + ", !rem [nick], !add [nick], !add_silent, !rem_silent, !unreport, !clear, !restart, !quit" if is_admin(m.user)
         User(m.user.nick).send(msg)
       end
@@ -494,11 +494,24 @@ module KAG
       end
     end
 
+    match /idle (.+)/,:method => :idle
+    def idle(m,nick)
+      if is_admin(m.user)
+        user = User(nick)
+        if user and !user.unknown
+          s = user.idle.to_i / 60
+          reply m,"#{nick} has been idle #{s} minutes"
+        else
+          reply m,"Could not find user #{nick}"
+        end
+      end
+    end
+
     match /reports (.+)/,:method => :reports
     def reports(m,nick)
       user = User(nick)
       if user and !user.unknown
-        count = KAG::Report.report_count(user)
+        count = KAG::Report.reports(user)
         if count
           reply m,"User has been reported #{count.to_s} times."
         else
@@ -509,14 +522,15 @@ module KAG
       end
     end
 
-    def is_banned?(user)
-      d = KAG::Config.data
-      KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
-      if d
-        d[:ignored].key?(user.host.to_sym)
-      else
-        false
+    match "reported",:method => :reported
+    def reported(m)
+      unless is_banned?(m.user)
+        KAG::Report.list
       end
+    end
+
+    def is_banned?(user)
+      KAG::Report.is_banned?(user)
     end
   end
 end

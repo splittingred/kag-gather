@@ -21,7 +21,12 @@ module KAG
 
     def socket
       unless self[:_socket]
-        self[:_socket] = TCPSocket.new(self[:ip],self[:port])
+        begin
+          self[:_socket] = TCPSocket.new(self[:ip],self[:port])
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
       end
       puts self[:_]
       self[:_socket]

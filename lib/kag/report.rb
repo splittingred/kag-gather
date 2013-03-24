@@ -5,7 +5,16 @@ require 'kag/config'
 module KAG
   class Report < SymbolTable
 
-    def initialize(hash=nil)
+    def initialize(m,user)
+      hash = {
+        :nick => user.nick,
+        :authname => user.authname,
+        :host => user.host,
+        :realname => user.realname,
+        :gather => self,
+        :message => m,
+        :count => 1
+      }
       super(hash)
       _ensure_data
       if reported?
@@ -32,22 +41,22 @@ module KAG
       end
     end
 
-
     def _ensure_data
       data[:reported] = {} unless data[:reported]
       data[:ignored] = {} unless data[:ignored]
     end
 
     def reported?
-      data[:reported].key?(self[:authname].to_sym)
+      data[:reported].key?(self[:host].to_sym)
     end
 
     def report
-      c = self.clone
+      puts self[:message].inspect
+      c = self.dup
       c.delete(:gather)
       c.delete(:message)
       c[:reporters] = [self[:message].user[:authname]]
-      data[:reported][self[:authname].to_sym] = c
+      data[:reported][self[:host].to_sym] = c
       data.save
 
       self[:gather].reply self[:message],"User #{self[:nick]} reported." if self[:gather].class == KAG::Gather
@@ -57,7 +66,7 @@ module KAG
       c = self.clone
       c.delete(:gather)
       c.delete(:message)
-      data[:ignored][self[:authname].to_sym] = c
+      data[:ignored][self[:host].to_sym] = c
       data.save
       self[:gather].reply self[:message],"User #{self[:nick]} ignored." if gather.class == KAG::Gather
     end
@@ -72,12 +81,12 @@ module KAG
       _report[:reporters] << self[:message].user.authname
       data.save
 
-      gather.reply message,"User #{self[:nick]} reported. #{self[:nick]} has now been reported #{data[:reported][self[:authname].to_sym][:count]} times." if gather.class == KAG::Gather
+      gather.reply message,"User #{self[:nick]} reported. #{self[:nick]} has now been reported #{data[:reported][self[:host].to_sym][:count]} times." if gather.class == KAG::Gather
     end
 
     def self.ignore(user,message,gather)
       KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
-      if KAG::Config.data[:ignored] and !KAG::Config.data[:ignored].key?(user.authname.to_sym)
+      if KAG::Config.data[:ignored] and !KAG::Config.data[:ignored].key?(user.host.to_sym)
         c = SymbolTable.new({
           :nick => user.nick,
           :authname => user.authname,
@@ -87,7 +96,7 @@ module KAG
           :message => message,
           :reporters => [message.user.authname]
         })
-        KAG::Config.data[:ignored][user.authname.to_sym] = c
+        KAG::Config.data[:ignored][user.host.to_sym] = c
         KAG::Config.data.save
 
         gather.reply message,"User #{user.nick} added to ignore list." if gather.class == KAG::Gather
@@ -99,8 +108,8 @@ module KAG
     end
 
     def self.remove(user,message,gather)
-      if KAG::Config.data[:reported] and KAG::Config.data[:reported].key?(user.authname.to_sym)
-        KAG::Config.data[:reported].delete(user.authname.to_sym)
+      if KAG::Config.data[:reported] and KAG::Config.data[:reported].key?(user.host.to_sym)
+        KAG::Config.data[:reported].delete(user.host.to_sym)
         KAG::Config.data.save
 
         gather.reply message,"User #{user.nick} removed from report list." if gather.class == KAG::Gather
@@ -112,8 +121,8 @@ module KAG
     end
 
     def self.unignore(user,message,gather)
-      if KAG::Config.data[:ignored] and KAG::Config.data[:ignored].key?(user.authname.to_sym)
-        KAG::Config.data[:ignored].delete(user.authname.to_sym)
+      if KAG::Config.data[:ignored] and KAG::Config.data[:ignored].key?(user.host.to_sym)
+        KAG::Config.data[:ignored].delete(user.host.to_sym)
         KAG::Config.data.save
 
         gather.reply message,"User #{user.nick} removed from ignore list." if gather.class == KAG::Gather
@@ -131,7 +140,7 @@ module KAG
     end
 
     def _report
-      data[:reported][self[:authname].to_sym]
+      data[:reported][self[:host].to_sym]
     end
   end
 end

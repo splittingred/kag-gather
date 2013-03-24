@@ -148,15 +148,7 @@ module KAG
       unless is_banned?(m.user)
         u = User(nick)
         if u and !u.unknown
-          KAG::Report.new({
-            :nick => nick,
-            :authname => u.authname,
-            :host => u.host,
-            :realname => u.realname,
-            :gather => self,
-            :message => m,
-            :count => 1
-          })
+          KAG::Report.new(m,u)
         else
           reply m,"User #{nick} not found!"
         end
@@ -505,7 +497,7 @@ module KAG
     def is_banned?(user)
       d = KAG::Config.data
       if d
-        d[:ignored].key?(user.authname.to_sym)
+        d[:ignored].key?(user.host.to_sym)
       else
         false
       end

@@ -7,6 +7,7 @@ nbproject
 
 # config files
 config/config.json
+config/data.json
 
 # other files
 tmp

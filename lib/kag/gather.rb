@@ -1,6 +1,8 @@
 require 'cinch'
 require 'kag/bot'
 require 'kag/config'
+require 'kag/data'
+require 'kag/report'
 require 'kag/server'
 require 'kag/match'
 
@@ -389,6 +391,37 @@ module KAG
     def evt_kick(m,nick,reason)
       if is_admin(m.user)
         m.channel.kick(nick,reason)
+      end
+    end
+
+
+    match /report (.+)/,:method => :report
+    def report(m,nick)
+      u = User(nick)
+      if u and !u.unknown
+        KAG::Report.new({
+          :nick => nick,
+          :authname => u.authname,
+          :host => u.host,
+          :realname => u.realname,
+          :gather => self,
+          :message => m,
+          :count => 1
+        })
+      else
+        reply m,"User #{nick} not found!"
+      end
+    end
+
+    match /unreport (.+)/,:method => :unreport
+    def unreport(m,nick)
+      if is_admin(m.user)
+        user = User(nick)
+        if user and !user.unknown
+          KAG::Report.remove(user,m,self)
+        else
+          reply m,"Could not find user #{nick}"
+        end
       end
     end
 

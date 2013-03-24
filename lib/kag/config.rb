@@ -1,10 +1,12 @@
 require 'singleton'
 require 'symboltable'
 require 'json'
+require 'kag/data'
 
 module KAG
   class Config < SymbolTable
     include Singleton
+    @@data = KAG::Data.new
 
     def initialize
       super
@@ -22,6 +24,10 @@ module KAG
     def reload
       puts "Reloading configuration file..."
       self.merge!(self._get_config)
+    end
+
+    def self.data
+      @@data
     end
   end
 end

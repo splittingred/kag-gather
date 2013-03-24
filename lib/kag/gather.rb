@@ -497,7 +497,8 @@ module KAG
     def is_banned?(user)
       d = KAG::Config.data
       if d
-        d[:ignored].key?(user.host.to_sym)
+        false
+        #d[:ignored].key?(user.host.to_sym)
       else
         false
       end

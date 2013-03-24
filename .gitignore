@@ -13,6 +13,7 @@ config/data.json
 tmp
 logs
 nohup*
+data/
 
 # other ruby-specific files
 *.gem

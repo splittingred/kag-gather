@@ -7,6 +7,18 @@ module KAG
       include Cinch::Plugin
       include KAG::Common
 
+      match /report (.+)/,:method => :report
+      def report(m,nick)
+        unless is_banned?(m.user)
+          u = User(nick)
+          if u and !u.unknown
+            KAG::Bans::Report.new(self,m,u)
+          else
+            reply m,"User #{nick} not found!"
+          end
+        end
+      end
+
       match /reports (.+)/,:method => :reports
       def reports(m,nick)
         user = User(nick)

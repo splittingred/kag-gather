@@ -8,4 +8,4 @@ First setup config file by copying config/config.sample.json to config/config.js
 
 Then run:
 
-`ruby gather.rb`
+`sh gather.sh`

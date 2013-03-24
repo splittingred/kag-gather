@@ -1,7 +1,5 @@
 require 'spec_helper'
-require 'kag/config'
-require 'kag/gather'
-require 'kag/report'
+require 'kag/bot/bot'
 
 ##
 # Testing for the server functions
@@ -21,13 +19,13 @@ describe KAG::Config do
         :message => {},
         :count => 1
     })
-    r = KAG::Report.new(d)
+    r = KAG::Bans::Report.new({},{},d)
     r.should_not eq(nil)
   end
 
   it "ensure remove works" do
     u = SymbolTable.new({:nick =>"test",:authname =>"test1"})
-    r = KAG::Report.remove(u,{},{})
+    r = KAG::Report.remove({},{},u)
     r.should eq(true)
 
   end

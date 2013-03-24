@@ -1,4 +1,3 @@
-require 'patches'
-require 'kag/gather'
+require 'kag/bot/bot'
 
-KAG::Bot.new
+KAG::Bot::Bot.new

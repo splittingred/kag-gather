@@ -3,7 +3,7 @@ require 'symboltable'
 require 'json'
 
 module KAG
-  class Data < SymbolTable
+  class Data < Hash
     def initialize(hash=nil)
       super
       self.merge!(self._load)
@@ -37,7 +37,6 @@ module KAG
       File.open("config/data.json","w") do |f|
         f.write(self.to_json)
       end
-      puts "saving..."
     end
   end
 end

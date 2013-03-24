@@ -1,5 +1,6 @@
-require 'lib/commands/commands'
+require 'commands/commands'
 require 'cinch/plugin'
+require 'kag/common'
 
 module Cinch
   module Commands
@@ -9,7 +10,7 @@ module Cinch
     class Help
       include Cinch::Plugin
       include Cinch::Commands
-      set :prefix, lambda{ |m| Regexp.new("^" + Regexp.escape(m.bot.nick + ": " ))}
+      include KAG::Common
 
       command :help, {command: :string},
         summary:     %{Displays help information for the COMMAND},
@@ -36,19 +37,24 @@ module Cinch
           if found.empty?
             m.reply "help: Unknown command #{command.dump}"
           else
+            return if found.first.admin and !is_admin(m.user)
+
             msg = []
             # print all usages
-            found.each { |cmd| msg << cmd.usage }
+            found.each do |cmd|
+              msg << cmd.usage
+            end
             # print the description of the first command
-            msg = "\x0302#{msg.join(", ")}\x0314 - "+found.first.description
-            m.reply msg
+            desc = found.first.description.to_s
+            msg = "\x0302#{msg.join(", ")}\x0314"+(desc != "" ? " - #{desc}" : " - #{found.first.summary.to_s}")
+            User(m.user.nick).send(msg)
           end
         else
           msg = []
           each_command do |cmd|
-            msg << "\x0302#{cmd.usage}\x0314: #{cmd.summary}"
+            msg << "\x0302#{cmd.usage}\x0314: #{cmd.summary}" unless (cmd.admin and !is_admin(m.user))
           end
-          m.reply msg.join " | "
+          User(m.user.nick).send(msg.join " | ")
         end
       end
 

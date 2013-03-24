@@ -25,6 +25,9 @@ module Cinch
       # Long description of the command
       attr_reader :description
 
+      # if admin-only
+      attr_reader :admin
+
       #
       # Creates a new command.
       #
@@ -53,6 +56,7 @@ module Cinch
 
         @summary     = options[:summary]
         @description = options[:description]
+        @admin       = options[:admin]
       end
 
       #
@@ -91,7 +95,7 @@ module Cinch
         # match the full message
         pattern << '$'
 
-        return Regexp.new(pattern)
+        Regexp.new(pattern)
       end
 
       #
@@ -114,7 +118,7 @@ module Cinch
                           end
         end
 
-        return usage
+        usage
       end
 
     end

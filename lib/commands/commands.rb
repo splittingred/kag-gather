@@ -1,4 +1,5 @@
-require 'lib/commands/command'
+require 'commands/command'
+require 'kag/common'
 
 module Cinch
   module Commands

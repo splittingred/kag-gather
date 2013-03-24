@@ -1,14 +1,18 @@
 require 'cinch'
 require 'kag/common'
+require 'commands/help'
 
 module KAG
   module Bot
     class Plugin
       include Cinch::Plugin
+      include Cinch::Commands
       include KAG::Common
 
-      match "quit", :method => :evt_quit
-      def evt_quit(m)
+      command :quit,{},
+        summary: "Quit the bot",
+        admin: true
+      def quit(m)
         if is_admin(m.user)
           m.bot.quit("Shutting down...")
         end
@@ -42,7 +46,7 @@ module KAG
           m.reply "Configuration reloaded."
         end
       end
-
+=begin
       match "help", :method => :evt_help
       def evt_help(m)
         unless is_banned?(m.user)
@@ -51,6 +55,7 @@ module KAG
           User(m.user.nick).send(msg)
         end
       end
+=end
     end
   end
 end

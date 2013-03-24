@@ -3,7 +3,7 @@ require 'kag/common'
 require 'kag/bot/bot'
 require 'kag/bans/report'
 require 'kag/server'
-require 'kag/match'
+require 'kag/gather/match'
 
 module KAG
   module Gather
@@ -105,7 +105,7 @@ module KAG
           @queue.each do |n,u|
             users << n
           end
-          m.user.send "Queue (#{KAG::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
+          m.user.send "Queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
         end
       end
 
@@ -147,7 +147,7 @@ module KAG
               :message => m.message,
               :joined_at => Time.now
           })
-          send_channels_msg "Added #{nick} to queue (#{KAG::Match.type_as_string}) [#{@queue.length}]" if send_msg
+          send_channels_msg "Added #{nick} to queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
           check_for_new_match
         end
       end
@@ -155,7 +155,7 @@ module KAG
       def remove_user_from_queue(nick,send_msg = true)
         if @queue.key?(nick)
           @queue.delete(nick)
-          send_channels_msg "Removed #{nick} from queue (#{KAG::Match.type_as_string}) [#{@queue.length}]" if send_msg
+          send_channels_msg "Removed #{nick} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
           true
         else
           false
@@ -189,7 +189,7 @@ module KAG
           # reset queue first to prevent 11-player load
           @queue = {}
 
-          match = KAG::Match.new(SymbolTable.new({
+          match = KAG::Gather::Match.new(SymbolTable.new({
             :server => server,
             :players => players
           }))

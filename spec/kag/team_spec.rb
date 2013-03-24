@@ -12,10 +12,10 @@ describe KAG::Server do
     KAG::Config.instance[:classes] = %w(Knight Archer Builder)
     ks = KAG::Config.instance[:servers].keys
     server = KAG::Server.new(KAG::Config.instance[:servers][ks.first])
-    match = KAG::Match.new({
+    match = KAG::Gather::Match.new({
         :server => server
     })
-    match = KAG::Team.new(SymbolTable.new({
+    match = KAG::Gather::Team.new(SymbolTable.new({
         :players => %w(player1 player2 player3),
         :match => match,
         :color => "\x0312",

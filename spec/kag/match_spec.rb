@@ -10,7 +10,7 @@ describe KAG::Server do
   subject do
     ks = KAG::Config.instance[:servers].keys
     server = KAG::Server.new(KAG::Config.instance[:servers][ks.first])
-    match = KAG::Match.new(SymbolTable.new({
+    match = KAG::Gather::Match.new(SymbolTable.new({
         :server => server,
         :players => %w(player1 player2 player3 player4 player5 player6 player7 player8 player9 player10)
     }))

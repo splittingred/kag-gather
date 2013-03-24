@@ -25,7 +25,7 @@ describe KAG::Config do
 
   it "ensure remove works" do
     u = SymbolTable.new({:nick =>"test",:authname =>"test1"})
-    r = KAG::Report.remove({},{},u)
+    r = KAG::Bans::Report.remove({},{},u)
     r.should eq(true)
 
   end

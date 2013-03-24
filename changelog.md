@@ -1,6 +1,7 @@
 # Changelog for KAG Gather Bot
 
 ## 1.3
+* Total refactoring to use submodules to make for easier code grokking
 * Add !report_count for getting number of times a user has been reported
 * Fix issue where server2 was always picked if no matches started
 * Fix issue where delay in match start was not resetting queue fast enough

@@ -1,5 +1,5 @@
 module KAG
-  VERSION = '1.3.3'
+  VERSION = '1.3.4'
   def self.version
     VERSION
   end

@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.version     = KAG::VERSION
   gem.platform    = Gem::Platform::RUBY
   gem.summary     = 'KAG Gather IRC Bot'
-  gem.description = ''
+  gem.description = 'A bot for starting and managing KAG Gather matches'
   gem.licenses    = %w(GPLv2)
 
   gem.authors     = ['Shaun McCormick']

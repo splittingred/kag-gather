@@ -148,7 +148,7 @@ module KAG
       unless is_banned?(m.user)
         u = User(nick)
         if u and !u.unknown
-          KAG::Report.new(m,u)
+          KAG::Report.new(self,m,u)
         else
           reply m,"User #{nick} not found!"
         end
@@ -439,7 +439,7 @@ module KAG
       if is_admin(m.user)
         user = User(nick)
         if user and !user.unknown
-          KAG::Report.remove(user,m,self)
+          KAG::Report.remove(self,m,user)
         else
           reply m,"Could not find user #{nick}"
         end
@@ -451,7 +451,7 @@ module KAG
       if is_admin(m.user)
         user = User(nick)
         if user and !user.unknown
-          KAG::Report.ignore(user,m,self)
+          KAG::Report.ignore(self,m,user)
         else
           reply m,"Could not find user #{nick}"
         end
@@ -463,7 +463,7 @@ module KAG
       if is_admin(m.user)
         user = User(nick)
         if user and !user.unknown
-          KAG::Report.unignore(user,m,self)
+          KAG::Report.unignore(self,m,user)
         else
           reply m,"Could not find user #{nick}"
         end
@@ -496,9 +496,9 @@ module KAG
 
     def is_banned?(user)
       d = KAG::Config.data
+      KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
       if d
-        false
-        #d[:ignored].key?(user.host.to_sym)
+        d[:ignored].key?(user.host.to_sym)
       else
         false
       end

@@ -1,6 +1,7 @@
 require 'cinch'
 require 'kag/config'
 require 'kag/gather'
+require 'kag/bans/plugin'
 
 module KAG
   class Bot
@@ -16,7 +17,7 @@ module KAG
           c.realname = config[:realname].to_s != "" ? config[:realname] : "KAG Gatherer"
           c.messages_per_second = 1
           c.server_queue_size = 1
-          c.plugins.plugins = [KAG::Gather]
+          c.plugins.plugins = [KAG::Gather,KAG::Bans::Plugin]
           if config[:sasl]
             c.sasl.username = config[:sasl][:username]
             c.sasl.password = config[:sasl][:password]

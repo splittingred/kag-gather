@@ -1,4 +1,5 @@
 require 'cinch'
+require 'kag/common'
 require 'kag/bot'
 require 'kag/config'
 require 'kag/data'
@@ -9,6 +10,7 @@ require 'kag/match'
 module KAG
   class Gather
     include Cinch::Plugin
+    include KAG::Common
 
     attr_accessor :queue,:servers
 
@@ -224,18 +226,6 @@ module KAG
       end
     end
 
-    def send_channels_msg(msg,colorize = true)
-      KAG::Config.instance[:channels].each do |c|
-        msg = Format(:grey,msg) if colorize
-        Channel(c).send(msg)
-      end
-    end
-
-    def reply(m,msg,colorize = true)
-      msg = Format(:grey,msg) if colorize
-      m.reply msg
-    end
-
     def get_unused_server
       server = false
       @servers.shuffle!
@@ -246,18 +236,6 @@ module KAG
     end
 
     # admin methods
-
-    def debug(msg)
-      if KAG::Config.instance[:debug]
-        puts msg
-      end
-    end
-
-    def is_admin(user)
-      user.refresh
-      o = (KAG::Config.instance[:owners] or [])
-      o.include?(user.authname)
-    end
 
     match "clear", :method => :evt_clear
     def evt_clear(m)
@@ -434,42 +412,6 @@ module KAG
       end
     end
 
-    match /unreport (.+)/,:method => :unreport
-    def unreport(m,nick)
-      if is_admin(m.user)
-        user = User(nick)
-        if user and !user.unknown
-          KAG::Bans::Report.remove(self,m,user)
-        else
-          reply m,"Could not find user #{nick}"
-        end
-      end
-    end
-
-    match /ignore (.+)/,:method => :ignore
-    def ignore(m,nick)
-      if is_admin(m.user)
-        user = User(nick)
-        if user and !user.unknown
-          KAG::Bans::Report.ignore(self,m,user)
-        else
-          reply m,"Could not find user #{nick}"
-        end
-      end
-    end
-
-    match /unignore (.+)/,:method => :unignore
-    def unignore(m,nick)
-      if is_admin(m.user)
-        user = User(nick)
-        if user and !user.unknown
-          KAG::Bans::Report.unignore(self,m,user)
-        else
-          reply m,"Could not find user #{nick}"
-        end
-      end
-    end
-
     match /hostname (.+)/,:method => :hostname
     def hostname(m,nick)
       if is_admin(m.user)
@@ -505,32 +447,6 @@ module KAG
           reply m,"Could not find user #{nick}"
         end
       end
-    end
-
-    match /reports (.+)/,:method => :reports
-    def reports(m,nick)
-      user = User(nick)
-      if user and !user.unknown
-        count = KAG::Bans::Report.reports(user)
-        if count
-          reply m,"User has been reported #{count.to_s} times."
-        else
-          reply m,"User has not been reported."
-        end
-      else
-        reply m,"Could not find user #{nick}"
-      end
-    end
-
-    match "reported",:method => :reported
-    def reported(m)
-      unless is_banned?(m.user)
-        KAG::Bans::Report.list
-      end
-    end
-
-    def is_banned?(user)
-      KAG::Bans::Report.is_banned?(user)
     end
   end
 end

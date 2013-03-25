@@ -27,6 +27,10 @@ module KAG
           debug cmd
           pid = spawn cmd
           debug "Restarting bot, new process ID is #{pid.to_s} ..."
+          if m.bot
+            m.bot.quit "Restarting! Back in a second!"
+          end
+          sleep(0.5)
           exit
         end
       end

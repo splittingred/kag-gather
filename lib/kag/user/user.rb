@@ -49,7 +49,7 @@ module KAG
 
       def self.stats(user)
         u = KAG::User::User.new(user)
-        "#{user.nick} has played in #{u.matches} matches."
+        "#{user.nick} has played in #{u.matches.to_i} matches."
       end
 
       protected

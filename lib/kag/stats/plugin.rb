@@ -14,7 +14,7 @@ module KAG
       command :stats,{},
         summary: "Get the gather-wide stats"
       def stats(m)
-        reply m,KAG::Stats::Main.instance.to_s
+        reply m,KAG::Stats::Main.instance.collect { |k,v| "#{k}: #{v}" }.join(", ")
       end
     end
   end

@@ -1,11 +1,11 @@
 # Changelog for KAG Gather Bot
 
 ## 1.5
-* Gather-wide stats
+* Gather-wide stats via !stats
 * Match logging for history
 
 ## 1.4
-* !stats command to get your stats, or !stats [nick] for other people's stats
+* !stats [nick] for user-specific stats
 * User-specific stats (for now only match counts)
 * Lots of refactoring to move away from using nick to more proper authname
 * Related, bot now requires AUTH to IRC server to use it

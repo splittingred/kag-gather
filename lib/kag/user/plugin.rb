@@ -10,12 +10,6 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
-      command :stats,{},
-        summary: "Get the stats for a user"
-      def stats(m)
-        reply m,KAG::User::User.stats(m.user)
-      end
-
       command :stats,{nick: :string},
         summary: "Get the stats for a user",
         method: :stats_specific

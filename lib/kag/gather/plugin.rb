@@ -75,10 +75,10 @@ module KAG
         unless is_banned?(m.user)
           @matches.each do |k,match|
             if match.needs_sub?
-              placement = match.sub_in(m.user.nick)
+              placement = match.sub_in(m.user)
               if placement
                 reply m,placement[:channel_msg]
-                User(m.user.nick).send placement[:private_msg]
+                m.user.send placement[:private_msg]
               end
             end
           end
@@ -89,6 +89,7 @@ module KAG
         summary: "Add yourself to the active queue for the next match"
       def add(m)
         unless is_banned?(m.user)
+          KAG::User::User.add_stat(m.user,:adds)
           add_user_to_queue(m,m.user.nick)
         end
       end
@@ -102,8 +103,9 @@ module KAG
             match.remove_player(m.user)
             send_channels_msg "#{m.user.nick} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
           elsif @queue.key?(m.user.nick)
+            KAG::User::User.add_stat(m.user,:rems)
             unless remove_user_from_queue(m.user.nick)
-              debug "#{nick} is not in the queue."
+              debug "#{m.user.nick} is not in the queue."
             end
           end
         end

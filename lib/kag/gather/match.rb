@@ -31,7 +31,7 @@ module KAG
         self[:players].each do |player|
           u = User(player.to_s)
           if u
-            KAG::User::User.add_match(u)
+            KAG::User::User.add_stat(u,:matches)
           end
         end
 
@@ -144,10 +144,11 @@ module KAG
         self[:subs_needed].length > 0
       end
 
-      def sub_in(nick)
+      def sub_in(user)
         placement = false
         if needs_sub?
           placement = self[:subs_needed].shift
+          KAG::User::User.add_stat(m.user,:substitutions)
         end
         placement
       end

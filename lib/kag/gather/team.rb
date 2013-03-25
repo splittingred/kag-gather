@@ -65,7 +65,8 @@ module KAG
           sub[:private_msg] = "Please #{self.match.server.text_join} | #{sub[:cls]} on the #{self[:name]} Team"
           self[:players].delete(user.nick)
 
-          KAG::User::User.subtract_match(user)
+          KAG::User::User.subtract_stat(user,:matches)
+          KAG::User::User.add_stat(m.user,:desertions)
 
           if self.match and self.match.server
             self.match.server.kick(user.nick)

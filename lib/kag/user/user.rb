@@ -28,19 +28,21 @@ module KAG
         end
       end
 
-      def self.add_match(user)
+      def self.add_stat(user,stat,increment = 1)
+        stat = stat.to_sym
         u = KAG::User::User.new(user)
-        u[:matches] = 0 unless u[:matches]
-        u[:matches] = u[:matches].to_i + 1
+        u[stat] = 0 unless u[stat]
+        u[stat] = u[stat].to_i + increment.to_i
         u.save
       end
 
-      def self.subtract_match(user)
+      def self.subtract_stat(user,stat,decrement = 1)
+        stat = stat.to_sym
         u = KAG::User::User.new(user)
-        if u[:matches]
-          u[:matches] = u[:matches].to_i + 1
+        if u[stat]
+          u[stat] = u[stat].to_i - decrement.to_i
         else
-          u[:matches] = 0
+          u[stat] = 0
         end
         u.save
       end

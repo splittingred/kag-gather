@@ -19,6 +19,7 @@ module KAG
         _ensure_data
         if reported?
           if can_report?
+            KAG::User::User.add_stat(user,:reports_others)
             if past_threshold?
               ignore
             else

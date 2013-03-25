@@ -157,7 +157,7 @@ module KAG
             puts e.backtrace
           end
         else
-          user.send _h("command_not_authed")
+          user.send "You must first AUTH on the IRC server via Q before you can use this bot. See !help for more info."
           KAG::Config.data.add_action(user)
         end
       end

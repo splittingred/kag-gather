@@ -149,7 +149,7 @@ module KAG
           return true
         end
 
-        if user.authname and user.authname != ""
+        if user.authed?
           begin
             KAG::Config.data[:ignored].key?(user.authname.to_sym)
           rescue Exception => e
@@ -157,7 +157,7 @@ module KAG
             puts e.backtrace
           end
         else
-          user.send "You must first AUTH on the IRC server before you can use this bot."
+          user.send "You must first AUTH on the IRC server via Q before you can use this bot."
           KAG::Config.data.add_action(user)
         end
       end

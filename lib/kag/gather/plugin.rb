@@ -45,8 +45,8 @@ module KAG
               if sub
                 m.channel.msg sub[:msg]
               end
-            elsif @queue.key?(nick)
-              remove_user_from_queue(nick)
+            elsif @queue.key?(user.authname)
+              remove_user_from_queue(user)
             end
           else
             reply m,"User #{nick} not found"
@@ -90,7 +90,7 @@ module KAG
       def add(m)
         unless is_banned?(m.user)
           KAG::User::User.add_stat(m.user,:adds)
-          add_user_to_queue(m,m.user.nick)
+          add_user_to_queue(m,m.user)
         end
       end
 
@@ -101,11 +101,11 @@ module KAG
           match = get_match_in(m.user)
           if match
             match.remove_player(m.user)
-            send_channels_msg "#{m.user.nick} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
-          elsif @queue.key?(m.user.nick)
+            send_channels_msg "#{m.user.authname} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
+          elsif @queue.key?(m.user.authname)
             KAG::User::User.add_stat(m.user,:rems)
-            unless remove_user_from_queue(m.user.nick)
-              debug "#{m.user.nick} is not in the queue."
+            unless remove_user_from_queue(m.user.authname)
+              debug "#{m.user.authname} is not in the queue."
             end
           end
         end
@@ -152,27 +152,27 @@ module KAG
         end
       end
 
-      def add_user_to_queue(m,nick,send_msg = true)
-        if @queue.key?(nick)
-          reply m,"#{nick} is already in the queue!"
-        elsif get_match_in(nick)
-          reply m,"#{nick} is already in a match!"
+      def add_user_to_queue(m,user,send_msg = true)
+        if @queue.key?(user.authname)
+          reply m,"#{user.authname} is already in the queue!"
+        elsif get_match_in(user)
+          reply m,"#{user.authname} is already in a match!"
         else
-          @queue[nick] = SymbolTable.new({
-              :user => User(nick),
+          @queue[user.authname] = SymbolTable.new({
+              :user => user,
               :irc => m.channel,
               :message => m.message,
               :joined_at => Time.now
           })
-          send_channels_msg "Added #{nick} to queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
+          send_channels_msg "Added #{user.authname} to queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
           check_for_new_match
         end
       end
 
-      def remove_user_from_queue(nick,send_msg = true)
-        if @queue.key?(nick)
-          @queue.delete(nick)
-          send_channels_msg "Removed #{nick} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
+      def remove_user_from_queue(user,send_msg = true)
+        if @queue.key?(user.authname)
+          @queue.delete(user.authname)
+          send_channels_msg "Removed #{user.authname} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
           true
         else
           false
@@ -214,8 +214,8 @@ module KAG
           match.start # prepare match data
           messages = match.notify_teams_of_match_start # gather texts for private messages
           send_channels_msg(match.text_for_match_start,false) # send channel-wide first
-          messages.each do |nick,msg|
-            User(nick.to_s).send(msg) unless nick.to_s.include?("player")
+          messages.each do |user,msg|
+            user.send(msg)
             sleep(2) # prevent excess flood stuff
           end
           @matches[server[:key]] = match
@@ -243,52 +243,64 @@ module KAG
         end
       end
 
-      command :rem,{nick: :string},
+      command :rem,{nicks: :string},
         summary: "Remove a specific user from the queue",
         method: :rem_admin,
         admin: true
-      def rem_admin(m, arg)
+      def rem_admin(m, nicks)
         if is_admin(m.user)
-          arg = arg.split(" ")
-          arg.each do |nick|
-            remove_user_from_queue(nick)
+          nicks = nicks.split(" ")
+          nicks.each do |nick|
+            u = User(nick)
+            if u and !u.unknown
+              remove_user_from_queue(u)
+            end
           end
         end
       end
 
-      command :rem_silent,{nick: :string},
+      command :rem_silent,{nicks: :string},
         summary: "Remove a specific user from the queue without pinging the user in the channel",
         admin: true
-      def rem_silent(m, arg)
+      def rem_silent(m, nicks)
         if is_admin(m.user)
-          arg = arg.split(" ")
-          arg.each do |nick|
-            remove_user_from_queue(nick,false)
+          nicks = nicks.split(" ")
+          nicks.each do |nick|
+            u = User(nick)
+            if u and !u.unknown
+              remove_user_from_queue(u,false)
+            end
           end
         end
       end
 
-      command :add,{nick: :string},
+      command :add,{nicks: :string},
         summary: "Add a specific user to the queue",
         method: :add_admin,
         admin: true
-      def add_admin(m, arg)
+      def add_admin(m, nicks)
         if is_admin(m.user)
-          arg = arg.split(" ")
-          arg.each do |nick|
-            add_user_to_queue(m,nick)
+          nicks = nicks.split(" ")
+          nicks.each do |nick|
+            u = User(nick)
+            if u and !u.unknown
+              add_user_to_queue(m,u)
+            end
           end
         end
       end
 
-      command :add_silent,{nick: :string},
+      command :add_silent,{nicks: :string},
         summary: "Add a specific user to the queue without pinging the user in the channel",
         admin: true
-      def add_silent(m, arg)
+      def add_silent(m, nicks)
         if is_admin(m.user)
-          arg = arg.split(" ")
-          arg.each do |nick|
-            add_user_to_queue(m,nick,false)
+          nicks = nicks.split(" ")
+          nicks.each do |nick|
+            u = User(nick)
+            if u and !u.unknown
+              add_user_to_queue(m,u,false)
+            end
           end
         end
       end
@@ -335,12 +347,12 @@ module KAG
         summary: "Next map a given server",
         method: :next_map_specify,
         admin: true
-      def next_map_specify(m,arg)
+      def next_map_specify(m,server)
         if is_admin(m.user)
-          if @servers[key]
-            @servers[key].next_map
+          if @servers[server]
+            @servers[server].next_map
           else
-            m.reply "No server found with key #{arg}"
+            m.reply "No server found with key #{server}"
           end
         end
       end

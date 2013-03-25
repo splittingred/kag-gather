@@ -8,6 +8,7 @@ require 'kag/irc/plugin'
 require 'kag/bot/plugin'
 require 'kag/user/plugin'
 require 'kag/help/plugin'
+require 'kag/stats/plugin'
 require 'commands/help'
 
 module KAG
@@ -32,7 +33,8 @@ module KAG
               KAG::Bans::Plugin,
               KAG::IRC::Plugin,
               KAG::User::Plugin,
-              KAG::Help::Plugin
+              KAG::Help::Plugin,
+              KAG::Stats::Plugin
             ]
             if config[:sasl]
               c.sasl.username = config[:sasl][:username]

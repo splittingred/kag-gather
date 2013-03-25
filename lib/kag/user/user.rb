@@ -23,7 +23,7 @@ module KAG
       end
 
       def save
-        File.open("data/#{self.authname}.json","w") do |f|
+        File.open("data/user/#{self.authname}.json","w") do |f|
           f.write(self.to_json)
         end
       end
@@ -57,11 +57,11 @@ module KAG
       def _load
         return {} unless self[:authname]
 
-        unless File.exists?("data/#{self[:authname]}.json")
-          File.open("data/#{self[:authname]}.json","w") {|f| f.write("{}") }
+        unless File.exists?("data/user/#{self[:authname]}.json")
+          File.open("data/user/#{self[:authname]}.json","w") {|f| f.write("{}") }
         end
 
-        f = ::IO.read("data/#{self[:authname]}.json")
+        f = ::IO.read("data/user/#{self[:authname]}.json")
         if f and !f.empty?
           SymbolTable.new(JSON.parse(f))
         else

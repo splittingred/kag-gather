@@ -4,6 +4,7 @@ require 'symboltable'
 require 'kag/config'
 require 'kag/gather/team'
 require 'kag/user/user'
+require 'kag/stats/main'
 
 module KAG
   module Gather
@@ -65,6 +66,7 @@ module KAG
         self[:subs_needed] = []
         setup_teams
         restart_map
+        KAG::Stats::Main.add_stat(:matches_started)
       end
 
       def text_for_match_start
@@ -109,6 +111,8 @@ module KAG
 
       def cease
         if self.server
+          self.archive
+          KAG::Stats::Main.add_stat(:matches_completed)
           if self.server.has_rcon?
             self.teams.each do |team|
               team.kick_all
@@ -155,6 +159,7 @@ module KAG
         if needs_sub?
           placement = self[:subs_needed].shift
           KAG::User::User.add_stat(user,:substitutions)
+          KAG::Stats::Main.add_stat(:substitutions_done)
         end
         placement
       end
@@ -163,6 +168,35 @@ module KAG
         if KAG::Config.instance[:debug]
           puts msg
         end
+      end
+
+      def archive
+        match = self.dup
+        match[:server] = self.server[:key]
+        ts = []
+        match.teams.each do |team|
+          ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
+        end
+        match[:teams] = ts
+        match.delete(:players)
+        match.delete(:bot) if match.key?(:bot)
+
+        unless File.exists?("data/matches.json")
+          File.open("data/matches.json","w") {|f| f.write("{}") }
+        end
+
+        data = Hash.new
+        d = ::IO.read("data/matches.json")
+        if d and !d.empty?
+          data = Hash.new
+          data.merge!(JSON.parse(d))
+        end
+
+        data[Time.now.to_s] = match
+        File.open("data/matches.json","w") do |f|
+          f.write(data.to_json)
+        end
+        true
       end
     end
   end

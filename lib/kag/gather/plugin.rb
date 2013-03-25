@@ -75,6 +75,7 @@ module KAG
       def add(m)
         unless is_banned?(m.user)
           KAG::User::User.add_stat(m.user,:adds)
+          KAG::Stats::Main.add_stat(:adds)
           add_user_to_queue(m,m.user)
         end
       end
@@ -89,6 +90,7 @@ module KAG
             send_channels_msg "#{m.user.authname} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
           elsif @queue.has_player?(m.user)
             KAG::User::User.add_stat(m.user,:rems)
+            KAG::Stats::Main.add_stat(:rems)
             unless remove_user_from_queue(m.user)
               debug "#{m.user.authname} is not in the queue."
             end

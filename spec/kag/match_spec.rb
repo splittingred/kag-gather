@@ -37,4 +37,8 @@ describe KAG::Server do
     puts msg
     msg.should_not eq(false)
   end
+
+  it "ensure archive() works" do
+    subject.archive.should eq(true)
+  end
 end

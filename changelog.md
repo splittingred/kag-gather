@@ -1,5 +1,9 @@
 # Changelog for KAG Gather Bot
 
+## 1.5
+* Gather-wide stats
+* Match logging for history
+
 ## 1.4
 * !stats command to get your stats, or !stats [nick] for other people's stats
 * User-specific stats (for now only match counts)

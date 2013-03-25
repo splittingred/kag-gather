@@ -1,5 +1,6 @@
 require 'cinch'
 require 'kag/common'
+require 'commands/help'
 require 'kag/bot/bot'
 require 'kag/bans/report'
 require 'kag/server'
@@ -9,6 +10,7 @@ module KAG
   module Gather
     class Plugin
       include Cinch::Plugin
+      include Cinch::Commands
       include KAG::Common
 
       attr_accessor :queue,:servers

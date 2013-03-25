@@ -50,13 +50,12 @@ module Cinch
             User(m.user.nick).send(msg)
           end
         else
-          #msg = []
-          msg = each_command.join(", ")
-          #each_command do |cmd|
-          #  msg << "\x0302#{cmd.usage}\x0314: #{cmd.summary}" unless (cmd.admin and !is_admin(m.user))
-          #end
-          #User(m.user.nick).send(msg.join " | ")
-          User(m.user.nick).send(msg)
+          msg = []
+          each_command do |cmd|
+            #msg << "\x0302#{cmd.usage}\x0314: #{cmd.summary}" unless (cmd.admin and !is_admin(m.user))
+            msg << "!"+cmd.usage
+          end
+          User(m.user.nick).send(msg.join ", ")
         end
       end
 

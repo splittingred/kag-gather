@@ -12,13 +12,8 @@ module KAG
 
       command :stats,{},
         summary: "Get the stats for a user"
-      def stats(m,nick)
-        user = User(nick)
-        if user and !user.unknown
-          reply m,KAG::User::User.stats(user)
-        else
-          reply m,"Could not find user #{nick}"
-        end
+      def stats(m)
+        reply m,KAG::User::User.stats(m.user)
       end
 
       command :stats,{nick: :string},

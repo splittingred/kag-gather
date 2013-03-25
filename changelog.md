@@ -1,5 +1,10 @@
 # Changelog for KAG Gather Bot
 
+## 1.4
+* User-specific stats (for now only match counts)
+* Lots of refactoring to move away from using nick to more proper authname
+* Related, bot now requires AUTH to IRC server to use it
+
 ## 1.3
 * Command-specific help via !help
 * Total refactoring to use submodules to make for easier code grokking

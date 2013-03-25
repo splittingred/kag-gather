@@ -2,6 +2,7 @@ require 'cinch'
 require 'cinch/user'
 require 'symboltable'
 require 'kag/config'
+require 'kag/user/user'
 
 module KAG
   module Gather
@@ -42,30 +43,32 @@ module KAG
         "#{self[:color]}#{self[:players].keys.join(", ")} (#{self[:name]})"
       end
 
-      def has_player?(nick)
-        self[:players].keys.include?(nick.to_sym)
+      def has_player?(user)
+        self[:players].keys.include?(user.nick.to_sym)
       end
 
-      def rename_player(last_nick,new_nick)
-        if has_player?(nick)
-          cls = self[:players][last_nick.to_sym]
-          self[:players].delete(last_nick.to_sym)
-          self[:players][new_nick.to_sym] = cls
+      def rename_player(user)
+        if self[:players].keys.include?(user.last_nick.to_sym)
+          cls = self[:players][user.last_nick.to_sym]
+          self[:players].delete(user.last_nick.to_sym)
+          self[:players][user.nick.to_sym] = cls
         end
       end
 
-      def remove_player(nick)
-        if has_player?(nick)
+      def remove_player(user)
+        if has_player?(user)
           sub = {}
-          sub[:cls] = self[:players][nick]
+          sub[:cls] = self[:players][user.nick]
           sub[:team] = self.clone
           sub[:msg] = "Sub needed at #{self.match.server[:ip]} for #{sub[:team][:name]}, #{sub[:cls]} Class! Type !sub to claim it!"
-          sub[:channel_msg] = "#{nick} is now subbing in for #{self[:name]} at #{self.match.server[:key]}. Subs still needed: #{self.match[:subs_needed].length}"
+          sub[:channel_msg] = "#{user.nick} is now subbing in for #{self[:name]} at #{self.match.server[:key]}. Subs still needed: #{self.match[:subs_needed].length}"
           sub[:private_msg] = "Please #{self.match.server.text_join} | #{sub[:cls]} on the #{self[:name]} Team"
-          self[:players].delete(nick)
+          self[:players].delete(user.nick)
+
+          KAG::User::User.subtract_match(user)
 
           if self.match and self.match.server
-            self.match.server.kick(nick)
+            self.match.server.kick(user.nick)
           end
 
           sub

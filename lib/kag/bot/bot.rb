@@ -6,6 +6,7 @@ require 'kag/gather/plugin'
 require 'kag/bans/plugin'
 require 'kag/irc/plugin'
 require 'kag/bot/plugin'
+require 'kag/user/plugin'
 require 'commands/help'
 
 module KAG
@@ -23,7 +24,14 @@ module KAG
             c.realname = config[:realname].to_s != "" ? config[:realname] : "KAG Gatherer"
             c.messages_per_second = 1
             c.server_queue_size = 1
-            c.plugins.plugins = [Cinch::Commands::Help,KAG::Bot::Plugin,KAG::Gather::Plugin,KAG::Bans::Plugin,KAG::IRC::Plugin]
+            c.plugins.plugins = [
+              Cinch::Commands::Help,
+              KAG::Bot::Plugin,
+              KAG::Gather::Plugin,
+              KAG::Bans::Plugin,
+              KAG::IRC::Plugin,
+              KAG::User::Plugin
+            ]
             if config[:sasl]
               c.sasl.username = config[:sasl][:username]
               c.sasl.password = config[:sasl][:password]

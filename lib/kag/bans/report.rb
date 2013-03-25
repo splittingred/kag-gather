@@ -143,10 +143,20 @@ module KAG
 
       def self.is_banned?(user)
         KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
-        begin
-          KAG::Config.data[:ignored].key?(user.authname.to_sym)
-        rescue Exception => e
-          puts e.message
+        if KAG::Config.data.flooding?(user)
+          return true
+        end
+
+        if user.authname and user.authname != ""
+          begin
+            KAG::Config.data[:ignored].key?(user.authname.to_sym)
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace
+          end
+        else
+          user.send "You must first AUTH on the IRC server before you can use this bot."
+          KAG::Config.data.add_action(user)
         end
       end
 

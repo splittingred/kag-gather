@@ -37,5 +37,20 @@ module KAG
         f.write(self.to_json)
       end
     end
+
+    def add_action(user)
+      self[:action_log] = [] unless self[:action_log]
+      self[:action_log] << user.nick
+      self[:action_log].shift if self[:action_log].length > 10
+      save
+    end
+
+    def flooding?(user)
+      flooding = false
+      if self[:action_log]
+        flooding = true if self[:action_log].count(user.nick) > 8
+      end
+      flooding
+    end
   end
 end

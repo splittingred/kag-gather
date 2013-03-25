@@ -37,34 +37,41 @@ module KAG
       listen_to :leaving, :method => :on_leaving
       def on_leaving(m,nick)
         unless is_banned?(m.user)
-          nick = nick.to_s
-          match = get_match_in(nick)
-          if match
-            sub = match.remove_player(nick)
-            if sub
-              m.channel.msg sub[:msg]
+          user = User(nick.to_s)
+          if user
+            match = get_match_in(user)
+            if match
+              sub = match.remove_player(user)
+              if sub
+                m.channel.msg sub[:msg]
+              end
+            elsif @queue.key?(nick)
+              remove_user_from_queue(nick)
             end
-          elsif @queue.key?(nick)
-            remove_user_from_queue(nick)
+          else
+            reply m,"User #{nick} not found"
           end
         end
       end
 
       listen_to :nick, :method => :on_nick
       def on_nick(m)
-        unless is_banned?(m.user)
-          match = get_match_in(m.user.last_nick)
-          if match
-            match.rename_player(m.user.last_nick,m.user.nick)
-          elsif @queue.key?(m.user.last_nick)
-            @queue[m.user.nick] = @queue[m.user.last_nick]
-            @queue.delete(m.user.last_nick)
-          end
-        end
+
+        #unless is_banned?(m.user)
+        #  match = get_match_in(m.user)
+        #  if match
+        #    match.rename_player(m.user)
+        #  elsif @queue.key?(m.user.last_nick)
+        #    @queue[m.user.nick] = @queue[m.user.last_nick]
+        #    @queue.delete(m.user.last_nick)
+        #  end
+        #end
       end
 
-      match "sub", :method => :evt_sub
-      def evt_sub(m)
+      command :sub,{},
+        summary: "Sub into a match",
+        description: "If a player leaves a match early, you can use this command to sub in and join the match"
+      def sub(m)
         unless is_banned?(m.user)
           @matches.each do |k,match|
             if match.needs_sub?
@@ -90,9 +97,9 @@ module KAG
         summary: "Remove yourself from the active queue for the next match"
       def rem(m)
         unless is_banned?(m.user)
-          match = get_match_in(m.user.nick)
+          match = get_match_in(m.user)
           if match
-            match.remove_player(m.user.nick)
+            match.remove_player(m.user)
             send_channels_msg "#{m.user.nick} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
           elsif @queue.key?(m.user.nick)
             unless remove_user_from_queue(m.user.nick)
@@ -127,7 +134,7 @@ module KAG
         description: "End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end."
       def end(m)
         unless is_banned?(m.user)
-          match = get_match_in(m.user.nick)
+          match = get_match_in(m.user)
           if match
             match.add_end_vote
             if match.voted_to_end?
@@ -170,10 +177,10 @@ module KAG
         end
       end
 
-      def get_match_in(nick)
+      def get_match_in(user)
         m = false
         @matches.each do |k,match|
-          if match.has_player?(nick)
+          if match.has_player?(user)
             m = match
           end
         end
@@ -199,7 +206,8 @@ module KAG
 
           match = KAG::Gather::Match.new(SymbolTable.new({
             :server => server,
-            :players => players
+            :players => players,
+            :bot => self.bot
           }))
           match.start # prepare match data
           messages = match.notify_teams_of_match_start # gather texts for private messages
@@ -288,7 +296,7 @@ module KAG
         admin: true
       def restart_map(m)
         if is_admin(m.user)
-          match = get_match_in(m.user.nick)
+          match = get_match_in(m.user)
           if match and match.server
             match.server.restart_map
           end
@@ -314,7 +322,7 @@ module KAG
         admin: true
       def next_map(m)
         if is_admin(m.user)
-          match = get_match_in(m.user.nick)
+          match = get_match_in(m.user)
           if match and match.server
             match.server.next_map
           end
@@ -340,12 +348,17 @@ module KAG
         admin: true
       def kick_from_match(m,nick)
         if is_admin(m.user)
-          match = get_match_in(nick)
-          if match
-            match.remove_player(nick)
-            m.reply "#{nick} has been kicked from the match"
+          user = User(nick.to_s)
+          if user
+            match = get_match_in(user)
+            if match
+              match.remove_player(user)
+              m.reply "#{user.nick} has been kicked from the match"
+            else
+              m.reply "#{user.nick} is not in a match!"
+            end
           else
-            m.reply "#{nick} is not in a match!"
+            reply m,"User #{nick} not found"
           end
         end
       end

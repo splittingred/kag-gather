@@ -1,11 +1,15 @@
 require 'cinch'
+require 'cinch/helpers'
 require 'symboltable'
 require 'kag/config'
 require 'kag/gather/team'
+require 'kag/user/user'
 
 module KAG
   module Gather
     class Match < SymbolTable
+      include Cinch::Helpers
+
       def self.type_as_string
         ms = KAG::Config.instance[:match_size].to_i
         ts = (ms / 2).ceil
@@ -23,6 +27,13 @@ module KAG
         debug "MATCH SIZE #{match_size.to_s}"
         debug "LOWER BOUND: #{lb.to_s}"
         debug "PLAYERS: #{self[:players].join(",")}"
+
+        self[:players].each do |player|
+          u = User(player.to_s)
+          if u
+            KAG::User::User.add_match(u)
+          end
+        end
 
         self[:teams] = []
         self[:teams] << KAG::Gather::Team.new({
@@ -82,10 +93,10 @@ module KAG
         evt - self[:end_votes]
       end
 
-      def has_player?(nick)
+      def has_player?(user)
         playing = false
         self[:teams].each do |team|
-          playing = true if team.has_player?(nick)
+          playing = true if team.has_player?(user)
         end
         playing
       end
@@ -116,11 +127,11 @@ module KAG
         end
       end
 
-      def remove_player(nick)
+      def remove_player(user)
         sub = false
         self[:teams].each do |team|
-          if team.has_player?(nick)
-            sub = team.remove_player(nick)
+          if team.has_player?(user)
+            sub = team.remove_player(user)
           end
         end
         if sub
@@ -141,10 +152,10 @@ module KAG
         placement
       end
 
-      def rename_player(last_nick,new_nick)
+      def rename_player(user)
         self[:teams].each do |team|
-          if team.has_player?(last_nick)
-            team.rename_player(last_nick,new_nick)
+          if team.has_player?(user)
+            team.rename_player(user)
           end
         end
       end

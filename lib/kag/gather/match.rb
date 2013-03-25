@@ -35,7 +35,11 @@ module KAG
         debug "PLAYERS: #{self.players.keys.join(",")}"
 
         self.players.each do |authname,user|
-          KAG::User::User.add_stat(user,:matches)
+          if user
+            KAG::User::User.add_stat(user,:matches)
+          else
+            self.players.delete(authname.to_sym)
+          end
         end
 
         self.teams = []
@@ -43,8 +47,7 @@ module KAG
         team_list.each do |ts|
           eb = lb+players_per_team-1
           eb = self.players.length if eb > self.players.length-1
-          debug "Spread: #{lb}..#{(eb)}"
-          ps = Hash[self.players.sort_by{|k,v| v.to_s }[lb..(eb)]]
+          ps = Hash[self.players.sort_by{|k,v| v ? v.to_s : ''}[lb..(eb)]]
           lb = players_per_team
 
           self.teams << KAG::Gather::Team.new({

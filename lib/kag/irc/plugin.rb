@@ -1,13 +1,17 @@
 require 'cinch'
 require 'kag/common'
+require 'commands/help'
 
 module KAG
   module IRC
     class Plugin
       include Cinch::Plugin
+      include Cinch::Commands
       include KAG::Common
 
-      match /hostname (.+)/,:method => :hostname
+      command :hostname,{nick: :string},
+        summary: "Get the hostname for a user",
+        admin: true
       def hostname(m,nick)
         if is_admin(m.user)
           user = User(nick)
@@ -19,7 +23,9 @@ module KAG
         end
       end
 
-      match /authname (.+)/,:method => :authname
+      command :authname,{nick: :string},
+        summary: "Get the AUTH name of a user",
+        admin: true
       def authname(m,nick)
         if is_admin(m.user)
           user = User(nick)
@@ -31,7 +37,9 @@ module KAG
         end
       end
 
-      match /idle (.+)/,:method => :idle
+      command :idle,{nick: :string},
+        summary: "Return how long a user has been idle",
+        admin: true
       def idle(m,nick)
         if is_admin(m.user)
           user = User(nick)
@@ -44,36 +52,46 @@ module KAG
         end
       end
 
-      match /op (.+)/,:method => :evt_op
-      def evt_op(m,nick)
+      command :op,{nick: :string},
+        summary: "Op a user",
+        admin: true
+      def op(m,nick)
         if is_admin(m.user)
           m.channel.op(nick)
         end
       end
 
-      match /deop (.+)/,:method => :evt_deop
-      def evt_deop(m,nick)
+      command :deop,{nick: :string},
+        summary: "Deop a user",
+        admin: true
+      def deop(m,nick)
         if is_admin(m.user)
           m.channel.deop(nick)
         end
       end
 
-      match /voice (.+)/,:method => :evt_voice
-      def evt_voice(m,nick)
+      command :voice,{nick: :string},
+        summary: "Voice a user",
+        admin: true
+      def voice(m,nick)
         if is_admin(m.user)
           m.channel.voice(nick)
         end
       end
 
-      match /devoice (.+)/,:method => :evt_devoice
-      def evt_devoice(m,nick,reason)
+      command :devoice,{nick: :string,reason: :string},
+        summary: "Devoice a user",
+        admin: true
+      def devoice(m,nick,reason = '')
         if is_admin(m.user)
           m.channel.devoice(nick)
         end
       end
 
-      match /kick (.+) (.+)/,:method => :evt_kick
-      def evt_kick(m,nick,reason)
+      command :kick,{nick: :string,reason: :string},
+        summary: "Kick a user",
+        admin: true
+      def kick(m,nick,reason)
         if is_admin(m.user)
           m.channel.kick(nick,reason)
         end

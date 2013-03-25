@@ -23,6 +23,16 @@ module KAG
         end
       end
 
+      command :authed,{},
+        summary: "Tell if you are authed"
+      def authed(m)
+        if m.user.authed?
+          reply m,"#{m.user.nick} is authed."
+        else
+          reply m,"#{m.user.nick} is not yet authed. Please type !help to get help with authenticating."
+        end
+      end
+
       command :authname,{nick: :string},
         summary: "Get the AUTH name of a user",
         admin: true

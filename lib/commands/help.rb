@@ -12,12 +12,14 @@ module Cinch
       include Cinch::Commands
       include KAG::Common
 
-      command :help, {command: :string},
+      command :h, {command: :string},
         summary:     %{Displays help information for the COMMAND},
+        method: :help,
         description: %{Finds the COMMAND and prints the usage and description for the COMMAND.}
 
-      command :help, {},
+      command :h, {},
         summary: "Lists available commands",
+        method: :help,
         description: %{If no COMMAND argument is given, then all commands will be listed.}
 
       #
@@ -47,7 +49,7 @@ module Cinch
             # print the description of the first command
             desc = found.first.description.to_s
             msg = "\x0302#{msg.join(", ")}\x0314"+(desc != "" ? " - #{desc}" : " - #{found.first.summary.to_s}")
-            User(m.user.nick).send(msg)
+            m.user.send(msg)
           end
         else
           msg = []
@@ -55,7 +57,7 @@ module Cinch
             #msg << "\x0302#{cmd.usage}\x0314: #{cmd.summary}" unless (cmd.admin and !is_admin(m.user))
             msg << "!"+cmd.usage
           end
-          User(m.user.nick).send(msg.join ", ")
+          m.user.send(msg.join ", ")
         end
       end
 

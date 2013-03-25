@@ -1,3 +1,4 @@
+require 'kag/help/book'
 
 module KAG
   module Common
@@ -29,6 +30,18 @@ module KAG
       user.refresh
       o = (KAG::Config.instance[:owners] or [])
       o.include?(user.authname)
+    end
+
+    def _h(key,params = {})
+      if KAG::Help::Book.instance.key?(key.to_sym)
+        text = KAG::Help::Book.instance[key.to_sym].to_s
+        params.each do |k,v|
+          text.gsub!("[[+"+k.to_s+"]]",v)
+        end
+        text
+      else
+        ""
+      end
     end
   end
 end

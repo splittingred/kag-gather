@@ -68,6 +68,7 @@ module KAG
             if match.needs_sub?
               placement = match.sub_in(m.user)
               if placement
+                placement[:channel_msg] = placement[:channel_msg].gsub("[[+user]]",m.user.authname)
                 reply m,placement[:channel_msg]
                 m.user.send placement[:private_msg]
               end

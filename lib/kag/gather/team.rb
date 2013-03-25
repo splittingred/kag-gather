@@ -54,7 +54,7 @@ module KAG
           sub[:cls] = self.teammates[user.authname.to_sym]
           sub[:team] = self.clone
           sub[:msg] = "Sub needed at #{self.match.server[:ip]} for #{sub[:team][:name]}, #{sub[:cls]} Class! Type !sub to claim it!"
-          sub[:channel_msg] = "#{user.authname} is now subbing in for #{self[:name]} at #{self.match.server[:key]}. Subs still needed: #{self.match[:subs_needed].length}"
+          sub[:channel_msg] = "[[+user]] is now subbing in for #{self[:name]} at #{self.match.server[:key]}. Subs still needed: #{self.match[:subs_needed].length}"
           sub[:private_msg] = "Please #{self.match.server.text_join} | #{sub[:cls]} on the #{self[:name]} Team"
           self.players.delete(user.authname.to_sym)
           self.teammates.delete(user.authname.to_sym)

@@ -10,7 +10,7 @@ module KAG
 
       def _load
         unless File.exists?("config/help.json")
-          File.open("config/help.json","w") {|f| f.write("{}") }
+          return {}
         end
         f = ::IO.read("config/help.json")
         if f and !f.empty?

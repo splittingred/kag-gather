@@ -1,7 +1,8 @@
 require 'spec_helper'
 require 'kag/config'
 require 'kag/server'
-require 'kag/match'
+require 'kag/gather/match'
+require 'kag/gather/team'
 
 ##
 # Testing for the server functions
@@ -13,19 +14,33 @@ describe KAG::Server do
     ks = KAG::Config.instance[:servers].keys
     server = KAG::Server.new(KAG::Config.instance[:servers][ks.first])
     match = KAG::Gather::Match.new({
-        :server => server
+        :server => server,
+        :subs_needed => []
     })
-    match = KAG::Gather::Team.new(SymbolTable.new({
-        :players => %w(player1 player2 player3),
+    player_list = %w(player1 player2 player3)
+    players = {}
+    player_list.each do |p|
+      players[p.to_sym] = {:authname => p,:nick => p}
+    end
+
+    team = KAG::Gather::Team.new(SymbolTable.new({
+        :players => players,
         :match => match,
         :color => "\x0312",
         :name => "Blue"
     }))
-    match
+    team
   end
 
   it "ensure setup_classes() works" do
     team = subject.setup_classes
-    team[:players].values.uniq.length.should eq(team[:players].values.length)
+    puts team.inspect
+    team.players.values.uniq.length.should eq(team.players.values.length)
+  end
+
+  it "ensure remove_player() works" do
+    subject.setup_classes
+    user = SymbolTable.new({:authname => "player2",:nick => "player2"})
+    subject.remove_player(user).should_not eq(false)
   end
 end

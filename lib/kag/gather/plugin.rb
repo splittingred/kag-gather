@@ -4,6 +4,7 @@ require 'commands/help'
 require 'kag/bot/bot'
 require 'kag/bans/report'
 require 'kag/server'
+require 'kag/gather/queue'
 require 'kag/gather/match'
 
 module KAG
@@ -17,7 +18,7 @@ module KAG
 
       def initialize(*args)
         super
-        @queue = {}
+        @queue = KAG::Gather::Queue.new
         @matches = {}
         _load_servers
       end
@@ -45,7 +46,7 @@ module KAG
               if sub
                 m.channel.msg sub[:msg]
               end
-            elsif @queue.key?(user.authname)
+            elsif @queue.has_player?(user)
               remove_user_from_queue(user)
             end
           else
@@ -56,16 +57,6 @@ module KAG
 
       listen_to :nick, :method => :on_nick
       def on_nick(m)
-
-        #unless is_banned?(m.user)
-        #  match = get_match_in(m.user)
-        #  if match
-        #    match.rename_player(m.user)
-        #  elsif @queue.key?(m.user.last_nick)
-        #    @queue[m.user.nick] = @queue[m.user.last_nick]
-        #    @queue.delete(m.user.last_nick)
-        #  end
-        #end
       end
 
       command :sub,{},
@@ -102,9 +93,9 @@ module KAG
           if match
             match.remove_player(m.user)
             send_channels_msg "#{m.user.authname} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
-          elsif @queue.key?(m.user.authname)
+          elsif @queue.has_player?(m.user)
             KAG::User::User.add_stat(m.user,:rems)
-            unless remove_user_from_queue(m.user.authname)
+            unless remove_user_from_queue(m.user)
               debug "#{m.user.authname} is not in the queue."
             end
           end
@@ -115,11 +106,7 @@ module KAG
         summary: "List the users signed up for the next match"
       def list(m)
         unless is_banned?(m.user)
-          users = []
-          @queue.each do |n,u|
-            users << n
-          end
-          m.user.send "Queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}] #{users.join(", ")}"
+          m.user.send "Queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}] #{@queue.list}"
         end
       end
 
@@ -153,25 +140,20 @@ module KAG
       end
 
       def add_user_to_queue(m,user,send_msg = true)
-        if @queue.key?(user.authname)
+        if @queue.has_player?(user)
           reply m,"#{user.authname} is already in the queue!"
         elsif get_match_in(user)
           reply m,"#{user.authname} is already in a match!"
         else
-          @queue[user.authname] = SymbolTable.new({
-              :user => user,
-              :irc => m.channel,
-              :message => m.message,
-              :joined_at => Time.now
-          })
+          @queue.add(user)
           send_channels_msg "Added #{user.authname} to queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
           check_for_new_match
         end
       end
 
       def remove_user_from_queue(user,send_msg = true)
-        if @queue.key?(user.authname)
-          @queue.delete(user.authname)
+        if @queue.has_player?(user)
+          @queue.remove(user)
           send_channels_msg "Removed #{user.authname} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
           true
         else
@@ -191,11 +173,6 @@ module KAG
 
       def check_for_new_match
         if @queue.length >= KAG::Config.instance[:match_size]
-          players = []
-          @queue.each do |n,i|
-            players << n
-          end
-
           server = get_unused_server
           unless server
             send_channels_msg "Could not find any available servers!"
@@ -203,8 +180,10 @@ module KAG
             return false
           end
 
+          players = @queue.players
+
           # reset queue first to prevent 11-player load
-          @queue = {}
+          @queue.reset
 
           match = KAG::Gather::Match.new(SymbolTable.new({
             :server => server,
@@ -239,7 +218,7 @@ module KAG
       def clear(m)
         if is_admin(m.user)
           send_channels_msg "Match queue cleared."
-          @queue = {}
+          @queue.reset
         end
       end
 

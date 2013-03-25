@@ -1,3 +1,5 @@
+require 'cinch'
+
 class Hash
   @keys_not_used = nil
   def random_key
@@ -12,5 +14,17 @@ class Hash
 
   def shuffle!
     self.replace(self.shuffle)
+  end
+end
+
+module Cinch
+  class User < Target
+    def to_s
+      self.data[:authname]
+    end
+
+    def to_i
+      self.to_s.to_i
+    end
   end
 end

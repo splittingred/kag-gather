@@ -142,20 +142,29 @@ module KAG
       def add_user_to_queue(m,user,send_msg = true)
         if @queue.has_player?(user)
           reply m,"#{user.authname} is already in the queue!"
+          false
         elsif get_match_in(user)
           reply m,"#{user.authname} is already in a match!"
+          false
         else
-          @queue.add(user)
-          send_channels_msg "Added #{user.authname} to queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
-          check_for_new_match
+          if @queue.add(user)
+            send_channels_msg "Added #{user.authname} to queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
+            check_for_new_match
+            true
+          else
+            false
+          end
         end
       end
 
       def remove_user_from_queue(user,send_msg = true)
         if @queue.has_player?(user)
-          @queue.remove(user)
-          send_channels_msg "Removed #{user.authname} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
-          true
+          if @queue.remove(user)
+            send_channels_msg "Removed #{user.authname} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
+            true
+          else
+            false
+          end
         else
           false
         end

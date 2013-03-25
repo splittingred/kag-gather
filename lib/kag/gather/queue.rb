@@ -9,12 +9,18 @@ module KAG
       end
 
       def add(user)
+        return false unless user.authname and !user.authname.to_s.empty?
         self.players[user.authname.to_sym] = user
+        true
       end
 
       def remove(user)
+        return false unless user.authname and !user.authname.to_s.empty?
         if has_player?(user)
           self.players.delete(user.authname.to_sym)
+          true
+        else
+          false
         end
       end
 

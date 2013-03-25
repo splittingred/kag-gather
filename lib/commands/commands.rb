@@ -52,10 +52,11 @@ module Cinch
       def command(name,arguments={},options={})
         new_command = Command.new(name,arguments,options)
 
-        match(new_command.regexp, method: name)
+        m = options.key?(:method) ? options[:method] : name
+        match(new_command.regexp, method: m)
 
         commands << new_command
-        return new_command
+        new_command
       end
     end
 

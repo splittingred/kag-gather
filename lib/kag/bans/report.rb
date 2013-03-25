@@ -150,6 +150,14 @@ module KAG
         end
       end
 
+      def self.list
+        if KAG::Config.data[:ignored]
+          KAG::Config.data[:ignored].keys
+        else
+          []
+        end
+      end
+
       protected
 
       def data

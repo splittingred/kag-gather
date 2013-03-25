@@ -76,15 +76,17 @@ module KAG
         end
       end
 
-      match "add", :method => :evt_add
-      def evt_add(m)
+      command :add,{},
+        summary: "Add yourself to the active queue for the next match"
+      def add(m)
         unless is_banned?(m.user)
           add_user_to_queue(m,m.user.nick)
         end
       end
 
-      match "rem", method: :evt_rem
-      def evt_rem(m)
+      command :rem,{},
+        summary: "Remove yourself from the active queue for the next match"
+      def rem(m)
         unless is_banned?(m.user)
           match = get_match_in(m.user.nick)
           if match
@@ -98,8 +100,9 @@ module KAG
         end
       end
 
-      match "list", :method => :evt_list
-      def evt_list(m)
+      command :list,{},
+        summary: "List the users signed up for the next match"
+      def list(m)
         unless is_banned?(m.user)
           users = []
           @queue.each do |n,u|
@@ -109,15 +112,18 @@ module KAG
         end
       end
 
-      match "status", :method => :evt_status
-      def evt_status(m)
+      command :status,{},
+        summary: "Show the number of ongoing matches"
+      def status(m)
         unless is_banned?(m.user)
           reply m,"Matches in progress: #{@matches.length.to_s}"
         end
       end
 
-      match "end", :method => :evt_end
-      def evt_end(m)
+      command :end,{},
+        summary: "End the current match",
+        description: "End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end."
+      def end(m)
         unless is_banned?(m.user)
           match = get_match_in(m.user.nick)
           if match
@@ -215,16 +221,21 @@ module KAG
 
       # admin methods
 
-      match "clear", :method => :evt_clear
-      def evt_clear(m)
+      command :clear,{},
+        summary: "Clear (empty) the ongoing queue",
+        admin: true
+      def clear(m)
         if is_admin(m.user)
           send_channels_msg "Match queue cleared."
           @queue = {}
         end
       end
 
-      match /rem (.+)/, :method => :evt_rem_admin
-      def evt_rem_admin(m, arg)
+      command :rem,{nick: :string},
+        summary: "Remove a specific user from the queue",
+        method: :rem_admin,
+        admin: true
+      def rem_admin(m, arg)
         if is_admin(m.user)
           arg = arg.split(" ")
           arg.each do |nick|
@@ -233,8 +244,10 @@ module KAG
         end
       end
 
-      match /rem_silent (.+)/, :method => :evt_rem_silent_admin
-      def evt_rem_silent_admin(m, arg)
+      command :rem_silent,{nick: :string},
+        summary: "Remove a specific user from the queue without pinging the user in the channel",
+        admin: true
+      def rem_silent(m, arg)
         if is_admin(m.user)
           arg = arg.split(" ")
           arg.each do |nick|
@@ -243,8 +256,11 @@ module KAG
         end
       end
 
-      match /add (.+)/, :method => :evt_add_admin
-      def evt_add_admin(m, arg)
+      command :add,{nick: :string},
+        summary: "Add a specific user to the queue",
+        method: :add_admin,
+        admin: true
+      def add_admin(m, arg)
         if is_admin(m.user)
           arg = arg.split(" ")
           arg.each do |nick|
@@ -253,8 +269,10 @@ module KAG
         end
       end
 
-      match /add_silent (.+)/, :method => :evt_add_silent_admin
-      def evt_add_silent_admin(m, arg)
+      command :add_silent,{nick: :string},
+        summary: "Add a specific user to the queue without pinging the user in the channel",
+        admin: true
+      def add_silent(m, arg)
         if is_admin(m.user)
           arg = arg.split(" ")
           arg.each do |nick|
@@ -263,8 +281,10 @@ module KAG
         end
       end
 
-      match "restart_map", :method => :evt_restart_map
-      def evt_restart_map(m)
+      command :restart_map,{},
+        summary: "Restart the map of the match you are in",
+        admin: true
+      def restart_map(m)
         if is_admin(m.user)
           match = get_match_in(m.user.nick)
           if match and match.server
@@ -273,19 +293,24 @@ module KAG
         end
       end
 
-      match /restart_map (.+)/, :method => :evt_restart_map_specify
-      def evt_restart_map_specify(m,arg)
+      command :restart_map,{server: :string},
+        summary: "Restart the map of a given server",
+        method: :restart_map_specify,
+        admin: true
+      def restart_map_specify(m,server)
         if is_admin(m.user)
-          if @servers[key]
-            @servers[key].restart_map
+          if @servers[server.to_sym]
+            @servers[server.to_sym].restart_map
           else
-            m.reply "No server found with key #{arg}"
+            m.reply "No server found with key #{server.to_s}"
           end
         end
       end
 
-      match "next_map", :method => :evt_next_map
-      def evt_next_map(m)
+      command :restart_map,{},
+        summary: "Next map the match of the server you are in",
+        admin: true
+      def next_map(m)
         if is_admin(m.user)
           match = get_match_in(m.user.nick)
           if match and match.server
@@ -294,8 +319,11 @@ module KAG
         end
       end
 
-      match /next_map (.+)/, :method => :evt_next_map_specify
-      def evt_next_map_specify(m,arg)
+      command :next_map,{server: :string},
+        summary: "Next map a given server",
+        method: :next_map_specify,
+        admin: true
+      def next_map_specify(m,arg)
         if is_admin(m.user)
           if @servers[key]
             @servers[key].next_map
@@ -305,8 +333,10 @@ module KAG
         end
       end
 
-      match /kick_from_match (.+)/, :method => :evt_kick_from_match
-      def evt_kick_from_match(m,nick)
+      command :kick_from_match,{nick: :string},
+        summary: "Actually kick a user from a match",
+        admin: true
+      def kick_from_match(m,nick)
         if is_admin(m.user)
           match = get_match_in(nick)
           if match

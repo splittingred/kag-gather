@@ -7,7 +7,8 @@ module KAG
       include Cinch::Plugin
       include KAG::Common
 
-      match /report (.+)/,:method => :report
+      command :report,{nick: :string},
+        summary: "Report a user the bot"
       def report(m,nick)
         unless is_banned?(m.user)
           u = User(nick)
@@ -19,7 +20,8 @@ module KAG
         end
       end
 
-      match /reports (.+)/,:method => :reports
+      command :reports,{nick: :string},
+        summary: "Show the number of reports for a given user"
       def reports(m,nick)
         user = User(nick)
         if user and !user.unknown
@@ -34,14 +36,17 @@ module KAG
         end
       end
 
-      match "reported",:method => :reported
+      command :reported,{},
+        summary: "Show a list of reported users"
       def reported(m)
         unless is_banned?(m.user)
           KAG::Bans::Report.list
         end
       end
 
-      match /unreport (.+)/,:method => :unreport
+      command :unreport,{nick: :string},
+        summary: "Clear all reports for a given user",
+        admin: true
       def unreport(m,nick)
         if is_admin(m.user)
           user = User(nick)
@@ -53,7 +58,9 @@ module KAG
         end
       end
 
-      match /ignore (.+)/,:method => :ignore
+      command :ignore,{nick: :string},
+        summary: "Ignore (Ban) a user",
+        admin: true
       def ignore(m,nick)
         if is_admin(m.user)
           user = User(nick)
@@ -65,7 +72,9 @@ module KAG
         end
       end
 
-      match /unignore (.+)/,:method => :unignore
+      command :unignore,{nick: :string},
+        summary: "Unignore (Unban) a user",
+        admin: true
       def unignore(m,nick)
         if is_admin(m.user)
           user = User(nick)

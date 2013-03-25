@@ -231,8 +231,10 @@ module KAG
           nicks = nicks.split(",")
           nicks.each do |nick|
             u = User(nick)
-            if u and !u.unknown
+            if u
               remove_user_from_queue(u)
+            else
+              reply m,"Could not find user #{nick}"
             end
           end
         end
@@ -246,8 +248,10 @@ module KAG
           nicks = nicks.split(",")
           nicks.each do |nick|
             u = User(nick)
-            if u and !u.unknown
+            if u
               remove_user_from_queue(u,false)
+            else
+              reply m,"Could not find user #{nick}"
             end
           end
         end
@@ -262,8 +266,10 @@ module KAG
           nicks = nicks.split(",")
           nicks.each do |nick|
             u = User(nick)
-            if u and !u.unknown
+            if u
               add_user_to_queue(m,u)
+            else
+              reply m,"Could not find user #{nick}"
             end
           end
         end
@@ -278,8 +284,10 @@ module KAG
           puts nicks.inspect
           nicks.each do |nick|
             u = User(nick)
-            if u and !u.unknown
+            if u
               add_user_to_queue(m,u,false)
+            else
+              reply m,"Could not find user #{nick}"
             end
           end
         end

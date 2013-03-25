@@ -27,6 +27,7 @@ module KAG
       end
 
       def has_player?(user)
+        return false unless user.authname and !user.authname.to_s.empty?
         self.players.has_key?(user.authname.to_sym)
       end
 

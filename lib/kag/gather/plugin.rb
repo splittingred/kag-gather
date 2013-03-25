@@ -228,7 +228,7 @@ module KAG
         admin: true
       def rem_admin(m, nicks)
         if is_admin(m.user)
-          nicks = nicks.split(" ")
+          nicks = nicks.split(",")
           nicks.each do |nick|
             u = User(nick)
             if u and !u.unknown
@@ -243,7 +243,7 @@ module KAG
         admin: true
       def rem_silent(m, nicks)
         if is_admin(m.user)
-          nicks = nicks.split(" ")
+          nicks = nicks.split(",")
           nicks.each do |nick|
             u = User(nick)
             if u and !u.unknown
@@ -259,7 +259,7 @@ module KAG
         admin: true
       def add_admin(m, nicks)
         if is_admin(m.user)
-          nicks = nicks.split(" ")
+          nicks = nicks.split(",")
           nicks.each do |nick|
             u = User(nick)
             if u and !u.unknown
@@ -274,7 +274,8 @@ module KAG
         admin: true
       def add_silent(m, nicks)
         if is_admin(m.user)
-          nicks = nicks.split(" ")
+          nicks = nicks.split(",")
+          puts nicks.inspect
           nicks.each do |nick|
             u = User(nick)
             if u and !u.unknown

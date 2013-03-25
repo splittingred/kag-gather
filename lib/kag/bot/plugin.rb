@@ -51,6 +51,16 @@ module KAG
           m.reply "Configuration reloaded."
         end
       end
+
+      command :version,{},
+        summary: "Show the version of the bot",
+        admin: true
+      def version(m)
+        if is_admin(m.user)
+          require 'kag/version'
+          m.reply "KAG Gather - version "+KAG::VERSION.to_s+" by splittingred - https://github.com/splittingred/kag-gather"
+        end
+      end
     end
   end
 end

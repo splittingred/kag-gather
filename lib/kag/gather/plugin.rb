@@ -36,22 +36,15 @@ module KAG
       #end
 
       listen_to :leaving, :method => :on_leaving
-      def on_leaving(m,nick)
-        unless is_banned?(m.user)
-          user = User(nick.to_s)
-          if user
-            match = get_match_in(user)
-            if match
-              sub = match.remove_player(user)
-              if sub
-                m.channel.msg sub[:msg]
-              end
-            elsif @queue.has_player?(user)
-              remove_user_from_queue(user)
-            end
-          else
-            reply m,"User #{nick} not found"
+      def on_leaving(m,user)
+        match = get_match_in(user)
+        if match
+          sub = match.remove_player(user)
+          if sub
+            m.channel.msg sub[:msg]
           end
+        elsif @queue.has_player?(user)
+          remove_user_from_queue(user)
         end
       end
 

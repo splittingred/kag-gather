@@ -146,7 +146,7 @@ module KAG
       def self.is_banned?(user)
         KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
         if KAG::Config.data.flooding?(user)
-          return true
+          #return true
         end
 
         if user.authed?

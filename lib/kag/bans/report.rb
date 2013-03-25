@@ -60,6 +60,7 @@ module KAG
         data[:reported][self[:authname].to_sym] = c
         data.save
 
+        KAG::User::User.add_stat(user,:reports_others)
         self.gather.reply self.message,"User #{self[:nick]} reported." if self.gather.class == KAG::Gather
       end
 

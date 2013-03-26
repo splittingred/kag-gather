@@ -87,8 +87,9 @@ module KAG
       end
 
       def self.ignore(gather,message,user)
+        user.refresh
         KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
-        if KAG::Config.data[:ignored] and !KAG::Config.data[:ignored].key?(user.authname.to_sym)
+        if KAG::Config.data[:ignored] and user.authname and !KAG::Config.data[:ignored].key?(user.authname.to_sym)
           c = SymbolTable.new({
             :nick => user.nick,
             :authname => user.authname,
@@ -101,16 +102,17 @@ module KAG
           KAG::Config.data[:ignored][user.authname.to_sym] = c
           KAG::Config.data.save
 
-          gather.reply message,"User #{user.nick} added to ignore list." if gather.class == KAG::Gather
+          gather.reply message,"User #{user.authname} added to ignore list." if gather.class == KAG::Gather
           true
         else
-          gather.reply message,"User #{user.nick} already in ignore list!" if gather.class == KAG::Gather
+          gather.reply message,"User #{user.authname} already in ignore list!" if gather.class == KAG::Gather
           false
         end
       end
 
       def self.remove(gather,message,user)
-        if KAG::Config.data[:reported] and KAG::Config.data[:reported].key?(user.authname.to_sym)
+        user.refresh
+        if KAG::Config.data[:reported] and user.authname and KAG::Config.data[:reported].key?(user.authname.to_sym)
           KAG::Config.data[:reported].delete(user.authname.to_sym)
           KAG::Config.data.save
 
@@ -123,7 +125,8 @@ module KAG
       end
 
       def self.unignore(gather,message,user)
-        if KAG::Config.data[:ignored] and KAG::Config.data[:ignored].key?(user.authname.to_sym)
+        user.refresh
+        if KAG::Config.data[:ignored] and user.authname and KAG::Config.data[:ignored].key?(user.authname.to_sym)
           KAG::Config.data[:ignored].delete(user.authname.to_sym)
           KAG::Config.data.save
 
@@ -136,7 +139,8 @@ module KAG
       end
 
       def self.reports(user)
-        if KAG::Config.data[:reported] and KAG::Config.data[:reported].key?(user.authname.to_sym)
+        user.refresh
+        if KAG::Config.data[:reported] and user.authname and KAG::Config.data[:reported].key?(user.authname.to_sym)
           KAG::Config.data[:reported][user.authname.to_sym][:count]
         else
           false

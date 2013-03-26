@@ -88,48 +88,73 @@ module KAG
         end
       end
 
-      command :op,{nick: :string},
+      command :op,{nick: :string,channel: :string},
         summary: "Op a user",
         admin: true
-      def op(m,nick)
+      def op(m,nick,channel = nil)
         if is_admin(m.user)
-          m.channel.op(nick)
+          if channel
+            c = Channel(channel)
+            c.op(nick) if c
+          else
+            m.channel.op(nick)
+          end
         end
       end
 
-      command :deop,{nick: :string},
+      command :deop,{nick: :string,channel: :string},
         summary: "Deop a user",
         admin: true
-      def deop(m,nick)
+      def deop(m,nick,channel = nil)
         if is_admin(m.user)
-          m.channel.deop(nick)
+          if channel
+            c = Channel(channel)
+            c.deop(nick) if c
+          else
+            m.channel.deop(nick)
+          end
         end
       end
 
-      command :voice,{nick: :string},
+      command :voice,{nick: :string,channel: :string},
         summary: "Voice a user",
         admin: true
-      def voice(m,nick)
+      def voice(m,nick,channel = nil)
         if is_admin(m.user)
-          m.channel.voice(nick)
+          if channel
+            c = Channel(channel)
+            c.voice(nick) if c
+          else
+            m.channel.voice(nick)
+          end
         end
       end
 
-      command :devoice,{nick: :string,reason: :string},
+      command :devoice,{nick: :string,channel: :string},
         summary: "Devoice a user",
         admin: true
-      def devoice(m,nick,reason = '')
+      def devoice(m,nick,channel = nil)
         if is_admin(m.user)
-          m.channel.devoice(nick)
+          if channel
+            c = Channel(channel)
+            c.devoice(nick) if c
+          else
+            m.channel.devoice(nick)
+          end
         end
       end
 
-      command :kick,{nick: :string,reason: :string},
+      command :kick,{nick: :string,reason: :string,channel: :string},
         summary: "Kick a user",
         admin: true
-      def kick(m,nick,reason)
+      def kick(m,nick,reason = "",channel = nil)
         if is_admin(m.user)
-          m.channel.kick(nick,reason)
+          if channel
+            c = Channel(channel)
+            c.kick(nick,reason) if c
+          else
+            m.channel.kick(nick,reason)
+          end
         end
       end
     end

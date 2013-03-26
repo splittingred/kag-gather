@@ -1,5 +1,6 @@
 require 'patches'
 require 'cinch'
+require 'cinch/plugins/identify'
 require 'kag/config'
 require 'kag/data'
 require 'kag/gather/plugin'
@@ -23,9 +24,11 @@ module KAG
             c.port = config[:port].to_i > 0 ? config[:port] : 6667
             #c.ssl = config[:ssl]
             c.nick = config[:nick].to_s != "" ? config[:nick] : "KAGatherer"
+            c.user = config[:user].to_s != "" ? config[:user] : c.nick
             c.realname = config[:realname].to_s != "" ? config[:realname] : "KAG Gatherer"
             c.messages_per_second = 1
             c.server_queue_size = 1
+            c.modes = %w(x)
             c.plugins.plugins = [
               Cinch::Commands::Help,
               KAG::Bot::Plugin,
@@ -36,6 +39,14 @@ module KAG
               KAG::Help::Plugin,
               KAG::Stats::Plugin
             ]
+            if config[:auth] and config[:auth][:password]
+              c.plugins.plugins << Cinch::Plugins::Identify
+              c.plugins.options[Cinch::Plugins::Identify] = {
+                :username => config[:auth][:username],
+                :password => config[:auth][:password],
+                :type     => :secure_quakenet,
+              }
+            end
             if config[:sasl]
               c.sasl.username = config[:sasl][:username]
               c.sasl.password = config[:sasl][:password]

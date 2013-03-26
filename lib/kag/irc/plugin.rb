@@ -23,9 +23,31 @@ module KAG
         end
       end
 
+      command :refresh,{},
+        summary: "Refresh your AUTH status",
+        method: :refresh,
+        admin: true
+      def refresh(m)
+        m.user.refresh
+        m.reply "#{m.user.nick} refreshed as #{m.user.authname}."
+      end
+
+      command :refresh,{nick: :string},
+        summary: "Refresh the status of a user",
+        method: :refresh_specific,
+        admin: true
+      def refresh_specific(m,nick)
+        u = User(nick)
+        if u
+          u.refresh
+          m.reply "#{u.nick} refreshed as #{u.authname}."
+        end
+      end
+
       command :authed,{},
         summary: "Tell if you are authed"
       def authed(m)
+        m.user.refresh
         if m.user.authed?
           reply m,"#{m.user.nick} is authed."
         else
@@ -39,6 +61,7 @@ module KAG
       def authname(m,nick)
         if is_admin(m.user)
           user = User(nick)
+          user.refresh
           if user and !user.unknown
             reply m,"Authname for #{nick} is #{user.authname}"
           else
@@ -53,6 +76,7 @@ module KAG
       def idle(m,nick)
         if is_admin(m.user)
           user = User(nick)
+          user.refresh
           if user and !user.unknown
             s = user.idle.to_i / 60
             reply m,"#{nick} has been idle #{s} minutes"

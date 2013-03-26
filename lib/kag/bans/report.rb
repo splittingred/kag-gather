@@ -144,6 +144,7 @@ module KAG
       end
 
       def self.is_banned?(user)
+        user.refresh
         KAG::Config.data[:ignored] = {} unless KAG::Config.data[:ignored]
         if KAG::Config.data.flooding?(user)
           #return true

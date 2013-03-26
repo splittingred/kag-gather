@@ -1,6 +1,7 @@
 # Changelog for KAG Gather Bot
 
 ## 1.5
+* Refresh users on commands to better handle authname checks
 * Remove users from queue after being idle 30 minutes (configurable)
 * Gather-wide stats via !stats
 * Match logging for history

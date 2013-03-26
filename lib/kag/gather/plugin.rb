@@ -3,7 +3,7 @@ require 'kag/common'
 require 'commands/help'
 require 'kag/bot/bot'
 require 'kag/bans/report'
-require 'kag/server'
+require 'kag/server/instance'
 require 'kag/gather/queue'
 require 'kag/gather/match'
 
@@ -24,11 +24,7 @@ module KAG
       end
 
       def _load_servers
-        @servers = {}
-        KAG::Config.instance[:servers].each do |k,s|
-          s[:key] = k
-          @servers[k] = KAG::Server.new(s)
-        end
+        @servers = KAG::Server::Instance.fetch_all
       end
 
       #listen_to :channel, method: :channel_listen

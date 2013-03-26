@@ -37,10 +37,12 @@ module KAG
         method: :refresh_specific,
         admin: true
       def refresh_specific(m,nick)
-        u = User(nick)
-        if u
-          u.refresh
-          m.reply "#{u.nick} refreshed as #{u.authname}."
+        if is_admin(m.user)
+          u = User(nick)
+          if u
+            u.refresh
+            m.reply "#{u.nick} refreshed as #{u.authname}."
+          end
         end
       end
 

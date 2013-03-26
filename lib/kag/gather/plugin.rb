@@ -360,6 +360,7 @@ module KAG
       def kick_from_match(m,nick)
         if is_admin(m.user)
           user = User(nick.to_s)
+          user.refresh
           if user
             match = get_match_in(user)
             if match

@@ -45,7 +45,11 @@ module KAG
       end
 
       def has_player?(user)
-        self.players.keys.include?(user.authname.to_sym)
+        if user.authname
+          self.players.keys.include?(user.authname.to_sym)
+        else
+          false
+        end
       end
 
       def remove_player(user)

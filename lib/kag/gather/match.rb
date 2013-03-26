@@ -48,7 +48,15 @@ module KAG
         team_list.each do |ts|
           eb = lb+players_per_team-1
           eb = self.players.length if eb > self.players.length-1
-          ps = Hash[self.players.sort_by{|k,v| v ? v.to_s : ''}[lb..(eb)]]
+          x = 0
+          ps = {}
+          self.players.each do |authname,user|
+            if x >= lb and x <= eb
+              ps[authname.to_sym] = user
+            end
+            x = x + 1
+          end
+          #ps = Hash[self.players.sort_by{|k,v| v ? v.to_s : ''}[lb..(eb)]]
           lb = players_per_team
 
           self.teams << KAG::Gather::Team.new({
@@ -174,10 +182,12 @@ module KAG
         match = self.dup
         match[:server] = self.server[:key]
         ts = []
-        match.teams.each do |team|
-          ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
+        if match.teams
+          match.teams.each do |team|
+            ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
+          end
+          match[:teams] = ts
         end
-        match[:teams] = ts
         match.delete(:players)
         match.delete(:bot) if match.key?(:bot)
 

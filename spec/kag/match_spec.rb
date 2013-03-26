@@ -1,6 +1,7 @@
 require 'spec_helper'
+require 'cinch'
 require 'kag/config'
-require 'kag/server'
+require 'kag/server/instance'
 require 'kag/gather/match'
 
 ##
@@ -9,7 +10,7 @@ require 'kag/gather/match'
 describe KAG::Server do
   subject do
     ks = KAG::Config.instance[:servers].keys
-    server = KAG::Server.new(KAG::Config.instance[:servers][ks.first])
+    server = KAG::Server::Instance.new(KAG::Config.instance[:servers][ks.first])
 
     KAG::Config.instance[:match_size] = 10
 
@@ -39,6 +40,8 @@ describe KAG::Server do
   end
 
   it "ensure archive() works" do
+    subject.setup_teams
+    subject.text_for_match_start
     subject.archive.should eq(true)
   end
 end

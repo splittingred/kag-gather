@@ -133,8 +133,6 @@ module KAG
             else
               reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server[:key]}"
             end
-          else
-            reply m,"You're not in a match, silly! Stop trying to hack me."
           end
         end
       end
@@ -360,6 +358,7 @@ module KAG
       def kick_from_match(m,nick)
         if is_admin(m.user)
           user = User(nick.to_s)
+          user.refresh
           if user
             match = get_match_in(user)
             if match

@@ -73,8 +73,16 @@ module KAG
         self[:end_votes] = 0 unless self[:end_votes]
         self[:subs_needed] = []
         setup_teams
-        restart_map
         KAG::Stats::Main.add_stat(:matches_started)
+        if self.server
+          self.server[:match] = self
+          begin
+            self.server.async.start
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace.join("\n")
+          end
+        end
       end
 
       def text_for_match_start
@@ -118,28 +126,32 @@ module KAG
       end
 
       def cease
+        wins = []
         if self.server
-          self.archive
-          KAG::Stats::Main.add_stat(:matches_completed)
-          if self.server.has_rcon?
-            self.teams.each do |team|
-              team.kick_all
-            end
-          else
-            debug "NO RCON, so could not kick!"
+          begin
+            wins = self.server.parser.wins
+            self.server.async.stop
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace.join("\n")
           end
-          self.server.disconnect
-          self.server.delete(:match)
           true
         else
           debug "No server for match defined!"
           false
         end
+        if wins.length > 0
+          freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+          winner = wins.sort_by { |v| freq[v] }.last
+        else
+          winner = "Neither Team"
+        end
+        winner
       end
 
       def restart_map
         if self.server.has_rcon?
-          self.server.restart_map
+          self.server.restart_map!
         else
           debug "Cannot restart map, no RCON defined"
         end

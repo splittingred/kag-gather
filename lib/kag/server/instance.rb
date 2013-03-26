@@ -3,19 +3,23 @@ require 'symboltable'
 require 'json'
 require 'kagerator'
 require 'kag/config'
+require 'kag/server/parser'
 require 'socket'
 
 module KAG
   module Server
     class Instance < SymbolTable
       include ::Celluloid
+      attr_accessor :parser
 
       def start
+        self.parser = KAG::Server::Parser.new(self)
         self.restart_map
         @twiddle = true
         while @twiddle
-          puts self.get_line
-          sleep 1
+          z = self.get_line.to_s
+          self.parser.parse(z)
+          sleep 0.5
         end
         puts "ending..."
       end
@@ -23,12 +27,27 @@ module KAG
       def stop
         puts "Stopping listener"
         @twiddle = false
+
+        self.archive
+        KAG::Stats::Main.add_stat(:matches_completed)
+        if self.has_rcon?
+          #if self.teams
+            #self.teams.each do |team|
+            #  team.kick_all
+            #end
+          #end
+          self.disconnect
+        else
+          debug "NO RCON, so could not kick!"
+        end
+        self.delete(:match)
       end
 
-      def self.fetch_all
+      def self.fetch_all(bot)
         servers = {}
         KAG::Config.instance[:servers].each do |k,s|
           s[:key] = k
+          s[:bot] = bot
           servers[k] = KAG::Server::Instance.new(s)
         end
         servers

@@ -24,7 +24,7 @@ module KAG
       end
 
       def _load_servers
-        @servers = KAG::Server::Instance.fetch_all
+        @servers = KAG::Server::Instance.fetch_all(self.bot)
       end
 
       #listen_to :channel, method: :channel_listen
@@ -127,9 +127,9 @@ module KAG
           if match
             match.add_end_vote
             if match.voted_to_end?
-              match.cease
+              winner = match.cease
               @matches.delete(match.server[:key])
-              send_channels_msg("Match at #{match.server[:key]} finished!")
+              send_channels_msg("Match at #{match.server[:key]} finished! #{winner.to_s} won!")
             else
               reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server[:key]}"
             end

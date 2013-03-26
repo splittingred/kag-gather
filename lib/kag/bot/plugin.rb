@@ -9,6 +9,11 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
+      listen_to :connect, :method => :on_connect
+      def on_connect(m)
+        m.bot.set_mode("x")
+      end
+
       command :quit,{},
         summary: "Quit the bot",
         admin: true
@@ -63,6 +68,33 @@ module KAG
         if is_admin(m.user)
           require 'kag/version'
           m.reply "KAG Gather - version "+KAG::VERSION.to_s+" by splittingred - https://github.com/splittingred/kag-gather"
+        end
+      end
+
+      command :bot_mode,{mode: :string},
+        summary:"Set a mode on the bot",
+        admin:true
+      def bot_mode(m,mode)
+        if is_admin(m.user)
+          m.bot.set_mode(mode.to_s)
+        end
+      end
+
+      command :bot_join,{channel: :string,password: :string},
+        summary:"Tell the bot to join a channel",
+        admin:true
+      def bot_join(m,channel,password = nil)
+        if is_admin(m.user)
+          m.bot.join(channel,password)
+        end
+      end
+
+      command :bot_part,{channel: :string,reason: :string},
+        summary:"Tell the bot to part a channel",
+        admin:true
+      def bot_part(m,channel,reason = nil)
+        if is_admin(m.user)
+          m.bot.part(channel,reason)
         end
       end
     end

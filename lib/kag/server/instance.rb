@@ -8,6 +8,23 @@ require 'socket'
 module KAG
   module Server
     class Instance < SymbolTable
+      include ::Celluloid
+
+      def start
+        self.restart_map
+        @twiddle = true
+        while @twiddle
+          puts self.get_line
+          sleep 1
+        end
+        puts "ending..."
+      end
+
+      def stop
+        puts "Stopping listener"
+        @twiddle = false
+      end
+
       def self.fetch_all
         servers = {}
         KAG::Config.instance[:servers].each do |k,s|
@@ -155,6 +172,10 @@ module KAG
         players
       end
 
+      def get_line
+        self.socket.gets
+      end
+
       def kick(nick)
         return false unless self.connect
         self.socket.puts "/kick #{nick}"
@@ -186,6 +207,16 @@ module KAG
         _cycle
       end
 
+      attr_accessor :listener
+      def _start_listener
+        self.listener = KAG::Server::Match.new self
+        self.listener.start!
+      end
+
+      def _end_listener
+        self.listener.stop!
+      end
+
       protected
 
       def _command(cmd)
@@ -193,6 +224,7 @@ module KAG
         puts "[RCON] #{cmd.to_s}"
         self.socket.puts cmd
       end
+
     end
   end
 end

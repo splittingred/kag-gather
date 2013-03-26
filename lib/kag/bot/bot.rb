@@ -1,6 +1,7 @@
 require 'patches'
 require 'cinch'
 require 'cinch/plugins/identify'
+require 'celluloid'
 require 'kag/config'
 require 'kag/data'
 require 'kag/gather/plugin'

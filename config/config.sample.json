@@ -12,8 +12,12 @@
   ,"classes": ["Knight","Knight","Knight","Archer","Builder"]
   ,"debug": true
   ,"end_vote_threshold": 3
+  ,"report_threshold": 7
   ,"restart_method": "nohup sh gather.sh &"
-  ,"ignore_list": ["JTG","ColbyCheez"]
+  ,"idle": {
+    "max": 1800
+    ,"check_period": 150
+  }
   ,"servers":{
     "server1": {
       "ip":"5.39.93.105"

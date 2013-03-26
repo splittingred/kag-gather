@@ -52,6 +52,14 @@ module KAG
       def on_nick(m)
       end
 
+      timer KAG::Config.instance[:idle][:check_period], method: :check_for_afk
+      def check_for_afk
+        KAG::Config.instance[:channels].each do |c|
+          @queue.check_for_afk(self)
+        end
+      end
+
+
       command :sub,{},
         summary: "Sub into a match",
         description: "If a player leaves a match early, you can use this command to sub in and join the match"

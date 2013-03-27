@@ -4,7 +4,7 @@ module KAG
   module Server
     class Parser
       attr_accessor :server,:data,:live,:ready,:veto
-      attr_accessor :match_start,:match_end,:rcon_block,:units_depleted,:wins
+      attr_accessor :match_start,:match_end,:units_depleted,:wins
 
       def initialize(server)
         self.server = server
@@ -109,6 +109,8 @@ module KAG
       def start
         self.server.restart_map
         self.live = true
+        self.match_start = Time.now
+        self.units_depleted = false
         say "Match is now LIVE!"
       end
 
@@ -120,19 +122,18 @@ module KAG
       end
       def evt_map_restart(msg)
         #broadcast "Map on #{self.server[:key]} has been restarted!"
+        self.ready = []
+        self.veto = []
         :map_restart
       end
       def evt_match_started(msg)
-        broadcast "Match has started on #{self.server[:key]}"
-        self.match_start = Time.now
-        self.rcon_block = false
-        self.units_depleted = false
+        #broadcast "Match has started on #{self.server[:key]}"
         :match_start
       end
       def evt_match_ended(msg)
         self.match_end = Time.now
-        #self.match_ended = true
-        self.rcon_block = true
+        self.ready = []
+        self.veto = []
         :match_end
       end
       def evt_match_win(msg)
@@ -142,6 +143,7 @@ module KAG
           self.data[:wins] << match[1]
           say("Match has now ended. #{match[1]} team wins!")
           if self.data[:wins].length >= 3
+            self.match_end = Time.now
             self.server.match.cease
           end
         end

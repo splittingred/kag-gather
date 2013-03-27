@@ -1,5 +1,9 @@
 # Changelog for KAG Gather Bot
 
+## 1.6
+* Link your IRC authname to your KAG account for better stats management
+* Proper control of servers via RCON, match flow control
+
 ## 1.5
 * Refresh users on commands to better handle authname checks
 * Remove users from queue after being idle 30 minutes (configurable)

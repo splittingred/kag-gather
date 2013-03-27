@@ -15,6 +15,7 @@ logs
 nohup*
 data/*.json
 data/user/*.json
+data/link/*.json
 
 # other ruby-specific files
 *.gem

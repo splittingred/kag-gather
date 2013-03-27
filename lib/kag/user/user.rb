@@ -28,23 +28,35 @@ module KAG
         end
       end
 
-      def self.add_stat(user,stat,increment = 1)
+      def linked?
+        self.key?(:kag_user) and !self[:kag_user].to_s.empty?
+      end
+
+      def add_stat(stat,increment = 1)
         stat = stat.to_sym
+        self[stat] = 0 unless self[stat]
+        self[stat] = self[stat].to_i + increment.to_i
+        self.save
+      end
+
+      def subtract_stat(stat,decrement = 1)
+        stat = stat.to_sym
+        if self[stat]
+          self[stat] = self[stat].to_i - decrement.to_i
+        else
+          self[stat] = 0
+        end
+        self.save
+      end
+
+      def self.add_stat(user,stat,increment = 1)
         u = KAG::User::User.new(user)
-        u[stat] = 0 unless u[stat]
-        u[stat] = u[stat].to_i + increment.to_i
-        u.save
+        u.add_stat(stat,increment)
       end
 
       def self.subtract_stat(user,stat,decrement = 1)
-        stat = stat.to_sym
         u = KAG::User::User.new(user)
-        if u[stat]
-          u[stat] = u[stat].to_i - decrement.to_i
-        else
-          u[stat] = 0
-        end
-        u.save
+        u.subtract_stat(stat,decrement)
       end
 
       def self.stats(user)

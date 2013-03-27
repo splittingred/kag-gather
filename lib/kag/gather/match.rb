@@ -127,8 +127,10 @@ module KAG
 
       def cease
         wins = []
+        data = {}
         if self.server
           begin
+            data = self.server.parser.data
             wins = self.server.parser.data[:wins]
             self.server.async.stop
           rescue Exception => e
@@ -140,11 +142,31 @@ module KAG
           debug "No server for match defined!"
           false
         end
+
         if wins.length > 0
           freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
           winner = wins.sort_by { |v| freq[v] }.last
         else
           winner = "Neither Team"
+        end
+        if data and data.length > 0
+          puts data.inspect
+          self.teams.each do |team|
+            team.players.each do |authname,user|
+              u = KAG::User::User.new(user)
+              if team.teammates[authname.to_sym]
+                stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
+                u.add_stat(stat.to_sym)
+              end
+              if team[:name] == winner
+                u.add_stat(:wins)
+              end
+              if data.players and u.linked? and data.players[u.kag_user]
+                u.merge!(data.players[u.kag_user])
+              end
+              u.save
+            end
+          end
         end
         winner
       end

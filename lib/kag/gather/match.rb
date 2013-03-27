@@ -24,10 +24,10 @@ module KAG
 
         team_list = [{
           :color => "\x0312",
-          :name => "Blue"
+          :name => "Blue Team"
         },{
            :color => "\x0304",
-           :name => "Red"
+           :name => "Red Team"
         }]
         players_per_team = (match_size / 2).floor.to_i
 
@@ -129,7 +129,7 @@ module KAG
         wins = []
         if self.server
           begin
-            wins = self.server.parser.wins
+            wins = self.server.parser.data[:wins]
             self.server.async.stop
           rescue Exception => e
             puts e.message

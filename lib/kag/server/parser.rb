@@ -3,39 +3,53 @@ require 'symboltable'
 module KAG
   module Server
     class Parser
-      attr_accessor :server,:data
+      attr_accessor :server,:data,:live,:ready,:veto
       attr_accessor :match_start,:match_end,:rcon_block,:units_depleted,:wins
 
       def initialize(server)
         self.server = server
         self.wins = []
+        self.ready = []
+        self.veto = []
         self.data = SymbolTable.new({
           :units_depleted => false,
           :wins => [],
           :match_start => nil,
           :match_end => nil,
           :players => {},
+          :started => false,
         })
+        self.live = false
       end
       def parse(msg)
-        puts msg.to_s
-
+        msg = msg[11..msg.length]
         if msg.index("*Restarting Map*")
           self.evt_map_restart(msg)
         elsif msg.index("*Match Started*")
           self.evt_match_started(msg)
         elsif msg.index("*Match Ended*")
           self.evt_match_ended(msg)
-        elsif msg.index(/^(.+) (wins the game!)$/)
-          self.evt_match_win(msg)
-        elsif msg.index(/^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/)
-          self.evt_kill(msg)
-        elsif msg.index("Can't spawn units depleted")
-          self.evt_units_depleted(msg)
         elsif msg.index(/^Unnamed player is now known as (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})$/)
           self.evt_player_join_renamed(msg)
         elsif msg.index(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20}) (?:is now known as) (.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20})$/)
           self.evt_player_renamed(msg)
+
+        elsif self.live
+          puts "[LIVE] "+msg.to_s
+          if msg.index(/^(.+) (wins the game!)$/)
+            self.evt_match_win(msg)
+          elsif msg.index(/^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/)
+            self.evt_kill(msg)
+          elsif msg.index("Can't spawn units depleted")
+            self.evt_units_depleted(msg)
+          end
+        else
+          puts "[WARMUP] "+msg.to_s
+          if msg.index("!ready")
+            self.evt_ready(msg)
+          elsif msg.index("!veto")
+            self.evt_veto(msg)
+          end
         end
       end
 
@@ -52,8 +66,56 @@ module KAG
 
 
 
-      def evt_units_depleted(msg)
+      def evt_ready(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready)$/)
+        if match
+          unless self.ready.include?(match[3])
+            self.ready << match[3]
+            if self.server and self.server.match and self.server.match.players
+              match_size = self.server.match.players.length
+            else
+              match_size = KAG::Config.instance[:match_size]
+            end
+            if self.ready.length == match_size
+              start
+            end
+            say "Ready count now at #{self.ready.length.to_s} of #{match_size.to_s} needed."
+            :ready
+          end
+        end
+      end
 
+      def evt_veto(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
+        if match
+          unless self.veto.include?(match[3])
+            if self.server and self.server.match and self.server.match.players
+              veto_threshold = (self.server.match.players.length / 2).to_i
+            else
+              veto_threshold = (KAG::Config.instance[:veto_threshold] or 5)
+            end
+            self.veto << match[3]
+            if self.veto.length == veto_threshold
+              self.server.next_map
+              self.ready = []
+              self.veto = []
+            end
+            say "Veto count now at #{self.veto.length.to_s} of #{veto_threshold.to_s} needed."
+            :veto
+          end
+        end
+      end
+
+      def start
+        self.server.restart_map
+        self.live = true
+        say "Match is now LIVE!"
+      end
+
+
+      # stats events
+
+      def evt_units_depleted(msg)
         :units_depleted
       end
       def evt_map_restart(msg)
@@ -74,10 +136,16 @@ module KAG
         :match_end
       end
       def evt_match_win(msg)
+        self.live = false
         match = msg.match(/^(.+) (wins the game!)$/)
         if match
           self.data[:wins] << match[1]
+          say("Match has now ended. #{match[1]} team wins!")
+          if self.data[:wins].length >= 3
+            self.server.match.cease
+          end
         end
+        self.ready = []
         :match_win
       end
       def evt_player_joined(msg)
@@ -181,6 +249,10 @@ module KAG
       end
 
       private
+
+      def say(msg)
+        self.server.msg(msg) if self.server and self.server.respond_to?(:msg)
+      end
 
       def _add_stat(stat,player,increment = 1)
         stat = stat.to_sym

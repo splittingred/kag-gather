@@ -220,6 +220,12 @@ module KAG
         _cycle
       end
 
+      def msg(msg)
+        return false unless self.connect
+        _command "/msg #{msg.to_s}"
+        _cycle
+      end
+
       def next_map
         return false unless self.connect
         _command "/nextmap"

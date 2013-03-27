@@ -9,6 +9,30 @@ describe KAG::Server::Parser do
     KAG::Server::Parser.new KAG::Config.instance[:servers][ks.first]
   end
 
+  it "test restart map" do
+    subject.parse("*Restarting Map*").should eq(:map_restart)
+  end
+  it "test match started" do
+    subject.parse("*Match Started*").should eq(:match_start)
+  end
+  it "test match ended" do
+    subject.parse("*Match Ended*").should eq(:match_end)
+  end
+  it "test match win" do
+    subject.parse("Red Team wins the game!").should eq(:match_win)
+    subject.parse("Blue Team wins the game!").should eq(:match_win)
+  end
+  it "test units depleted" do
+    subject.parse("Can't spawn units depleted").should eq(:units_depleted)
+  end
+  it "test player join then rename" do
+    subject.parse("Unnamed player is now known as Geti").should eq(:player_joined_renamed)
+  end
+  it "test player renamed" do
+    subject.parse("Geti is now known as [Newb] Geti").should eq(:player_renamed)
+    subject.parse("[Newb] Geti is now known as [Dev] Geti").should eq(:player_renamed)
+  end
+
   # kill tests
 
   it "test slew" do

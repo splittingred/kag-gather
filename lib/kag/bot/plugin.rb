@@ -14,32 +14,6 @@ module KAG
         m.bot.set_mode("x")
       end
 
-      command :quit,{},
-        summary: "Quit the bot",
-        admin: true
-      def quit(m)
-        if is_admin(m.user)
-          m.bot.quit("Shutting down...")
-        end
-      end
-
-      command :restart,{},
-        summary: "Restart the bot",
-        admin: true
-      def restart(m)
-        if is_admin(m.user)
-          cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
-          debug cmd
-          pid = spawn cmd
-          debug "Restarting bot, new process ID is #{pid.to_s} ..."
-          if m.bot
-            m.bot.quit "Restarting! Back in a second!"
-          end
-          sleep(0.5)
-          exit
-        end
-      end
-
       command :is_an_admin,{nick: :string},
         summary: "See if the specified user is an Admin"
       def is_an_admin(m,nick)

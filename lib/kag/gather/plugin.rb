@@ -198,12 +198,19 @@ module KAG
             :bot => self.bot
           }))
           match.start # prepare match data
+          puts "Got past match.start in gather/plugin.rb"
           messages = match.notify_teams_of_match_start # gather texts for private messages
+
+          puts "Got past match.notify_teams_of_match_start in gather/plugin.rb"
           send_channels_msg(match.text_for_match_start,false) # send channel-wide first
+
+          puts "Got past send_channels_msg in gather/plugin.rb"
           messages.each do |user,msg|
             user.send(msg)
             sleep(2) # prevent excess flood stuff
           end
+
+          puts "Got past messages.each in gather/plugin.rb"
           @matches[server[:key]] = match
         end
       end
@@ -370,6 +377,39 @@ module KAG
           else
             reply m,"User #{nick} not found"
           end
+        end
+      end
+
+      command :quit,{},
+        summary: "Quit the bot",
+        admin: true
+      def quit(m)
+        if is_admin(m.user)
+          @servers.each do |s|
+            s.disconnect
+          end
+          m.bot.quit("Shutting down...")
+        end
+      end
+
+      command :restart,{},
+        summary: "Restart the bot",
+        admin: true
+      def restart(m)
+        if is_admin(m.user)
+          @servers.each do |s|
+            s.disconnect
+          end
+
+          cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
+          debug cmd
+          pid = spawn cmd
+          debug "Restarting bot, new process ID is #{pid.to_s} ..."
+          if m.bot
+            m.bot.quit "Restarting! Back in a second!"
+          end
+          sleep(0.5)
+          exit
         end
       end
     end

@@ -25,9 +25,11 @@ module KAG
       end
 
       def notify_of_match_start
-        server = self.match.server
-        msg = "Join \x0305#{server[:key]} - #{server[:ip]}:#{server[:port]} \x0306password #{server[:password]}\x0301 | Visit kag://#{server[:ip]}/#{server[:password]} | "
+        puts "start of team.notify_of_match_start"
+        msg = "Join \x0305#{self.match.server[:key]} - #{self.match.server[:ip]}:#{self.match.server[:port]} \x0306password #{self.match.server[:password]}\x0301 | Visit kag://#{self.match.server[:ip]}/#{self.match.server[:password]} | "
         msg = msg + " \x0303Class: " if KAG::Config.instance[:pick_classes]
+
+        puts "after message compile in team.notify_of_match_start"
 
         messages = {}
         self.players.each do |authname,user|

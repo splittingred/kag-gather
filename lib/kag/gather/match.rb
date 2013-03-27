@@ -70,19 +70,26 @@ module KAG
       end
 
       def start
+        puts "at begin of match.start"
         self[:end_votes] = 0 unless self[:end_votes]
         self[:subs_needed] = []
         setup_teams
         KAG::Stats::Main.add_stat(:matches_started)
         if self.server
           self.server[:match] = self
+          puts "before server.async.start"
           begin
             self.server.async.start
           rescue Exception => e
             puts e.message
             puts e.backtrace.join("\n")
+          #ensure
+            #self.server.async.disconnect if self.server
           end
+          puts "after server.async.start"
         end
+        puts "at end of match.start"
+        true
       end
 
       def text_for_match_start

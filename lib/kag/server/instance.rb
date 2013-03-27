@@ -84,9 +84,9 @@ module KAG
 
       def connect
         return true if self.connected?
-        puts "[RCON] Attempting to get socket"
+        puts "[Server] Attempting to get socket"
         unless self.socket
-          puts "[RCON] Could not establish TCP socket to connect"
+          puts "[Server] Could not establish TCP socket to connect"
           return false
         end
         success = false
@@ -101,6 +101,7 @@ module KAG
           puts e.message
           puts e.backtrace.join("\n")
         end
+        puts "[Server] Connected!"
         success
       end
 

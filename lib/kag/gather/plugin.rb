@@ -48,12 +48,12 @@ module KAG
       def on_nick(m)
       end
 
-      timer KAG::Config.instance[:idle][:check_period], method: :check_for_afk
-      def check_for_afk
-        KAG::Config.instance[:channels].each do |c|
-          @queue.check_for_afk(self)
-        end
-      end
+      #timer KAG::Config.instance[:idle][:check_period], method: :check_for_afk
+      #def check_for_afk
+      #  KAG::Config.instance[:channels].each do |c|
+      #    @queue.check_for_afk(self)
+      #  end
+      #end
 
 
       command :sub,{},

@@ -70,25 +70,20 @@ module KAG
       end
 
       def start
-        puts "at begin of match.start"
         self[:end_votes] = 0 unless self[:end_votes]
         self[:subs_needed] = []
         setup_teams
         KAG::Stats::Main.add_stat(:matches_started)
         if self.server
-          self.server[:match] = self
-          puts "before server.async.start"
           begin
-            self.server.async.start
+            self.server.start(self)
           rescue Exception => e
             puts e.message
             puts e.backtrace.join("\n")
           #ensure
-            #self.server.async.disconnect if self.server
+            #self.server.disconnect if self.server
           end
-          puts "after server.async.start"
         end
-        puts "at end of match.start"
         true
       end
 
@@ -135,29 +130,29 @@ module KAG
       def cease
         wins = []
         data = {}
+        puts "in cease"
         if self.server
-          begin
-            data = self.server.parser.data
-            wins = self.server.parser.data[:wins]
-            self.server.async.stop
-          rescue Exception => e
-            puts e.message
-            puts e.backtrace.join("\n")
-          end
-          true
+          puts "running self.server.stop"
+          self.server.stop
+          data = self.server.data
         else
           debug "No server for match defined!"
-          false
         end
+        puts '----'
+        puts data.inspect
+        puts '----'
 
-        if wins.length > 0
-          freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
-          winner = wins.sort_by { |v| freq[v] }.last
-        else
-          winner = "Neither Team"
-        end
         if data and data.length > 0
           puts data.inspect
+
+          wins = data[:wins]
+          if wins and wins.length > 0
+            freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+            winner = wins.sort_by { |v| freq[v] }.last
+          else
+            winner = "Neither Team"
+          end
+
           self.teams.each do |team|
             team.players.each do |authname,user|
               u = KAG::User::User.new(user)
@@ -180,7 +175,7 @@ module KAG
 
       def restart_map
         if self.server.has_rcon?
-          self.server.restart_map!
+          self.server.restart_map
         else
           debug "Cannot restart map, no RCON defined"
         end
@@ -221,7 +216,7 @@ module KAG
 
       def archive
         match = self.dup
-        match[:server] = self.server[:key]
+        match[:server] = self.server.key
         ts = []
         if match.teams
           match.teams.each do |team|

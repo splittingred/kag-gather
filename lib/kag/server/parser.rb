@@ -3,15 +3,16 @@ require 'symboltable'
 module KAG
   module Server
     class Parser
-      attr_accessor :server,:data,:live,:ready,:veto
+      attr_accessor :server,:data,:live,:ready,:veto,:listener
       attr_accessor :match_start,:match_end,:units_depleted,:wins
 
-      def initialize(server)
+      def initialize(server,listener,data)
         self.server = server
+        self.listener = listener
         self.wins = []
         self.ready = []
         self.veto = []
-        self.data = SymbolTable.new({
+        self.data = data.merge({
           :units_depleted => false,
           :wins => [],
           :match_start => nil,
@@ -96,7 +97,7 @@ module KAG
             end
             self.veto << match[3]
             if self.veto.length == veto_threshold
-              self.server.next_map
+              self.listener.next_map
               self.ready = []
               self.veto = []
             end
@@ -107,7 +108,7 @@ module KAG
       end
 
       def start
-        self.server.restart_map
+        self.listener.restart_map
         self.live = true
         self.match_start = Time.now
         self.units_depleted = false
@@ -253,7 +254,7 @@ module KAG
       private
 
       def say(msg)
-        self.server.msg(msg) if self.server and self.server.respond_to?(:msg)
+        self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg)
       end
 
       def _add_stat(stat,player,increment = 1)

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'kag/gather/match'
 require 'kag/server/instance'
 ##
 # Testing for the server functions
@@ -6,13 +7,15 @@ require 'kag/server/instance'
 describe KAG::Server::Instance do
   subject do
     ks = KAG::Config.instance[:servers].keys
-    KAG::Server::Instance.new KAG::Config.instance[:servers][ks.first]
+    KAG::Server::Instance.new({},"test",KAG::Config.instance[:servers][ks.first])
   end
 
   it "test match start" do
-    subject.start!
+    match = KAG::Gather::Match.new
+    subject.start(match)
     sleep 2
-    subject.stop
+    data = subject.stop
+    puts data.inspect
   end
 
   #it "test kick()" do

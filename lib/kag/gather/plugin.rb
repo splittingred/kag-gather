@@ -91,7 +91,7 @@ module KAG
           match = get_match_in(m.user)
           if match
             match.remove_player(m.user)
-            send_channels_msg "#{m.user.authname} has left the match at #{match.server[:key]}! You can sub in by typing !sub"
+            send_channels_msg "#{m.user.authname} has left the match at #{match.server.key}! You can sub in by typing !sub"
           elsif @queue.has_player?(m.user)
             KAG::User::User.add_stat(m.user,:rems)
             KAG::Stats::Main.add_stat(:rems)
@@ -123,16 +123,22 @@ module KAG
         description: "End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end."
       def end(m)
         unless is_banned?(m.user)
+          puts "past is_banned?"
           match = get_match_in(m.user)
           if match
+            puts "found match"
             match.add_end_vote
             if match.voted_to_end?
+              puts "voted_to_end? past, attempting to cease"
               winner = match.cease
-              @matches.delete(match.server[:key])
-              send_channels_msg("Match at #{match.server[:key]} finished! #{winner.to_s} won!")
+              @matches.delete(match.server.key)
+              send_channels_msg("Match at #{match.server.key} finished! #{winner.to_s} won!")
             else
-              reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server[:key]}"
+              reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server.key}"
             end
+          else
+            puts "No match found"
+            puts @matches.inspect
           end
         end
       end
@@ -211,7 +217,7 @@ module KAG
           end
 
           puts "Got past messages.each in gather/plugin.rb"
-          @matches[server[:key]] = match
+          @matches[server.key] = match
         end
       end
 
@@ -385,8 +391,10 @@ module KAG
         admin: true
       def quit(m)
         if is_admin(m.user)
-          @servers.each do |s|
-            s.disconnect
+          @servers.each do |k,s|
+            if s.listener
+              s.listener.async.disconnect
+            end
           end
           m.bot.quit("Shutting down...")
         end

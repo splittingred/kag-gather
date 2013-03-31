@@ -7,31 +7,44 @@ module KAG
     class Listener
       include ::Celluloid
 
-      attr_accessor :server,:_socket,:connected,:data,:parser,:data
+      attr_accessor :server,:socket,:connected,:data,:parser,:data
+
+      trap_exit :actor_died
+
+      def actor_died(actor, reason)
+        p "Oh no! #{actor.inspect} has died because of a #{reason.class}"
+      end
 
       def initialize(server,data)
         self.server = server
         self.data = data
+        self.socket = nil
       end
 
-      def start
+      def start_listening
+        return false unless self.connect
         self.parser = KAG::Server::Parser.new(self.server,self,self.data)
-        self.restart_map
+        #self.restart_map
         @twiddle = true
-        while @twiddle
-          z = get.to_s
+
+        i = 0
+        #z = "[00:00:00] Fake message goes here"
+        while (z = get) and @twiddle
           self.parser.parse(z)
-          puts "twiddle..."
           sleep 0.5
+          i = i+1
         end
         puts "ending..."
       end
 
-      def stop
+      def stop_listening
+        @twiddle = false
         # NOT WORKING
         puts "Stopping listener"
+        #self.get
         self.data = self.parser.data
-        @twiddle = false
+
+        self.socket.close
 
         #self.archive
         KAG::Stats::Main.add_stat(:matches_completed)
@@ -40,25 +53,15 @@ module KAG
           #  team.kick_all
           #end
         #end
-        self.disconnect
+        #self.disconnect
         self.data
-      end
-
-      def socket
-        unless self._socket
-          begin
-            self._socket = TCPSocket.new(self.server.ip,self.server.port)
-          rescue Exception => e
-            puts e.message
-            puts e.backtrace.join("\n")
-          end
-        end
-        self._socket
       end
 
       def connect
         return true if self.connected?
-        puts "[Server] Attempting to get socket"
+        puts "[Server] Attempting to connect via socket to #{self.server.ip}:#{self.server.port}"
+        self.socket = TCPSocket.new(self.server.ip,self.server.port)
+        self.socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         unless self.socket
           puts "[Server] Could not establish TCP socket to connect"
           return false
@@ -66,7 +69,7 @@ module KAG
         success = false
         begin
           put self.server.rcon_password
-          z = self.socket.gets
+          z = get
           puts "[RCON] "+z.to_s
           z.include?("now authenticated")
           self.connected = true
@@ -75,7 +78,7 @@ module KAG
           puts e.message
           puts e.backtrace.join("\n")
         end
-        puts "[Server] Connected!"
+        puts "[Server] Connected! #{success.to_s}"
         success
       end
 
@@ -104,7 +107,7 @@ module KAG
         _command "/rcon /players"
 
         players = []
-        while (line = self.socket.gets)
+        while (line = get)
           puts "[RCONPRIOR] '"+line+"'"
           line = _parse_line(line)
           puts "[RCON] '"+line+"'"
@@ -206,7 +209,12 @@ module KAG
       def get
         msg = ""
         begin
-          msg = self.socket.gets
+          ready = IO.select([self.socket],nil,nil,2)
+          if ready
+            msg = self.socket.gets
+          else
+            msg = ''
+          end
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
@@ -215,7 +223,7 @@ module KAG
       end
 
       def put(msg)
-        self.socket.puts(msg)
+        self.socket.puts(msg+"\r\n")
       end
 
       def _command(cmd)

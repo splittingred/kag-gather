@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "cinch", "2.0.4"
   gem.add_runtime_dependency "cinch-identify", "1.4.1"
   gem.add_runtime_dependency "celluloid"
+  gem.add_runtime_dependency "celluloid-io"
   gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "symboltable", "1.0.2"
   gem.add_runtime_dependency "kagerator", "1.0.4"

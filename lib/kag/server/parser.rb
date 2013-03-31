@@ -23,6 +23,7 @@ module KAG
         self.live = false
       end
       def parse(msg)
+        return false if msg.to_s.empty?
         msg = msg[11..msg.length]
         if msg.index("*Restarting Map*")
           self.evt_map_restart(msg)
@@ -50,6 +51,8 @@ module KAG
             self.evt_ready(msg)
           elsif msg.index("!veto")
             self.evt_veto(msg)
+          elsif msg.index("!hello")
+            self.evt_hello(msg)
           end
         end
       end
@@ -64,8 +67,6 @@ module KAG
           end
         end
       end
-
-
 
       def evt_ready(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready)$/)
@@ -107,6 +108,13 @@ module KAG
         end
       end
 
+      def evt_hello(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!hello)$/)
+        if match
+          say "Hello #{match[3]}!"
+        end
+      end
+
       def start
         self.listener.restart_map
         self.live = true
@@ -114,7 +122,6 @@ module KAG
         self.units_depleted = false
         say "Match is now LIVE!"
       end
-
 
       # stats events
 

@@ -7,14 +7,15 @@ require 'kag/server/instance'
 describe KAG::Server::Instance do
   subject do
     ks = KAG::Config.instance[:servers].keys
-    KAG::Server::Instance.new({},"test",KAG::Config.instance[:servers][ks.first])
+    KAG::Config.instance[:servers][ks.first]
   end
 
   it "test match start" do
+    server = KAG::Server::Instance.new({},"test",subject)
     match = KAG::Gather::Match.new
-    subject.start(match)
+    server.start(match)
     sleep 2
-    data = subject.stop
+    data = server.stop
     puts data.inspect
   end
 

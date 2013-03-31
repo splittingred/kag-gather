@@ -5,6 +5,7 @@ require 'kagerator'
 require 'kag/config'
 require 'kag/server/listener'
 require 'socket'
+require 'celluloid'
 
 module KAG
   module Server
@@ -33,19 +34,24 @@ module KAG
         self.match = match
         self.data = SymbolTable.new
         self.listener = KAG::Server::Listener.new(self,self.data)
-        self.listener.async.start
+        self.listener.async.start_listening
       end
 
       def stop
         puts "Attempting to stop"
+        puts self.listener.tasks.inspect
         begin
-          self.listener.async.stop
+          v = self.listener.future.stop_listening
           #puts data.inspect
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
         end
+        puts "get future"
+        self.data = v.value
+
         puts "Stopped, terminating thread"
+        #self.listener.socket.close
         self.listener.terminate
         puts "Thread terminated"
         self.listener = nil
@@ -56,8 +62,8 @@ module KAG
       end
 
       def method_missing(meth, *args, &block)
-        if self.listener.respond_to?(meth.to_sym)
-          self.listener.async.send(:meth,*args,&block)
+        if self.listener and self.listener.respond_to?(meth.to_sym)
+        self.listener.async.send(:meth,*args,&block)
         end
       end
 

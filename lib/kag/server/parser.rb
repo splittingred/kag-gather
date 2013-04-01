@@ -425,20 +425,22 @@ module KAG
           record[:teams] = ts
         end
         record[:id] = self.listener.server.match[:id]
-        record.delete(:bot) if match.key?(:bot)
+        record.delete(:bot) if record.key?(:bot)
+        record.delete(:units_depleted)
 
         # record K/D for each user
         self.data.players.each do |player,data|
           user = SymbolTable.new({:authname => player,:nick => player})
-          user.add_stat(user,:kills,data[:kill])
-          user.add_stat(user,:deaths,data[:death])
+          user = KAG::User::User.new(user)
+          user.add_stat(:kills,data[:kill])
+          user.add_stat(:deaths,data[:death])
         end
 
         KAG::Stats::Main.add_stat(:matches_completed)
 
-        file = "data/matches/#{match[:id]}.json"
+        file = "data/matches/#{record[:id]}.json"
         unless File.exists?(file)
-          File.open(file,"w") {|f| f.write(match.to_json) }
+          File.open(file,"w") {|f| f.write(record.to_json) }
         end
         true
       end

@@ -41,9 +41,6 @@ module KAG
         puts "Attempting to stop"
         begin
           self.listener.stop_listening
-        rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
         end
 
         puts "Stopped, terminating thread"

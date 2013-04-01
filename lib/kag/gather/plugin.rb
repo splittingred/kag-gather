@@ -14,7 +14,7 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
-      attr_accessor :queue,:servers
+      attr_accessor :queue,:servers,:matches
 
       def initialize(*args)
         super
@@ -130,9 +130,7 @@ module KAG
             match.add_end_vote
             if match.voted_to_end?
               puts "voted_to_end? past, attempting to cease"
-              winner = match.cease
-              @matches.delete(match.server.key)
-              send_channels_msg("Match at #{match.server.key} finished! #{winner.to_s} won!")
+              match.cease
             else
               reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server.key}"
             end
@@ -201,7 +199,8 @@ module KAG
           match = KAG::Gather::Match.new(SymbolTable.new({
             :server => server,
             :players => players,
-            :bot => self.bot
+            :gather => self,
+            :id => KAG::Stats::Main.instance[:matches_completed]+1,
           }))
           match.start # prepare match data
           puts "Got past match.start in gather/plugin.rb"

@@ -18,15 +18,11 @@ describe KAG::Server::Parser do
         :server => server,
         :players => players
     }))
+    match.setup_teams
 
     server.match = match
     listener = KAG::Server::Listener.new(server,SymbolTable.new)
     KAG::Server::Parser.new(listener,listener.data)
-  end
-
-  it "test players" do
-    s = "[20:45:26]        [[=] splittingred] (id 177) (ip 127.0.0.1) (hwid 154634236)"
-    subject.parse(s)
   end
 
   it "test restart map" do

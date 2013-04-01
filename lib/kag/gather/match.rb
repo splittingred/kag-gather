@@ -87,6 +87,25 @@ module KAG
         true
       end
 
+      def cease
+        data = SymbolTable.new
+        if self.server
+          begin
+            data = self.server.stop
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace.join("\n")
+          end
+        end
+        if self.gather
+          self.gather.matches.delete(self.server.key)
+          msg = "Match at #{self.server.key} finished! #{data[:winner].to_s} won!"
+          self.gather.send_channels_msg(msg)
+          KAG::Stats::Main.add_stat(:matches_completed)
+        end
+        data
+      end
+
       def text_for_match_start
         msg = "MATCH: #{KAG::Gather::Match.type_as_string} - "
         self.teams.each do |team|

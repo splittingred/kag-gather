@@ -5,7 +5,7 @@ module KAG
     class Parser
       attr_accessor :server,:data,:live,:ready,:veto,:listener
       attr_accessor :units_depleted,:wins,:players_there
-      attr_accessor :players
+      attr_accessor :players,:teams
 
       def initialize(listener,data)
         self.server = listener.server
@@ -13,8 +13,9 @@ module KAG
         self.wins = []
         self.ready = []
         self.veto = []
+        self.teams = self.server.match.teams
         self.players = self.server.match.players.keys
-        self.players_there = self.players.length
+        self.players_there = 0
         self.data = data.merge({
           :units_depleted => false,
           :wins => [],
@@ -30,14 +31,12 @@ module KAG
         msg = msg[11..msg.length]
         if msg.index("*Restarting Map*")
           self.evt_map_restart(msg)
-        elsif msg.index("*Match Started*")
-          self.evt_match_started(msg)
-        elsif msg.index("*Match Ended*")
-          self.evt_match_ended(msg)
-        elsif msg.index(/^Unnamed player is now known as (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})$/)
-          self.evt_player_join_renamed(msg)
         elsif msg.index(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20}) (?:is now known as) (.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20})$/)
           self.evt_player_renamed(msg)
+        elsif msg.index(/^Unnamed player is now known as (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})$/)
+          self.evt_player_join_renamed(msg)
+        elsif msg.index(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
+          self.evt_player_left(msg)
 
         elsif self.live
           puts "[LIVE] "+msg.to_s
@@ -47,8 +46,10 @@ module KAG
             self.evt_kill(msg)
           elsif msg.index("Can't spawn units depleted")
             self.evt_units_depleted(msg)
-          elsif msg.index(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
-            self.evt_player_left(msg)
+          elsif msg.index("*Match Started*")
+            self.evt_match_started(msg)
+          elsif msg.index("*Match Ended*")
+            self.evt_match_ended(msg)
           end
         else
           puts "[WARMUP] "+msg.to_s
@@ -63,38 +64,47 @@ module KAG
       end
 
       def end_match
-        self.data[:end] = Time.now
+        puts "Ending match..."
+        begin
+          self.data[:end] = Time.now
 
-        wins = data[:wins]
-        if wins and wins.length > 0
-          freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
-          self.data[:winner] = wins.sort_by { |v| freq[v] }.last
-        else
-          self.data[:winner] = "Neither Team"
-        end
-
-        if self.server.match.teams
-          self.server.match.teams.each do |team|
-            team.players.each do |authname,user|
-              u = KAG::User::User.new(user)
-              if team.teammates[authname.to_sym]
-                stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
-                u.add_stat(stat.to_sym)
-              end
-              if team[:name] == winner
-                u.add_stat(:wins)
-              end
-              if data.players and u.linked? and data.players[u.kag_user]
-                u.merge!(data.players[u.kag_user])
-              end
-              u.save
-            end
-            self.listener.kick_all
+          wins = data[:wins]
+          if wins and wins.length > 0
+            freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+            self.data[:winner] = wins.sort_by { |v| freq[v] }.last
+          else
+            self.data[:winner] = "Neither Team"
           end
-        end
 
-        archive
-        self.listener.stop_listening
+          if self.server.match.teams
+            self.server.match.teams.each do |team|
+              team.players.each do |authname,user|
+                u = KAG::User::User.new(user)
+                if team.teammates[authname.to_sym]
+                  stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
+                  u.add_stat(stat.to_sym)
+                end
+                if team[:name] == self.data[:winner]
+                  u.add_stat(:wins)
+                end
+                if data.players and u.linked? and data.players[u.kag_user]
+                  u.merge!(data.players[u.kag_user])
+                end
+                u.save
+              end
+              self.listener.kick_all
+            end
+          end
+
+          puts "archiving result"
+          archive
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        ensure
+          puts "cease match"
+          self.server.match.cease
+        end
       end
 
       def broadcast(msg)
@@ -212,7 +222,11 @@ module KAG
           player = match[2]
           if self.players.include?(player.to_s.to_sym)
             self.players_there = self.players_there + 1
-            say "Back up to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
+
+            # if in match, cancel sub request
+            if self.live
+              say "Back up to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
+            end
           end
         end
         :player_joined_renamed
@@ -226,13 +240,35 @@ module KAG
           player = match[2]
           if self.players.include?(player.to_s.to_sym)
             self.players_there = self.players_there - 1
-            say "Down to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
+
+            # if in match, notify for sub
+            if self.live
+              say "Down to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
+
+              # check here to see if we're down to less than half, if so, then end match
+              puts "Checking for match end threshold: #{self.players_there.to_s} < #{((self.players.length / 2)+1).to_s}"
+              if self.players_there.to_i < ((self.players.length / 2)+1)
+                end_match
+              end
+
+            # otherwise, delete player from ready queue
+            else
+              self.ready.delete(player)
+            end
           end
         end
         :player_left
       end
       def evt_player_chat(msg)
         :player_chat
+      end
+
+      def swap_team(player)
+        self.teams.each do |team|
+          if team.players.include?(player.to_sym)
+            self.listener.switch_team(player)
+          end
+        end
       end
 
       def evt_kill(msg)
@@ -366,23 +402,13 @@ module KAG
           end
           match[:teams] = ts
         end
+        match[:id] = self.listener.server.match[:id]
         match.delete(:players)
         match.delete(:bot) if match.key?(:bot)
 
-        unless File.exists?("data/matches.json")
-          File.open("data/matches.json","w") {|f| f.write("{}") }
-        end
-
-        data = Hash.new
-        d = ::IO.read("data/matches.json")
-        if d and !d.empty?
-          data = Hash.new
-          data.merge!(JSON.parse(d))
-        end
-
-        data[Time.now.to_s] = match
-        File.open("data/matches.json","w") do |f|
-          f.write(data.to_json)
+        file = "data/matches/#{match[:id]}.json"
+        unless File.exists?(file)
+          File.open(file,"w") {|f| f.write(match.to_json) }
         end
         true
       end

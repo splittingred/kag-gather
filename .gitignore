@@ -16,6 +16,7 @@ nohup*
 data/*.json
 data/user/*.json
 data/link/*.json
+data/matches/*.json
 
 # other ruby-specific files
 *.gem

@@ -101,44 +101,36 @@ module KAG
       #
       def players
         return false unless self.connect
-        _command "/rcon /players"
+        _command "/players"
 
-        players = []
+        players = {}
         while (line = get)
-          puts "[RCONPRIOR] '"+line+"'"
-          line = _parse_line(line)
-          puts "[RCON] '"+line+"'"
+          next if line.to_s.length < 10
+          line = line[10..line.length].strip
           break if (line.empty? or line == '' or line == "\n")
 
-          player = SymbolTable.new
-
-          # get nick
-          sp = line.index("[")
-          next if sp == nil
-          ep = line.index("]",sp)
-          player[:nick] = line[(sp+1)..(ep-1)]
-          line = line[ep..line.length].strip
-
-          # get id
-          sp = line.index("(")
-          ep = line.index(")",sp)
-          player[:id] = line[(sp+4)..(ep-1)]
-          line = line[ep..line.length]
-
-          # get ip
-          sp = line.index("(")
-          ep = line.index(")",sp)
-          player[:ip] = line[(sp+4)..(ep-1)]
-          line = line[ep..line.length]
-
-          # get hwid
-          sp = line.index("(")
-          ep = line.index(")",sp)
-          player[:hwid] = line[(sp+6)..(ep-1)]
-
-          players << player
+          match = line.strip.match(/^\[(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})\] \(id ([0-9]+)\) \(ip (.+)\) \(hwid (.+)\)$/)
+          if match
+            player = SymbolTable.new
+            player[:clan] = match[1].strip
+            player[:nick] = match[2].strip
+            player[:id] = match[3]
+            player[:ip] = match[4]
+            player[:hwid] = match[5]
+            players[player[:nick].to_sym] = player
+          end
         end
         players
+      end
+
+      def switch_team(nick)
+        puts "Swapping #{nick}'s team"
+        players = self.players
+        if players.key?(nick.to_sym)
+          id = players[nick.to_sym][:id]
+          put "/swapid #{id}"
+          _cycle
+        end
       end
 
       def kick(nick)
@@ -196,7 +188,7 @@ module KAG
         end
         line.gsub!(/\r/,"")
         line.gsub!(/\n/,"")
-        line.strip
+        line.strip.chop
       end
 
       def _cycle

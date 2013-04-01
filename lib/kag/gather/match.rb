@@ -84,6 +84,10 @@ module KAG
             #self.server.disconnect if self.server
           end
         end
+
+
+        puts "Got past match.start in gather/plugin.rb"
+        messages = self.notify_teams_of_match_start # gather texts for private messages
         true
       end
 
@@ -99,27 +103,28 @@ module KAG
         end
         if self.gather
           self.gather.matches.delete(self.server.key)
-          msg = "Match at #{self.server.key} finished! #{data[:winner].to_s} won!"
+          msg = "Match #{self[:id]} at #{self.server.key} finished!"
           self.gather.send_channels_msg(msg)
           KAG::Stats::Main.add_stat(:matches_completed)
         end
         data
       end
 
-      def text_for_match_start
-        msg = "MATCH: #{KAG::Gather::Match.type_as_string} - "
+      def send_channel_start_msg
+        msg = "MATCH #{self[:id]}: #{KAG::Gather::Match.type_as_string} - "
         self.teams.each do |team|
           msg = msg+" "+team.text_for_match_start
         end
-        msg+" \x0301(!end when done)"
+        msg+" \x0301 at #{self.server.key}"
+        self.gather.send_channels_msg(msg,false) if self.gather
       end
 
       def notify_teams_of_match_start
-        messages = {}
+        self.send_channel_start_msg
         self.teams.each do |t|
-          messages.merge!(t.notify_of_match_start)
+          t.notify_of_match_start(self.gather)
         end
-        messages
+
       end
 
       def add_end_vote
@@ -177,6 +182,12 @@ module KAG
           placement = self[:subs_needed].shift
           KAG::User::User.add_stat(user,:substitutions)
           KAG::Stats::Main.add_stat(:substitutions_done)
+
+          placement[:channel_msg] = placement[:channel_msg].gsub("[[+user]]",user.authname)
+          if self.gather
+            self.gather.send_channel_msg placement[:channel_msg]
+            user.send placement[:private_msg]
+          end
         end
         placement
       end

@@ -4,13 +4,12 @@ module KAG
   module Server
     class Parser
       attr_accessor :server,:data,:live,:ready,:veto,:listener
-      attr_accessor :units_depleted,:wins,:players_there
+      attr_accessor :units_depleted,:players_there
       attr_accessor :players,:teams
 
       def initialize(listener,data)
         self.server = listener.server
         self.listener = listener
-        self.wins = []
         self.ready = []
         self.veto = []
         self.teams = self.server.match.teams
@@ -18,7 +17,7 @@ module KAG
         self.players_there = 0
         self.data = data.merge({
           :units_depleted => false,
-          :wins => [],
+          :wins => {},
           :match_start => Time.now,
           :match_end => nil,
           :players => {},
@@ -27,7 +26,7 @@ module KAG
         self.live = false
       end
       def parse(msg)
-        return false if msg.to_s.empty?
+        return false if msg.to_s.empty? or msg.to_s.length < 11
         msg = msg[11..msg.length]
         if msg.index("*Restarting Map*")
           self.evt_map_restart(msg)
@@ -41,15 +40,15 @@ module KAG
         elsif self.live
           puts "[LIVE] "+msg.to_s
           if msg.index(/^(.+) (wins the game!)$/)
-            self.evt_match_win(msg)
+            self.evt_round_win(msg)
           elsif msg.index(/^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/)
             self.evt_kill(msg)
           elsif msg.index("Can't spawn units depleted")
             self.evt_units_depleted(msg)
           elsif msg.index("*Match Started*")
-            self.evt_match_started(msg)
+            self.evt_round_started(msg)
           elsif msg.index("*Match Ended*")
-            self.evt_match_ended(msg)
+            self.evt_round_ended(msg)
           end
         else
           puts "[WARMUP] "+msg.to_s
@@ -63,18 +62,29 @@ module KAG
         end
       end
 
+      def _team_has_won
+        self.data[:wins].each do |team,wins|
+          if wins >= 2
+            return team
+          end
+        end
+        false
+      end
+
+      def get_winning_team
+        if self.data[:wins]
+          self.data[:wins].max[0]
+        else
+          "Neither Team"
+        end
+      end
+
       def end_match
         puts "Ending match..."
         begin
           self.data[:end] = Time.now
 
-          wins = data[:wins]
-          if wins and wins.length > 0
-            freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
-            self.data[:winner] = wins.sort_by { |v| freq[v] }.last
-          else
-            self.data[:winner] = "Neither Team"
-          end
+          self.data[:winner] = get_winning_team
 
           if self.server.match.teams
             self.server.match.teams.each do |team|
@@ -95,6 +105,8 @@ module KAG
               self.listener.kick_all
             end
           end
+
+          say "Match ended! #{self.data[:winner]} has won!"
 
           puts "archiving result"
           archive
@@ -123,15 +135,16 @@ module KAG
         if match
           unless self.ready.include?(match[3])
             self.ready << match[3]
-            if self.players
-              ready_threshold = _get_ready_threshold(self.players.length)
-            else
-              ready_threshold = _get_ready_threshold(KAG::Config.instance[:match_size])
-            end
+            ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
+
+            # if match is ready to go live, start it
             if self.ready.length == ready_threshold
               start
+
+            # otherwise notify how many left are needed
+            else
+              say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
             end
-            say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
             :ready
           end
         end
@@ -189,29 +202,32 @@ module KAG
         self.veto = []
         :map_restart
       end
-      def evt_match_started(msg)
+      def evt_round_started(msg)
         #broadcast "Match has started on #{self.server[:key]}"
         :match_start
       end
-      def evt_match_ended(msg)
+      def evt_round_ended(msg)
         self.data[:end] = Time.now
         self.ready = []
         self.veto = []
         :match_end
       end
-      def evt_match_win(msg)
+      def evt_round_win(msg)
         self.live = false
         match = msg.match(/^(.+) (wins the game!)$/)
         if match
-          self.data[:wins] << match[1]
-          say("Match has now ended. #{match[1]} team wins!")
-          if self.data[:wins].length >= 3
+          self.data[:wins][match[1]] = 0 unless self.data[:wins][match[1]]
+          self.data[:wins][match[1]] += 1
+
+          say("Round has now ended. #{match[1]} team wins!")
+          if _team_has_won
             end_match
           end
         end
         self.ready = []
         :match_win
       end
+
       def evt_player_joined(msg)
 
         :player_joined
@@ -249,8 +265,10 @@ module KAG
               puts "Checking for match end threshold: #{self.players_there.to_s} < #{((self.players.length / 2)+1).to_s}"
               if self.players_there.to_i < ((self.players.length / 2)+1)
                 end_match
+              else
+                # call for sub
+                request_sub(player)
               end
-
             # otherwise, delete player from ready queue
             else
               self.ready.delete(player)
@@ -261,6 +279,10 @@ module KAG
       end
       def evt_player_chat(msg)
         :player_chat
+      end
+
+      def request_sub(player_left)
+
       end
 
       def swap_team(player)

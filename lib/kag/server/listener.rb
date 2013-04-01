@@ -24,7 +24,7 @@ module KAG
       def start_listening
         return false unless self.connect
         self.parser = KAG::Server::Parser.new(self,self.data)
-        #self.restart_map
+        self.restart_map
         @twiddle = true
 
         i = 0

@@ -24,22 +24,20 @@ module KAG
         self
       end
 
-      def notify_of_match_start
+      def notify_of_match_start(gather)
         puts "start of team.notify_of_match_start"
-        msg = "Join \x0305#{self.match.server[:key]} - #{self.match.server[:ip]}:#{self.match.server[:port]} \x0306password #{self.match.server[:password]}\x0301 | Visit kag://#{self.match.server[:ip]}/#{self.match.server[:password]} | "
+        msg = "Join \x0305#{self.match.server.key} - #{self.match.server.ip}:#{self.match.server.port} \x0306password #{self.match.server.password}\x0301 | Visit kag://#{self.match.server.ip}/#{self.match.server.password} | "
         msg = msg + " \x0303Class: " if KAG::Config.instance[:pick_classes]
 
         puts "after message compile in team.notify_of_match_start"
 
-        messages = {}
         self.players.each do |authname,user|
           player_msg = msg.clone
           player_msg = player_msg+cls if KAG::Config.instance[:pick_classes] and cls and !cls.empty?
           player_msg = player_msg+" #{self[:color]}#{self[:name]} with: #{self.teammates.keys.join(", ")}"
-          messages[user] = player_msg
+          user.send(player_msg)
+          sleep(2) # prevent excess flood stuff
         end
-        puts messages.inspect
-        messages
       end
 
       def text_for_match_start

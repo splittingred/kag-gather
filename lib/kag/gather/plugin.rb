@@ -64,11 +64,6 @@ module KAG
           @matches.each do |k,match|
             if match.needs_sub?
               placement = match.sub_in(m.user)
-              if placement
-                placement[:channel_msg] = placement[:channel_msg].gsub("[[+user]]",m.user.authname)
-                reply m,placement[:channel_msg]
-                m.user.send placement[:private_msg]
-              end
             end
           end
         end
@@ -203,17 +198,6 @@ module KAG
             :id => KAG::Stats::Main.instance[:matches_completed]+1,
           }))
           match.start # prepare match data
-          puts "Got past match.start in gather/plugin.rb"
-          messages = match.notify_teams_of_match_start # gather texts for private messages
-
-          puts "Got past match.notify_teams_of_match_start in gather/plugin.rb"
-          send_channels_msg(match.text_for_match_start,false) # send channel-wide first
-
-          puts "Got past send_channels_msg in gather/plugin.rb"
-          messages.each do |user,msg|
-            user.send(msg)
-            sleep(2) # prevent excess flood stuff
-          end
 
           puts "Got past messages.each in gather/plugin.rb"
           @matches[server.key] = match

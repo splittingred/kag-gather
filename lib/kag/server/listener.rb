@@ -48,8 +48,7 @@ module KAG
 
         self.socket.close
 
-        #self.archive
-        KAG::Stats::Main.add_stat(:matches_completed)
+
         self.terminate
         self.data
       end
@@ -143,8 +142,8 @@ module KAG
         return false unless self.connect
         ps = self.players
         if ps
-          ps.each do |player|
-            _command "/kick #{player[:nick]}"
+          ps.each do |nick,player|
+            _command "/kick #{nick.to_s}"
           end
         else
           puts "No Players found on Server #{self[:ip]}!"

@@ -200,6 +200,9 @@ module KAG
         #broadcast "Map on #{self.server[:key]} has been restarted!"
         self.ready = []
         self.veto = []
+        unless self.live
+          say "Now in WARMUP mode. Please type !ready to begin the match."
+        end
         :map_restart
       end
       def evt_round_started(msg)
@@ -415,18 +418,19 @@ module KAG
       end
 
       def archive
-        match = self.data
-        match[:server] = self.listener.server.key
+        record = self.data
+        record[:server] = self.listener.server.key
         ts = []
         if self.listener.server.match.teams
           self.listener.server.match.teams.each do |team|
             ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
           end
-          match[:teams] = ts
+          record[:teams] = ts
         end
-        match[:id] = self.listener.server.match[:id]
-        match.delete(:players)
-        match.delete(:bot) if match.key?(:bot)
+        record[:id] = self.listener.server.match[:id]
+        record.delete(:bot) if match.key?(:bot)
+
+        KAG::Stats::Main.add_stat(:matches_completed)
 
         file = "data/matches/#{match[:id]}.json"
         unless File.exists?(file)

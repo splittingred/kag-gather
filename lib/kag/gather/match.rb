@@ -105,7 +105,6 @@ module KAG
           self.gather.matches.delete(self.server.key)
           msg = "Match #{self[:id]} at #{self.server.key} finished!"
           self.gather.send_channels_msg(msg)
-          KAG::Stats::Main.add_stat(:matches_completed)
         end
         data
       end

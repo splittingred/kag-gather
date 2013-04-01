@@ -1,4 +1,6 @@
 require 'symboltable'
+require 'kag/stats/main'
+require 'kag/user/user'
 
 module KAG
   module Server
@@ -85,31 +87,10 @@ module KAG
           self.data[:end] = Time.now
 
           self.data[:winner] = get_winning_team
-
-          if self.server.match.teams
-            self.server.match.teams.each do |team|
-              team.players.each do |authname,user|
-                u = KAG::User::User.new(user)
-                if team.teammates[authname.to_sym]
-                  stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
-                  u.add_stat(stat.to_sym)
-                end
-                if team[:name] == self.data[:winner]
-                  u.add_stat(:wins)
-                end
-                if data.players and u.linked? and data.players[u.kag_user]
-                  u.merge!(data.players[u.kag_user])
-                end
-                u.save
-              end
-              self.listener.kick_all
-            end
-          end
-
           say "Match ended! #{self.data[:winner]} has won!"
 
-          puts "archiving result"
           archive
+          self.listener.kick_all
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
@@ -421,14 +402,37 @@ module KAG
         record = self.data
         record[:server] = self.listener.server.key
         ts = []
+
         if self.listener.server.match.teams
           self.listener.server.match.teams.each do |team|
             ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
+
+            # record user win/loss stats
+            team.players.each do |authname,user|
+              u = KAG::User::User.new(user)
+              if team.teammates[authname.to_sym]
+                stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
+                u.add_stat(stat.to_sym)
+              end
+              if team[:name] == self.data[:winner]
+                u.add_stat(:wins)
+              else
+                u.add_stat(:losses)
+              end
+              u.save
+            end
           end
           record[:teams] = ts
         end
         record[:id] = self.listener.server.match[:id]
         record.delete(:bot) if match.key?(:bot)
+
+        # record K/D for each user
+        self.data.players.each do |player,data|
+          user = SymbolTable.new({:authname => player,:nick => player})
+          user.add_stat(user,:kills,data[:kill])
+          user.add_stat(user,:deaths,data[:death])
+        end
 
         KAG::Stats::Main.add_stat(:matches_completed)
 

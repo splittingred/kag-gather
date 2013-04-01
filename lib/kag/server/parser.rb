@@ -5,7 +5,7 @@ require 'kag/user/user'
 module KAG
   module Server
     class Parser
-      attr_accessor :server,:data,:live,:ready,:veto,:listener
+      attr_accessor :server,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there
       attr_accessor :players,:teams
 
@@ -14,6 +14,7 @@ module KAG
         self.listener = listener
         self.ready = []
         self.veto = []
+        self.restart_queue = []
         self.teams = self.server.match.teams
         self.players = self.server.match.players.keys
         self.players_there = 0
@@ -51,6 +52,8 @@ module KAG
             self.evt_round_started(msg)
           elsif msg.index("*Match Ended*")
             self.evt_round_ended(msg)
+          elsif msg.index("!restart")
+            self.evt_veto(msg)
           end
         else
           puts "[WARMUP] "+msg.to_s
@@ -153,6 +156,24 @@ module KAG
             end
             say "Veto count now at #{self.veto.length.to_s} of #{veto_threshold.to_s} needed."
             :veto
+          end
+        end
+      end
+
+      def evt_restart(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!restart)$/)
+        if match
+          unless self.restart_queue.include?(match[3])
+            restart_threshold = (self.players.length / 2).to_i
+            self.restart_queue << match[3]
+            if self.restart_queue.length == restart_threshold
+              self.ready = []
+              self.veto = []
+              self.live = false
+              self.listener.restart_map
+            end
+            say "Restart count now at #{self.restart_queue.length.to_s} of #{restart_threshold.to_s} needed."
+            :restart
           end
         end
       end

@@ -6,7 +6,27 @@ require 'kag/server/instance'
 describe KAG::Server::Parser do
   subject do
     ks = KAG::Config.instance[:servers].keys
-    KAG::Server::Parser.new KAG::Config.instance[:servers][ks.first]
+    server = KAG::Config.instance[:servers][ks.first]
+
+    player_list = %w(Geti splittingred Vidar Ardivaba killatron Verra Cpa3y Kalikst Ezreli Furai)
+    players = {}
+    player_list.each do |p|
+      players[p.to_sym] = {:authname => p,:nick => p}
+    end
+
+    match = KAG::Gather::Match.new(SymbolTable.new({
+        :server => server,
+        :players => players
+    }))
+
+    server.match = match
+    listener = KAG::Server::Listener.new(server,SymbolTable.new)
+    KAG::Server::Parser.new(listener,listener.data)
+  end
+
+  it "test players" do
+    s = "[20:45:26]        [[=] splittingred] (id 177) (ip 127.0.0.1) (hwid 154634236)"
+    subject.parse(s)
   end
 
   it "test restart map" do
@@ -59,6 +79,12 @@ describe KAG::Server::Parser do
     subject.parse("[00:00:00] <[Pk#] master4523> !veto").should eq(:veto)
     subject.parse("[00:00:00] <[Pk#] name_with_underscore> !veto").should eq(:veto)
     subject.parse("[00:00:00] <[Pk#] dot.me.up> !veto").should eq(:veto)
+  end
+
+  it "test player left" do
+    subject.live = true
+    subject.parse("[00:00:00] Player [Newb] Geti left the game (players left 0)")
+
   end
 
   # kill tests
@@ -135,4 +161,11 @@ describe KAG::Server::Parser do
     subject.parse("[00:00:00] Geti died under falling rocks").should eq(:died)
     subject.data.players[:Geti][:death].should eq(1)
   end
+
+  it "test ready threshold calculations" do
+    subject._get_ready_threshold(10).should eq(7)
+    subject._get_ready_threshold(2).should eq(1)
+    subject._get_ready_threshold(6).should eq(4)
+  end
+
 end

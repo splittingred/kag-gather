@@ -23,7 +23,7 @@ module KAG
 
       def start_listening
         return false unless self.connect
-        self.parser = KAG::Server::Parser.new(self.server,self,self.data)
+        self.parser = KAG::Server::Parser.new(self,self.data)
         #self.restart_map
         @twiddle = true
 
@@ -42,18 +42,15 @@ module KAG
         # NOT WORKING
         puts "Stopping listener"
         #self.get
+
+        self.data[:end] = Time.now
         self.data = self.parser.data
 
         self.socket.close
 
         #self.archive
         KAG::Stats::Main.add_stat(:matches_completed)
-        #if self.teams
-          #self.teams.each do |team|
-          #  team.kick_all
-          #end
-        #end
-        #self.disconnect
+        self.terminate
         self.data
       end
 

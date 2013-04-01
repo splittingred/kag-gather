@@ -4,18 +4,21 @@ module KAG
   module Server
     class Parser
       attr_accessor :server,:data,:live,:ready,:veto,:listener
-      attr_accessor :match_start,:match_end,:units_depleted,:wins
+      attr_accessor :units_depleted,:wins,:players_there
+      attr_accessor :players
 
-      def initialize(server,listener,data)
-        self.server = server
+      def initialize(listener,data)
+        self.server = listener.server
         self.listener = listener
         self.wins = []
         self.ready = []
         self.veto = []
+        self.players = self.server.match.players.keys
+        self.players_there = self.players.length
         self.data = data.merge({
           :units_depleted => false,
           :wins => [],
-          :match_start => nil,
+          :match_start => Time.now,
           :match_end => nil,
           :players => {},
           :started => false,
@@ -44,6 +47,8 @@ module KAG
             self.evt_kill(msg)
           elsif msg.index("Can't spawn units depleted")
             self.evt_units_depleted(msg)
+          elsif msg.index(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
+            self.evt_player_left(msg)
           end
         else
           puts "[WARMUP] "+msg.to_s
@@ -55,6 +60,41 @@ module KAG
             self.evt_hello(msg)
           end
         end
+      end
+
+      def end_match
+        self.data[:end] = Time.now
+
+        wins = data[:wins]
+        if wins and wins.length > 0
+          freq = wins.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+          self.data[:winner] = wins.sort_by { |v| freq[v] }.last
+        else
+          self.data[:winner] = "Neither Team"
+        end
+
+        if self.server.match.teams
+          self.server.match.teams.each do |team|
+            team.players.each do |authname,user|
+              u = KAG::User::User.new(user)
+              if team.teammates[authname.to_sym]
+                stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
+                u.add_stat(stat.to_sym)
+              end
+              if team[:name] == winner
+                u.add_stat(:wins)
+              end
+              if data.players and u.linked? and data.players[u.kag_user]
+                u.merge!(data.players[u.kag_user])
+              end
+              u.save
+            end
+            self.listener.kick_all
+          end
+        end
+
+        archive
+        self.listener.stop_listening
       end
 
       def broadcast(msg)
@@ -73,18 +113,23 @@ module KAG
         if match
           unless self.ready.include?(match[3])
             self.ready << match[3]
-            if self.server and self.server.match and self.server.match.players
-              match_size = self.server.match.players.length
+            if self.players
+              ready_threshold = _get_ready_threshold(self.players.length)
             else
-              match_size = KAG::Config.instance[:match_size]
+              ready_threshold = _get_ready_threshold(KAG::Config.instance[:match_size])
             end
-            if self.ready.length == match_size
+            if self.ready.length == ready_threshold
               start
             end
-            say "Ready count now at #{self.ready.length.to_s} of #{match_size.to_s} needed."
+            say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
             :ready
           end
         end
+      end
+
+      def _get_ready_threshold(num_of_players)
+        half = (num_of_players / 2)
+        half + (half / 2).ceil
       end
 
       def evt_veto(msg)
@@ -116,9 +161,9 @@ module KAG
       end
 
       def start
+        self.players_there = self.server.match.players.length if self.server and self.server.match and self.server.match.players
         self.listener.restart_map
         self.live = true
-        self.match_start = Time.now
         self.units_depleted = false
         say "Match is now LIVE!"
       end
@@ -139,7 +184,7 @@ module KAG
         :match_start
       end
       def evt_match_ended(msg)
-        self.match_end = Time.now
+        self.data[:end] = Time.now
         self.ready = []
         self.veto = []
         :match_end
@@ -151,8 +196,7 @@ module KAG
           self.data[:wins] << match[1]
           say("Match has now ended. #{match[1]} team wins!")
           if self.data[:wins].length >= 3
-            self.match_end = Time.now
-            self.server.match.cease
+            end_match
           end
         end
         self.ready = []
@@ -163,13 +207,28 @@ module KAG
         :player_joined
       end
       def evt_player_join_renamed(msg)
-
+        match = msg.match(/^Unnamed player is now known as (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})$/)
+        if match
+          player = match[2]
+          if self.players.include?(player.to_s.to_sym)
+            self.players_there = self.players_there + 1
+            say "Back up to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
+          end
+        end
         :player_joined_renamed
       end
       def evt_player_renamed(msg)
         :player_renamed
       end
       def evt_player_left(msg)
+        match = msg.match(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
+        if match
+          player = match[2]
+          if self.players.include?(player.to_s.to_sym)
+            self.players_there = self.players_there - 1
+            say "Down to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
+          end
+        end
         :player_left
       end
       def evt_player_chat(msg)
@@ -267,28 +326,65 @@ module KAG
       def _add_stat(stat,player,increment = 1)
         stat = stat.to_sym
         player = player.to_sym
-        self.data.players[player] = {} unless self.data.players[player]
-        self.data.players[player][stat] = 0 unless self.data.players[player][stat]
-        self.data.players[player][stat] = self.data.players[player][stat] + increment.to_i
-        self.data.players[player][stat]
+        if self.data.players
+          self.data.players[player] = {} unless self.data.players[player]
+          self.data.players[player][stat] = 0 unless self.data.players[player][stat]
+          self.data.players[player][stat] = self.data.players[player][stat] + increment.to_i
+          self.data.players[player][stat]
+        end
       end
 
       def _add_kill_type(type,player,increment = 1)
         type = type.to_sym
         player = player.to_sym
-        self.data.players[player] = {} unless self.data.players[player]
-        self.data.players[player][:kill_types] = {} unless self.data.players[player][:kill_types]
-        self.data.players[player][:kill_types][type] = 0 unless self.data.players[player][:kill_types][type]
-        self.data.players[player][:kill_types][type] = self.data.players[player][:kill_types][type] + increment.to_i
+        if self.data.players
+          self.data.players[player] = {} unless self.data.players[player]
+          self.data.players[player][:kill_types] = {} unless self.data.players[player][:kill_types]
+          self.data.players[player][:kill_types][type] = 0 unless self.data.players[player][:kill_types][type]
+          self.data.players[player][:kill_types][type] = self.data.players[player][:kill_types][type] + increment.to_i
+        end
       end
 
       def _add_death_type(type,player,increment = 1)
         type = type.to_sym
         player = player.to_sym
-        self.data.players[player] = {} unless self.data.players[player]
-        self.data.players[player][:death_types] = {} unless self.data.players[player][:death_types]
-        self.data.players[player][:death_types][type] = 0 unless self.data.players[player][:death_types][type]
-        self.data.players[player][:death_types][type] = self.data.players[player][:death_types][type] + increment.to_i
+        if self.data.players
+          self.data.players[player] = {} unless self.data.players[player]
+          self.data.players[player][:death_types] = {} unless self.data.players[player][:death_types]
+          self.data.players[player][:death_types][type] = 0 unless self.data.players[player][:death_types][type]
+          self.data.players[player][:death_types][type] = self.data.players[player][:death_types][type] + increment.to_i
+        end
+      end
+
+      def archive
+        match = self.data
+        match[:server] = self.listener.server.key
+        ts = []
+        if self.listener.server.match.teams
+          self.listener.server.match.teams.each do |team|
+            ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
+          end
+          match[:teams] = ts
+        end
+        match.delete(:players)
+        match.delete(:bot) if match.key?(:bot)
+
+        unless File.exists?("data/matches.json")
+          File.open("data/matches.json","w") {|f| f.write("{}") }
+        end
+
+        data = Hash.new
+        d = ::IO.read("data/matches.json")
+        if d and !d.empty?
+          data = Hash.new
+          data.merge!(JSON.parse(d))
+        end
+
+        data[Time.now.to_s] = match
+        File.open("data/matches.json","w") do |f|
+          f.write(data.to_json)
+        end
+        true
       end
     end
   end

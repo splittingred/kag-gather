@@ -39,25 +39,17 @@ module KAG
 
       def stop
         puts "Attempting to stop"
-        puts self.listener.tasks.inspect
         begin
-          v = self.listener.future.stop_listening
-          #puts data.inspect
+          self.listener.stop_listening
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
         end
-        puts "get future"
-        self.data = v.value
 
         puts "Stopped, terminating thread"
-        #self.listener.socket.close
-        self.listener.terminate
         puts "Thread terminated"
         self.listener = nil
-        puts "Listener nilled"
         self.match = nil
-        puts "Match nilled, now returning"
         self.data
       end
 

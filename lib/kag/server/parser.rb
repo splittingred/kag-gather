@@ -189,6 +189,7 @@ module KAG
         self.players_there = self.server.match.players.length if self.server and self.server.match and self.server.match.players
         self.listener.restart_map
         self.live = true
+        self.restart_queue = []
         self.units_depleted = false
         say "Match is now LIVE!"
       end

@@ -12,11 +12,24 @@ describe KAG::Server::Instance do
 
   it "test match start" do
     server = KAG::Server::Instance.new({},"test",subject)
-    match = KAG::Gather::Match.new
+
+    player_list = %w(Geti splittingred Vidar Ardivaba killatron Verra Cpa3y Kalikst Ezreli Furai)
+    players = {}
+    player_list.each do |p|
+      players[p.to_sym] = {:authname => p,:nick => p}
+    end
+
+    match = KAG::Gather::Match.new(SymbolTable.new({
+        :server => server,
+        :players => players
+    }))
+    match.setup_teams
+
     server.start(match)
     sleep 2
-    data = server.stop
-    puts data.inspect
+    #server.listener.puts "<[Newb] Geti> !ready"
+    #sleep 2
+    server.stop
   end
 
   #it "test kick()" do

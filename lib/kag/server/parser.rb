@@ -186,7 +186,7 @@ module KAG
       end
 
       def start
-        self.players_there = self.server.match.players.length if self.server and self.server.match and self.server.match.players
+        self.listener.players.length
         self.listener.restart_map
         self.live = true
         self.restart_queue = []

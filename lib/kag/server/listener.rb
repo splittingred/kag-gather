@@ -47,8 +47,6 @@ module KAG
         self.data = self.parser.data
 
         self.socket.close
-
-
         self.terminate
         self.data
       end

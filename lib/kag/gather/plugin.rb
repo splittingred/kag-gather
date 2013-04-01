@@ -63,7 +63,7 @@ module KAG
         unless is_banned?(m.user)
           @matches.each do |k,match|
             if match.needs_sub?
-              placement = match.sub_in(m.user)
+              match.sub_in(m.user)
             end
           end
         end

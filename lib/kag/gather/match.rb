@@ -175,6 +175,10 @@ module KAG
         self[:subs_needed].length > 0
       end
 
+      def request_sub(player)
+        # todo
+      end
+
       def sub_in(user)
         placement = false
         if needs_sub?

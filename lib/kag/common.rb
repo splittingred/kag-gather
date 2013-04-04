@@ -45,7 +45,7 @@ module KAG
     end
 
     def _load_db
-      ActiveRecord::Base.logger = Logger.new('debug.log')
+      ActiveRecord::Base.logger = Logger.new('log/debug.log') if KAG::Config.instance[:debug]
       config = KAG::Config.instance['database']
       #ActiveRecord::Base.configurations = config
       db = config[:development]

@@ -9,6 +9,9 @@ nbproject
 config/config.json
 config/data.json
 
+# log stuff
+log/
+
 # other files
 tmp
 logs

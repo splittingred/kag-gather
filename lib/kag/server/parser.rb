@@ -425,51 +425,30 @@ module KAG
       end
 
       def archive
-        return true
-
-        record = self.data
-        record[:server] = self.listener.server.key
-        ts = []
-
         if self.listener.server.match.teams
           self.listener.server.match.teams.each do |team|
-            ts << {:players => team.teammates,:color => team[:color],:name => team[:name]}
-
             # record user win/loss stats
-            team.players.each do |authname,user|
-              u = KAG::User::User.new(user)
-              if team.teammates[authname.to_sym]
-                stat = team.teammates[authname.to_sym].to_s.downcase+"_plays"
-                u.add_stat(stat.to_sym)
-              end
-              if team[:name] == self.data[:winner]
-                u.add_stat(:wins)
+            team.players.each do |player|
+              if team.name == self.data[:winner]
+                player.won = true
               else
-                u.add_stat(:losses)
+                player.won = false
               end
-              u.save
+              player.save
             end
           end
-          record[:teams] = ts
         end
-        record[:id] = self.listener.server.match[:id]
-        record.delete(:bot) if record.key?(:bot)
-        record.delete(:units_depleted)
 
         # record K/D for each user
-        self.data.players.each do |player,data|
-          user = SymbolTable.new({:authname => player,:nick => player})
-          user = KAG::User::User.new(user)
-          user.add_stat(:kills,data[:kill])
-          user.add_stat(:deaths,data[:death])
+        self.data.players.each do |player|
+          p = ::Player.joins(:user).where(:users => {:kag_user => player}).first
+          if p
+            p.kills = data[:kill]
+            p.deaths = data[:death]
+          end
         end
 
         KAG::Stats::Main.add_stat(:matches_completed)
-
-        file = "data/matches/#{record[:id]}.json"
-        unless File.exists?(file)
-          File.open(file,"w") {|f| f.write(record.to_json) }
-        end
         true
       end
     end

@@ -77,11 +77,6 @@ class Match < KAG::Model
     self.users(true).where(:authname => user.authname)
   end
 
-  def needs_sub?
-    # TODO
-    false
-  end
-
   def setup_teams(queue_players)
     queue_players.shuffle!
 
@@ -109,7 +104,8 @@ class Match < KAG::Model
       queue_players.each do |qp|
         if x >= lb and x <= eb
           ps << Player.new({
-            :user_id => qp.user_id
+            :user_id => qp.user_id,
+            :match => self
           })
         end
         x = x + 1
@@ -123,5 +119,50 @@ class Match < KAG::Model
         :color => ts[:color],
       })
     end
+  end
+
+  def add_end_vote
+    self.end_votes += 1
+    self.save
+  end
+
+  def voted_to_end?
+    evt = KAG::Config.instance[:end_vote_threshold].to_i
+    evt = 3 if evt < 1
+    self.end_votes >= evt
+  end
+
+  def clear_end_votes
+    self.end_votes = 0
+    self.save
+  end
+
+  def get_needed_end_votes_left
+    evt = KAG::Config.instance[:end_vote_threshold].to_i
+    evt - self.end_votes
+  end
+
+
+  # TODO redo all sub stuff to use new table
+  def needs_sub?
+    self.subs_needed > 0
+  end
+
+  def sub_in(user)
+    placement = false
+    if needs_sub?
+      KAG::User::User.add_stat(user,:substitutions)
+      KAG::Stats::Main.add_stat(:substitutions_done)
+
+      if self.gather
+        self.gather.send_channel_msg "#{user.nick} is now subbing in at #{self.server.name}. Subs still needed: #{self.subs_needed.to_s}"
+        user.send "Please #{self.server.text_join}"
+      end
+    end
+    placement
+  end
+
+  def kick_all
+    self.server.kick_all
   end
 end

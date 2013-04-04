@@ -39,9 +39,9 @@ module KAG
 
       def stop_listening
         @twiddle = false
-        # NOT WORKING
         puts "Stopping listener"
-        #self.get
+
+        self.kick_all
 
         self.data[:end] = Time.now
         self.data = self.parser.data

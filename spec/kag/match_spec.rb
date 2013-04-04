@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'cinch'
 require 'kag/config'
-require 'kag/server/instance'
 require 'kag/gather/match'
 
 ##

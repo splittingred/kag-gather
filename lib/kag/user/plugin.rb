@@ -11,18 +11,6 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
-      command :stats,{nick: :string},
-        summary: "Get the stats for a user",
-        method: :stats_specific
-      def stats_specific(m,nick)
-        user = User(nick)
-        if user and !user.unknown
-          reply m,KAG::User::User.stats(user)
-        else
-          reply m,"Could not find user #{nick}"
-        end
-      end
-
       command :linked?,{},
         summary: "See if your IRC account is linked."
       def linked?(m)

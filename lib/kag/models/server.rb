@@ -6,7 +6,7 @@ class Server < KAG::Model
   has_many :matches
 
   attr_accessor :match_in_progress
-  attr_accessor :listener,:match_data
+  attr_accessor :listener,:match_data,:bot
 
   def self.find_unused
     Server.where(:in_use => false).order("RAND()").first
@@ -39,5 +39,19 @@ class Server < KAG::Model
     self.save
 
     self.match_data
+  end
+
+  def text_join
+    "Join \x0305#{self.name} - #{self.ip}:#{self.port} \x0306password #{self.password}\x0301 | Visit kag://#{self.ip}/#{self.password}"
+  end
+
+  def has_rcon?
+    self.rcon_password and !self.rcon_password.empty?
+  end
+
+  def method_missing(meth, *args, &block)
+    if self.listener and self.listener.respond_to?(meth.to_sym)
+    self.listener.async.send(:meth,*args,&block)
+    end
   end
 end

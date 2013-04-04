@@ -3,7 +3,6 @@ require 'kag/common'
 require 'commands/help'
 require 'kag/bot/bot'
 require 'kag/bans/report'
-require 'kag/server/instance'
 require 'kag/gather/queue'
 require 'kag/gather/match'
 
@@ -14,17 +13,11 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
-      attr_accessor :queue,:servers,:matches
+      attr_accessor :queue,:matches
 
       def initialize(*args)
         super
-        @queue = KAG::Gather::Queue.new
-        @matches = {}
-        _load_servers
-      end
-
-      def _load_servers
-        @servers = KAG::Server::Instance.fetch_all(self.bot)
+        @queue = ::Queue.first
       end
 
       #listen_to :channel, method: :channel_listen
@@ -61,7 +54,7 @@ module KAG
         description: "If a player leaves a match early, you can use this command to sub in and join the match"
       def sub(m)
         unless is_banned?(m.user)
-          @matches.each do |k,match|
+          ::Match.all.each do |k,match|
             if match.needs_sub?
               match.sub_in(m.user)
             end
@@ -101,7 +94,7 @@ module KAG
         summary: "List the users signed up for the next match"
       def list(m)
         unless is_banned?(m.user)
-          m.user.send "Queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}] #{@queue.list}"
+          m.user.send "Queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.players.length}] #{@queue.list}"
         end
       end
 
@@ -109,7 +102,7 @@ module KAG
         summary: "Show the number of ongoing matches"
       def status(m)
         unless is_banned?(m.user)
-          reply m,"Matches in progress: #{@matches.length.to_s}"
+          reply m,"Matches in progress: #{::Match.total_in_progress.to_s}"
         end
       end
 
@@ -131,13 +124,12 @@ module KAG
             end
           else
             puts "No match found"
-            puts @matches.inspect
           end
         end
       end
 
       def add_user_to_queue(m,user,send_msg = true)
-        if @queue.has_player?(user)
+        if @queue.has?(user)
           reply m,"#{user.authname} is already in the queue!"
           false
         elsif get_match_in(user)
@@ -155,13 +147,9 @@ module KAG
       end
 
       def remove_user_from_queue(user,send_msg = true)
-        if @queue.has_player?(user)
-          if @queue.remove(user)
-            send_channels_msg "Removed #{user.authname} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
-            true
-          else
-            false
-          end
+        if @queue.remove(user)
+          send_channels_msg "Removed #{user.authname} from queue (#{KAG::Gather::Match.type_as_string}) [#{@queue.length}]" if send_msg
+          true
         else
           false
         end
@@ -169,7 +157,7 @@ module KAG
 
       def get_match_in(user)
         m = false
-        @matches.each do |k,match|
+        ::Match.active.each do |match|
           if match.has_player?(user)
             m = match
           end
@@ -178,7 +166,7 @@ module KAG
       end
 
       def check_for_new_match
-        if @queue.length >= KAG::Config.instance[:match_size]
+        if @queue.is_full?
           server = KAG::Server.find_unused
           unless server
             send_channels_msg "Could not find any available servers!"
@@ -196,9 +184,7 @@ module KAG
           })
           match.gather = self
           match.setup_teams(players)
-          match.start # prepare match data
-
-          @matches[server.name] = match
+          match.start
         end
       end
 
@@ -214,7 +200,7 @@ module KAG
       def clear(m)
         if is_admin(m.user)
           send_channels_msg "Match queue cleared."
-          @queue.delete_all
+          @queue.reset
         end
       end
 
@@ -307,8 +293,9 @@ module KAG
         admin: true
       def restart_map_specify(m,server)
         if is_admin(m.user)
-          if @servers[server.to_sym]
-            @servers[server.to_sym].restart_map
+          s = ::Server.find_by_name(server)
+          if s
+            s.restart_map
           else
             m.reply "No server found with key #{server.to_s}"
           end
@@ -333,8 +320,9 @@ module KAG
         admin: true
       def next_map_specify(m,server)
         if is_admin(m.user)
-          if @servers[server]
-            @servers[server].next_map
+          s = ::Server.find_by_name(server)
+          if s
+            s.next_map
           else
             m.reply "No server found with key #{server}"
           end
@@ -367,7 +355,7 @@ module KAG
         admin: true
       def quit(m)
         if is_admin(m.user)
-          @servers.each do |k,s|
+          ::Server.all.each do |s|
             if s.listener
               s.listener.async.disconnect
             end
@@ -381,7 +369,7 @@ module KAG
         admin: true
       def restart(m)
         if is_admin(m.user)
-          @servers.each do |s|
+          ::Server.all.each do |s|
             s.disconnect
           end
 

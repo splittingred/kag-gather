@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'kag/server/instance'
 ##
 # Testing for the server functions
 #

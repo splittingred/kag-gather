@@ -6,8 +6,17 @@ class Match < KAG::Model
   belongs_to :server
   has_many :teams
   has_many :players
+  has_many :users, :through => :players
 
   attr_accessor :gather
+
+  def self.total_in_progress
+    Match.count(:conditions => {:ended_at => nil})
+  end
+
+  def self.active
+    Match.all(:conditions => {:ended_at => nil})
+  end
 
   def start
     #self.end_votes = 0 unless self.end_votes
@@ -46,6 +55,15 @@ class Match < KAG::Model
       end
     end
     data
+  end
+
+  def has_player?(user)
+    self.players.joins(:user).where(:users => {:authname => user.authname})
+  end
+
+  def needs_sub?
+    # TODO
+    false
   end
 
   def setup_teams(queue_players)

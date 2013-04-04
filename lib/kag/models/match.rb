@@ -18,6 +18,22 @@ class Match < KAG::Model
     Match.all(:conditions => {:ended_at => nil})
   end
 
+  def self.player_in(user)
+    m = false
+    Match.active.each do |match|
+      if match.has_player?(user)
+        m = match
+      end
+    end
+    m
+  end
+
+  def self.type_as_string
+    ms = KAG::Config.instance[:match_size].to_i
+    ts = (ms / 2).ceil
+    "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
+  end
+
   def start
     #self.end_votes = 0 unless self.end_votes
     KAG::Stats::Main.add_stat(:matches_started)
@@ -58,7 +74,7 @@ class Match < KAG::Model
   end
 
   def has_player?(user)
-    self.players.joins(:user).where(:users => {:authname => user.authname})
+    self.users(true).where(:authname => user.authname)
   end
 
   def needs_sub?

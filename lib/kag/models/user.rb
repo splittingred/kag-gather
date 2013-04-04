@@ -7,6 +7,6 @@ class User < KAG::Model
   has_many :queues, :through => :gather_queue_players
 
   def stats
-    "#{self.authname} has played in #{self.matches.count.to_s} matches."
+    "#{self.authname} has played in #{self.matches(true).count.to_s} matches."
   end
 end

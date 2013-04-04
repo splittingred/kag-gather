@@ -2,7 +2,7 @@ require 'kag/config'
 require 'active_record'
 require 'symboltable'
 require 'logger'
-
+=begin
 ActiveRecord::Base.logger = Logger.new('debug.log')
 config = KAG::Config.instance['database']
 #ActiveRecord::Base.configurations = config
@@ -17,4 +17,5 @@ ActiveRecord::Base.establish_connection(
   :timeout => db[:timeout].to_i
 
 )
+=end
 #ActiveRecord::Base.table_name_prefix = config[:development][:table_name_prefix]

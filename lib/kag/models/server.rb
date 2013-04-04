@@ -14,13 +14,21 @@ class Server < KAG::Model
 
 
   def start(match)
-    self.in_use = 1
+    self.in_use = match.id
     if self.save
       self.match_in_progress = match
       self.match_data = SymbolTable.new
 
       self.listener = KAG::Server::Listener.new(self,self.match_data)
       self.listener.async.start_listening
+    end
+  end
+
+  def match
+    if self.in_use > 0
+      ::Match.find(self.in_use)
+    else
+      false
     end
   end
 

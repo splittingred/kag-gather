@@ -16,7 +16,11 @@ module KAG
         self.veto = []
         self.restart_queue = []
         self.teams = self.server.match.teams
-        self.players = self.server.match.players.keys
+        ps = []
+        self.server.match.users.each do |u|
+          ps << u.authname
+        end
+        self.players = ps
         self.players_there = 0
         self.data = data.merge({
           :units_depleted => false,
@@ -143,8 +147,8 @@ module KAG
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
         if match
           unless self.veto.include?(match[3])
-            if self.server and self.server.match and self.server.match.players
-              veto_threshold = (self.server.match.players.length / 2).to_i
+            if self.players
+              veto_threshold = (self.players.length / 2).to_i
             else
               veto_threshold = (KAG::Config.instance[:veto_threshold] or 5)
             end
@@ -186,7 +190,7 @@ module KAG
       end
 
       def start
-        self.listener.players.length
+        #self.listener.players.length
         self.listener.restart_map
         self.live = true
         self.restart_queue = []
@@ -421,6 +425,8 @@ module KAG
       end
 
       def archive
+        return true
+
         record = self.data
         record[:server] = self.listener.server.key
         ts = []

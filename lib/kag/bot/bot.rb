@@ -3,7 +3,9 @@ require 'cinch'
 require 'cinch/plugins/identify'
 require 'celluloid'
 require 'kag/config'
-require 'kag/data'
+require 'kag/database'
+Dir.glob('kag/models/*.rb').each {|f| load f.to_s }
+
 require 'kag/gather/plugin'
 require 'kag/bans/plugin'
 require 'kag/irc/plugin'

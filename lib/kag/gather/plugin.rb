@@ -179,7 +179,7 @@ module KAG
 
       def check_for_new_match
         if @queue.length >= KAG::Config.instance[:match_size]
-          server = get_unused_server
+          server = KAG::Server.find_unused
           unless server
             send_channels_msg "Could not find any available servers!"
             debug "FAILED TO FIND UNUSED SERVER"
@@ -191,26 +191,19 @@ module KAG
           # reset queue first to prevent 11-player load
           @queue.reset
 
-          match = KAG::Gather::Match.new(SymbolTable.new({
-            :server => server,
-            :players => players,
-            :gather => self,
-            :id => KAG::Stats::Main.instance[:matches_completed]+1,
-          }))
+          match = ::Match.new({
+             :server => server,
+          })
+          match.gather = self
+          match.setup_teams(players)
           match.start # prepare match data
 
-          puts "Got past messages.each in gather/plugin.rb"
-          @matches[server.key] = match
+          @matches[server.name] = match
         end
       end
 
       def get_unused_server
-        server = false
-        @servers.shuffle!
-        @servers.each do |k,s|
-          server = s unless s.in_use?
-        end
-        server
+        KAG::Server.find_unused
       end
 
       # admin methods
@@ -221,7 +214,7 @@ module KAG
       def clear(m)
         if is_admin(m.user)
           send_channels_msg "Match queue cleared."
-          @queue.reset
+          @queue.delete_all
         end
       end
 

@@ -71,8 +71,6 @@ module KAG
 
       def start
         self[:end_votes] = 0 unless self[:end_votes]
-        self[:subs_needed] = []
-        setup_teams
         KAG::Stats::Main.add_stat(:matches_started)
         if self.server
           begin

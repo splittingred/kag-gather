@@ -26,6 +26,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "json"
   gem.add_runtime_dependency "symboltable", "1.0.2"
   gem.add_runtime_dependency "kagerator", "1.0.4"
+  gem.add_runtime_dependency "activerecord"
+  gem.add_runtime_dependency "mysql2"
   #gem.add_runtime_dependency 'timers', '>= 1.0.0'
 
   #if RUBY_PLATFORM =~ /java/

@@ -103,7 +103,7 @@ module KAG
           puts e.backtrace.join("\n")
         ensure
           puts "cease match"
-          self.server.match.cease
+          self.server.match.cease(self.server.gather)
         end
       end
 

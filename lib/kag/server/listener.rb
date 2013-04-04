@@ -15,9 +15,9 @@ module KAG
         p "Oh no! #{actor.inspect} has died because of a #{reason.class}"
       end
 
-      def initialize(server,data)
+      def initialize(server)
         self.server = server
-        self.data = data
+        self.data = server.match_data
         self.socket = nil
       end
 
@@ -53,8 +53,8 @@ module KAG
 
       def connect
         return true if self.connected?
-        puts "[Server] Attempting to connect via socket to #{self.server.ip}:#{self.server.port}"
-        self.socket = TCPSocket.new(self.server.ip,self.server.port)
+        puts "[Server] Attempting to connect via socket to #{self.server.host}:#{self.server.port}"
+        self.socket = TCPSocket.new(self.server.host,self.server.port)
         self.socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         unless self.socket
           puts "[Server] Could not establish TCP socket to connect"

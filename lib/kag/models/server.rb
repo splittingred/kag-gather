@@ -6,20 +6,25 @@ class Server < KAG::Model
   has_many :matches
 
   attr_accessor :match_in_progress
-  attr_accessor :listener,:match_data,:bot
+  attr_accessor :listener,:match_data,:bot,:gather
 
   def self.find_unused
     Server.where(:in_use => false).order("RAND()").first
   end
 
 
-  def start(match)
+  def start(gather,match)
+    self.gather = gather
     self.in_use = match.id
     if self.save
       self.match_in_progress = match
       self.match_data = SymbolTable.new
 
-      self.listener = KAG::Server::Listener.new(self,self.match_data)
+      puts "setting up listener"
+
+      self.listener = KAG::Server::Listener.new(self)
+      KAG::Server::Listener.supervise_as self.name.to_sym, self
+
       self.listener.async.start_listening
     end
   end
@@ -34,9 +39,19 @@ class Server < KAG::Model
 
   def stop
     puts "Attempting to stop"
-    begin
-      self.listener.stop_listening
+    unless self.listener
+      puts "attempting celluloid registry lookup"
+      self.listener = Celluloid::Actor[self.name.to_sym] # TODO use some other global array here
     end
+    if self.listener
+      begin
+        self.listener.stop_listening
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+    end
+
 
     puts "Stopped, terminating thread"
     puts "Thread terminated"

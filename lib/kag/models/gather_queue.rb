@@ -100,7 +100,8 @@ class GatherQueue < KAG::Model
     })
     match.gather = gather
     match.setup_teams(players)
-    match.start
+    match.notify_players_of_match_start
+    match.start(gather)
     true
   end
 end

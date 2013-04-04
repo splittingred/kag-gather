@@ -120,7 +120,7 @@ module KAG
             match.add_end_vote
             if match.voted_to_end?
               puts "voted_to_end? past, attempting to cease"
-              match.cease
+              match.cease(self)
             else
               reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server.key}"
             end

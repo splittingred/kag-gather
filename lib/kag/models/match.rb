@@ -34,14 +34,14 @@ class Match < KAG::Model
     "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
   end
 
-  def start
+  def start(gather)
     #self.end_votes = 0 unless self.end_votes
     KAG::Stats::Main.add_stat(:matches_started)
     if self.server
       self.started_at = Time.now()
       if self.save
         begin
-          self.server.start(self)
+          self.server.start(gather,self)
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
@@ -52,7 +52,7 @@ class Match < KAG::Model
     end
   end
 
-  def cease
+  def cease(gather = nil)
     data = SymbolTable.new
     self.ended_at = Time.now
     if self.save
@@ -64,10 +64,11 @@ class Match < KAG::Model
           puts e.backtrace.join("\n")
         end
       end
-      if self.gather
-        self.gather.matches.delete(self.server.name)
-        msg = "Match #{self[:id]} at #{self.server.name} finished!"
-        self.gather.send_channels_msg(msg)
+      if gather
+        msg = "Match #{self.id} at #{self.server.name} finished!"
+        gather.send_channels_msg(msg)
+      else
+        puts "No gather to send message!"
       end
     end
     data
@@ -119,6 +120,7 @@ class Match < KAG::Model
         :color => ts[:color],
       })
     end
+    self.save
   end
 
   def add_end_vote
@@ -140,6 +142,22 @@ class Match < KAG::Model
   def get_needed_end_votes_left
     evt = KAG::Config.instance[:end_vote_threshold].to_i
     evt - self.end_votes
+  end
+
+  def notify_players_of_match_start
+    self.send_channel_start_msg
+    self.teams.each do |t|
+      t.notify_of_match_start(self.gather)
+    end
+  end
+
+  def send_channel_start_msg
+    msg = "MATCH #{self.id}: #{::Match.type_as_string} - "
+    self.teams.each do |team|
+      msg = msg+" "+team.text_for_match_start
+    end
+    msg+" \x0301 at #{self.server.name}"
+    self.gather.send_channels_msg(msg,false) if self.gather
   end
 
 

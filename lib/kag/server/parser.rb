@@ -434,7 +434,13 @@ module KAG
               else
                 player.won = false
               end
-              player.save
+              if player.save
+                user = player.user
+                if user
+                  k = player.won ? :wins : :losses
+                  user.inc_stat(k)
+                end
+              end
             end
           end
         end
@@ -445,6 +451,13 @@ module KAG
           if p
             p.kills = data[:kill]
             p.deaths = data[:death]
+            if p.save
+              user = p.user
+              if user
+                user.inc_stat(:kills,p.kills)
+                user.inc_stat(:deaths,p.deaths)
+              end
+            end
           end
         end
 

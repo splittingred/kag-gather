@@ -446,8 +446,8 @@ module KAG
         end
 
         # record K/D for each user
-        self.data.players.each do |player|
-          p = ::Player.joins(:user).where(:users => {:kag_user => player}).first
+        self.data.players.each do |player,data|
+          p = ::Player.select("*").joins(:user).where(:users => {:kag_user => player}).first
           if p
             p.kills = data[:kill]
             p.deaths = data[:death]
@@ -456,6 +456,12 @@ module KAG
               if user
                 user.inc_stat(:kills,p.kills)
                 user.inc_stat(:deaths,p.deaths)
+                data[:death_types].each do |type,v|
+                  user.inc_stat("deaths."+type.to_s,v)
+                end
+                data[:kill_types].each do |type,v|
+                  user.inc_stat("kills."+type.to_s,v)
+                end
               end
             end
           end

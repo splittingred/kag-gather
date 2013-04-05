@@ -47,6 +47,7 @@ module KAG
         self.data = self.parser.data
 
         self.socket.close
+        KAG.listeners.delete(self.server.name)
         self.terminate
         self.data
       end

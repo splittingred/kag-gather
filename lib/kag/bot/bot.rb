@@ -4,6 +4,7 @@ require 'cinch/plugins/identify'
 require 'celluloid'
 require 'kag/config'
 require 'kag/database'
+require 'kag/registry'
 require 'kag/models/model'
 Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 
@@ -17,6 +18,26 @@ require 'kag/stats/plugin'
 require 'commands/help'
 
 module KAG
+  extend Forwardable
+  class Listener
+    class << self
+      extend Forwardable
+      def_delegators "KAG::Registry.root", :[], :[]=
+    end
+
+    def registered
+      KAG::Registry.root.names
+    end
+
+    def clear_registry
+      KAG::Registry.root.clear
+    end
+  end
+
+  class Registry
+    attr_accessor :root
+  end
+
   module Bot
     class Bot
       def initialize

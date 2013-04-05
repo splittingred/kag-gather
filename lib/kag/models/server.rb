@@ -23,7 +23,7 @@ class Server < KAG::Model
       puts "setting up listener"
 
       self.listener = KAG::Server::Listener.new(self)
-      KAG::Server::Listener.supervise_as self.name.to_sym, self
+      KAG::Listener[self.name.to_sym] = self
 
       self.listener.async.start_listening
     end
@@ -41,7 +41,7 @@ class Server < KAG::Model
     puts "Attempting to stop"
     unless self.listener
       puts "attempting celluloid registry lookup"
-      self.listener = Celluloid::Actor[self.name.to_sym] # TODO use some other global array here
+      self.listener = KAG::Listener[self.name.to_sym]
     end
     if self.listener
       begin
@@ -51,7 +51,6 @@ class Server < KAG::Model
         puts e.backtrace.join("\n")
       end
     end
-
 
     puts "Stopped, terminating thread"
     puts "Thread terminated"

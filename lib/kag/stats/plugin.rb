@@ -25,7 +25,7 @@ module KAG
         if user and !user.unknown
           u = ::User.find_by_authname(user.authname)
           if u
-            reply m,u.stats
+            reply m,u.stats_text
           else
             reply m,"User has not played any matches, and therefore is not in the stats table."
           end

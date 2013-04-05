@@ -12,7 +12,8 @@ class User < KAG::Model
   end
 
   def stats_text
-    "#{self.authname} has played in #{self.matches(true).count.to_s} matches."
+    kd_ratio = self.stat("kills").to_s+'/'+self.stat("deaths").to_s
+    "#{self.authname} has played in #{self.matches(true).count.to_s} matches, with a K/D ratio of: #{kd_ratio}"
   end
 
   def stat(k,return_value = true)

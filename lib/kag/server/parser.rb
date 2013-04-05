@@ -439,7 +439,11 @@ module KAG
                 if user
                   k = player.won ? :wins : :losses
                   user.inc_stat(k)
+                else
+                  puts "Cannot find User for player ID #{player.id}"
                 end
+              else
+                puts "Cannot save Player #{p.id} record!"
               end
             end
           end
@@ -462,9 +466,21 @@ module KAG
                 data[:kill_types].each do |type,v|
                   user.inc_stat("kills."+type.to_s,v)
                 end
+              else
+                puts "Cannot find User for player ID #{p.id}"
               end
+            else
+              puts "Cannot save Player #{p.id} record!"
             end
+          else
+            puts "Could not find Player with kag_user #{player.to_s} for stats archiving!"
           end
+        end
+
+        match = self.listener.server.match
+        if match
+          match.stats = self.data.to_json
+          match.save
         end
 
         KAG::Stats::Main.add_stat(:matches_completed)

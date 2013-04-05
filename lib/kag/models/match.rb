@@ -120,6 +120,9 @@ class Match < KAG::Model
         :color => ts[:color],
       })
     end
+
+    self.num_players = match_size
+    self.num_teams = team_list.length
     self.save
   end
 

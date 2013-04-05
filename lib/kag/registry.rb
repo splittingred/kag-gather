@@ -1,6 +1,26 @@
 require 'thread'
 
 module KAG
+  class Listener
+    class << self
+      extend Forwardable
+      def_delegators "KAG::Registry.root", :[], :[]=
+
+      def delete_registered(x)
+        KAG::Registry.root.delete(x)
+      end
+    end
+
+    def registered
+      KAG::Registry.root.names
+    end
+
+
+    def clear_registry
+      KAG::Registry.root.clear
+    end
+  end
+
   class Registry
     class << self
       attr_reader :root

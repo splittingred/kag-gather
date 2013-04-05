@@ -18,26 +18,6 @@ require 'kag/stats/plugin'
 require 'commands/help'
 
 module KAG
-  extend Forwardable
-  class Listener
-    class << self
-      extend Forwardable
-      def_delegators "KAG::Registry.root", :[], :[]=
-    end
-
-    def registered
-      KAG::Registry.root.names
-    end
-
-    def clear_registry
-      KAG::Registry.root.clear
-    end
-  end
-
-  class Registry
-    attr_accessor :root
-  end
-
   module Bot
     class Bot
       def initialize

@@ -73,7 +73,7 @@ class Server < KAG::Model
 
   def method_missing(meth, *args, &block)
     if self.listener and self.listener.respond_to?(meth.to_sym)
-    self.listener.async.send(:meth,*args,&block)
+      self.listener.async.send(meth.to_sym,*args,&block)
     end
   end
 end

@@ -7,6 +7,24 @@ class User < KAG::Model
   has_many :queues, :through => :gather_queue_players
   has_many :user_stats
 
+  def self.create(user)
+    u = User.new
+    u.authname = user.authname
+    u.nick = user.nick
+    u.host = user.host
+    u.created_at = Time.now
+    u.save
+  end
+
+  def linked?
+    u.kag_user != '' and !u.kag_user.nil?
+  end
+
+  def unlink
+    u.kag_user = ""
+    u.save
+  end
+
   def stats(bust_cache = true)
     self.user_stats(bust_cache)
   end

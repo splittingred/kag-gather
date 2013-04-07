@@ -12,44 +12,48 @@ module KAG
       include KAG::Common
 
       command :linked?,{},
-        summary: "See if your IRC account is linked."
+        summary: "See if your IRC account is linked to your KAG Account."
       def linked?(m)
         if m.user.authed?
-          unlinked = KAG::User::Linker.unlinked?(m.user)
-          if unlinked === true
+          u = ::User.find_by_authname(m.user.authname)
+          if u and u.linked?
+            m.user.send("Your IRC user #{m.user.authname} is linked to the KAG account #{u.kag_user.to_s}")
+          else
             m.user.send("Your IRC user #{m.user.authname} is not linked to any KAG account.")
-          else
-            m.user.send("Your IRC user #{m.user.authname} is linked to the KAG account #{unlinked.to_s}")
           end
         else
           m.user.send("You will need to AUTH with IRC before linking. Do !help for more information.")
         end
       end
 
-      command :link,{username: :string,password: :string},
-        summary: "Link your IRC user to your KAG account",
-        description: "Enter in your KAG username and password to link your IRC Auth to your KAG account. This is only required to do once."
-      def link(m,username,password)
+      command :link,
+        summary: "Link your IRC user to your KAG account for stats tracking and other cool features..",
+        description: "Link your IRC Auth to your KAG account. This is only required to do once."
+      def link(m)
         if m.user.authed?
-          unlinked = KAG::User::Linker.unlinked?(m.user)
-          if unlinked === true
-            KAG::User::Linker.link(m.user,username,password)
+          u = ::User.find_by_authname(m.user.authname)
+          unless u
+            u = ::User.create(m.user)
+          end
+
+          if u.linked?
+            m.user.send("Your IRC user #{m.user.authname} is already linked to the KAG account #{u.authname.to_s}")
           else
-            m.user.send("Your IRC user #{m.user.authname} is already linked to the KAG account #{unlinked.to_s}")
+            m.user.send("Please go to http://stats.gather.kag2d.nl/sso/?i=#{m.user.authname} to link your main KAG Account with your KAG-Gather account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers.")
           end
         else
           m.user.send("You will need to AUTH with IRC before linking. Do !help for more information.")
         end
       end
 
-      command :unlink,{username: :string},
+      command :unlink,
         summary: "Unlink your IRC user from a KAG account",
         description: "This will unlink your IRC AUTH user from a KAG account."
-      def unlink(m,username)
+      def unlink(m)
         if m.user.authed?
-          unlinked = KAG::User::Linker.unlinked?(m.user)
-          if unlinked != true
-            KAG::User::Linker.unlink(m.user,username)
+          u = ::User.find_by_authname(m.user.authname)
+          if u and u.linked?
+            u.unlink
           else
             m.user.send("Your IRC user #{m.user.authname} is not linked to any KAG account.")
           end

@@ -1,8 +1,11 @@
 # Changelog for KAG Gather Bot
 
-## 1.6
-* Link your IRC authname to your KAG account for better stats management
-* Proper control of servers via RCON, match flow control
+## 2.0
+- Link your IRC authname to your KAG account for better stats management via sso.kag2d.com
+- Converted data storage to mysql for easier searching of stats overall architectural scalability
+- Added WARMUP mode in matches, !ready to start round
+- Used multithreading to properly handle RCON connections for multiple matches
+- Proper control of servers via RCON, match flow control
 
 ## 1.5
 * Refresh users on commands to better handle authname checks

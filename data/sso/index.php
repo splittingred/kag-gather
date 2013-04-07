@@ -41,8 +41,13 @@ if (!empty($_REQUEST['stage'])) {
 			if ($mysqli->connect_errno) {
 			    over(sprintf("Connect failed: %s\n", $mysqli->connect_error));
 			}
+			
+			$uname = mysqli_real_escape_string($mysqli,strip_tags(str_replace(";","",$_REQUEST['uname'])));
+			$uname = htmlspecialchars($uname,ENT_COMPAT,'UTF-8');
+			$ircname = mysqli_real_escape_string($mysqli,strip_tags(str_replace(";","",$_SESSION['kag.gather.ircname'])));
+			$ircname = htmlspecialchars($ircname,ENT_COMPAT,'UTF-8');
 
-			if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$_REQUEST['uname'].'" WHERE `authname` = "'.$_SESSION['kag.gather.ircname'].'"') == true) {
+			if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$uname.'" WHERE `authname` = "'.$ircname.'"') == true) {
 			    $loggedIn = true;
 			}
         	$mysqli->close();

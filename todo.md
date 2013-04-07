@@ -12,8 +12,6 @@
 - Fix bug where when user leaves it doesn't remove, and leaves blank name in list
     - This is due to authname check on_leaving, needs to be smarter
     - MySQL conversion should add possible workaround routes w/o having to poll entire chan periodically
-- KAG name -> mysql name linking via sso.kag2d.com
-    - Setup now via Teemo/FLAB; just need to write PHP script/form to do the linking
 
 ## Future Additions/TODO:
 

@@ -26,21 +26,17 @@ module KAG
       #def channel_listen(m)
       #end
 
-      listen_to :leaving, :method => :on_leaving
-      def on_leaving(m,user)
-        match = get_match_in(user)
+      listen_to :part, :quit, :kill, method: :on_leaving
+      def on_leaving(m)
+        match = get_match_in(m.user)
         if match
-          sub = match.remove_player(user)
+          sub = match.remove_player(m.user)
           if sub
             m.channel.msg sub[:msg]
           end
-        elsif @queue.has_player?(user)
-          remove_user_from_queue(user)
+        elsif @queue.has_player?(m.user)
+          remove_user_from_queue(m.user)
         end
-      end
-
-      listen_to :nick, :method => :on_nick
-      def on_nick(m)
       end
 
       #timer KAG::Config.instance[:idle][:check_period], method: :check_for_afk
@@ -152,7 +148,6 @@ module KAG
       end
 
       def remove_user_from_queue(user,send_msg = true)
-        puts "got to remove_user_from_queue"
         if @queue.remove(user,send_msg)
           true
         else

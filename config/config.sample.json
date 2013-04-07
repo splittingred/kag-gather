@@ -32,4 +32,36 @@
       ,"rcon_password": ""
     }
   }
+  ,"database":{
+    "development": {
+      "adapter":"mysql2",
+      "host":"localhost",
+      "database":"kag_gather",
+      "username":"",
+      "password":"",
+      "pool":25,
+      "timeout":5000,
+      "table_name_prefix":""
+    }
+    ,"test": {
+      "adapter":"mysql2",
+      "host":"localhost",
+      "database":"kag_gather_test",
+      "username":"",
+      "password":"",
+      "pool":25,
+      "timeout":5000,
+      "table_name_prefix":""
+    }
+    ,"production": {
+      "adapter":"mysql2",
+      "host":"localhost",
+      "database":"kag_gather_production",
+      "username":"",
+      "password":"",
+      "pool":25,
+      "timeout":5000,
+      "table_name_prefix":""
+    }
+  }
 }

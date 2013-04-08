@@ -46,15 +46,31 @@ module KAG
       #end
 
 
-      command :sub,{},
-        summary: "Sub into a match",
-        description: "If a player leaves a match early, you can use this command to sub in and join the match"
-      def sub(m)
+      command :rsub,{user: :string},
+        summary: "Request a sub for a match",
+        description: "If a player leaves a match early, you can use this command to request a sub for the match"
+      def rsub(m,nick)
         unless is_banned?(m.user)
-          ::Match.all.each do |k,match|
-            if match.needs_sub?
-              match.sub_in(m.user)
+          match = get_match_in(m.user)
+          if match
+            user = ::User.fetch(nick)
+            if user
+              match.gather = self
+              match.request_sub(user)
             end
+          end
+        end
+      end
+
+      command :sub,{match_id: :int},
+        summary: "Sub yourself into a match that needs subs.",
+        description: "If a player leaves a match early, you can use this command to sub in and join the match"
+      def sub(m,match_id)
+        unless is_banned?(m.user)
+          match = ::Match.find(match_id)
+          if match
+            match.gather = self
+            match.sub_in(m.user)
           end
         end
       end

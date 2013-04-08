@@ -183,16 +183,48 @@ class Match < KAG::Model
   # Request a sub for the match for a given user
   #
   # @param [String|User] user
-  # @return [Boolean|NilClass]
+  # @return [Boolean]
   #
   def request_sub(user)
+    requested = false
     user = User.fetch(user)
-    if u
-      player = self.get_player_for(u)
+    if user
+      player = self.get_player_for(user)
       if player
-        Substitution.request(self,player)
+        substitution = Substitution.request(self,player)
+        if substitution
+          self.gather.send_channels_msg("Substitute requested for match #{self.id}, team #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.")
+          user.inc_stat(:substitutions_requested)
+          requested = true
+        end
       end
     end
+    requested
+  end
+
+  ##
+  # Sub in a user into the match
+  #
+  # @param [Cinch::User] u
+  # @return [Boolean]
+  #
+  def sub_in(u)
+    subbed = false
+    user = User.fetch(u)
+    if user
+      substitution = Substitution.find_for(self)
+      if substitution
+        substitution.gather = self.gather if self.gather
+        if substitution.take(user)
+          u.send("Please join #{substitution.match.server.text_join} | Team: \x03#{substitution.team.color}#{substitution.team.name}") if u.class == ::Cinch::User
+          self.gather.send_channels_msg("#{user.authname} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!") if self.gather
+          subbed = true
+        else
+          u.send("Could not sub into match!") if u.class == ::Cinch::User
+        end
+      end
+    end
+    subbed
   end
 
   def kick_all

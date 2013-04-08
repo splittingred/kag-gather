@@ -6,6 +6,8 @@ class Substitution < KAG::Model
   belongs_to :old_player, :class_name => "Player", :foreign_key => "old_player_id"
   belongs_to :new_player, :class_name => "Player", :foreign_key => "new_player_id"
 
+  attr_accessor :gather
+
   class << self
     ##
     # Request a sub for a match
@@ -26,7 +28,7 @@ class Substitution < KAG::Model
       saved = sub.save
       if saved
         player.user.inc_stat(:desertions)
-        true
+        sub
       else
         false
       end
@@ -44,6 +46,11 @@ class Substitution < KAG::Model
   # @return [Boolean]
   #
   def take(user)
+    unless user.class == User
+      user = User.fetch(user)
+      return false unless user.class == User
+    end
+
     player = Player.new
     player.user_id = user.id
     player.match_id = self.match.id

@@ -74,7 +74,7 @@ module KAG
         if is_admin(m.user)
           user = User(nick)
           if user and !user.unknown
-            ::Ignore.un(user)
+            ::Ignore.unignore(user)
           else
             reply m,"Could not find user #{nick}"
           end

@@ -45,14 +45,20 @@ class Ignore < KAG::Model
       ig.hours = hours.to_i
       ig.created_at = Time.now
       ig.ends_at = Time.now + (hours.to_i * 3600)
-      ig.save
+      saved = ig.save
+      if saved
+        u.inc_stat(:ignored)
+        creator.inc_stat(:ignored_others) if creator
+      else
+        false
+      end
     end
 
     ##
     # Unban a user
     #
     # @param [String|Cinch::User] user The user or authname to unban
-    def un(user)
+    def unignore(user)
       unless user.class == String
         return false unless user.authed?
         user = user.authname

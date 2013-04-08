@@ -15,6 +15,7 @@ class Server < KAG::Model
 
   def start(gather,match)
     self.gather = gather
+    self.bot = gather.bot
     self.in_use = match.id
     if self.save
       self.match_in_progress = match

@@ -43,7 +43,7 @@ module KAG
           self.evt_player_join_renamed(msg)
         elsif msg.index(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
           self.evt_player_left(msg)
-        elsif msg.index("!request_sub")
+        elsif msg.index("!request_sub") or msg.index("!rsub")
           self.evt_request_sub(msg)
 
         elsif self.live
@@ -199,7 +199,8 @@ module KAG
         if m
           match = self.listener.server.match
           if match
-            substitution = m.request_sub(m[5].strip)
+            match.gather = self.listener.server.gather
+            substitution = match.request_sub(m[5].strip)
             if substitution
               self.listener.kick(m[5])
               if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?

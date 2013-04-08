@@ -7,7 +7,7 @@ module KAG
     class Listener
       include ::Celluloid
 
-      attr_accessor :server,:socket,:connected,:data,:parser,:data
+      attr_accessor :server,:socket,:connected,:data,:parser,:data,:gather
 
       trap_exit :actor_died
 
@@ -17,6 +17,7 @@ module KAG
 
       def initialize(server)
         self.server = server
+        self.gather = server.gather
         self.data = server.match_data
         self.socket = nil
       end

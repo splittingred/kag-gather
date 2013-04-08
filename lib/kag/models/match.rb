@@ -11,28 +11,30 @@ class Match < KAG::Model
 
   attr_accessor :gather
 
-  def self.total_in_progress
-    Match.count(:conditions => {:ended_at => nil})
-  end
-
-  def self.active
-    Match.all(:conditions => {:ended_at => nil})
-  end
-
-  def self.player_in(user)
-    m = false
-    Match.active.each do |match|
-      if match.has_player?(user)
-        m = match
-      end
+  class << self
+    def total_in_progress
+      Match.count(:conditions => {:ended_at => nil})
     end
-    m
-  end
 
-  def self.type_as_string
-    ms = KAG::Config.instance[:match_size].to_i
-    ts = (ms / 2).ceil
-    "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
+    def active
+      Match.all(:conditions => {:ended_at => nil})
+    end
+
+    def player_in(user)
+      m = false
+      Match.active.each do |match|
+        if match.has_player?(user)
+          m = match
+        end
+      end
+      m
+    end
+
+    def type_as_string
+      ms = KAG::Config.instance[:match_size].to_i
+      ts = (ms / 2).ceil
+      "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
+    end
   end
 
   def start(gather)
@@ -164,24 +166,33 @@ class Match < KAG::Model
     self.gather.send_channels_msg(msg,false) if self.gather
   end
 
-
-  # TODO redo all sub stuff to use new table
-  def needs_sub?
-    self.subs_needed > 0
+  def get_team_for(user)
+    p = self.get_player_for(user)
+    if p
+      p.team
+    else
+      nil
+    end
   end
 
-  def sub_in(user)
-    placement = false
-    if needs_sub?
-      KAG::User::User.add_stat(user,:substitutions)
-      KAG::Stats::Main.add_stat(:substitutions_done)
+  def get_player_for(user)
+    Player.where(:user_id => user.id,:match_id => self.id).first
+  end
 
-      if self.gather
-        self.gather.send_channel_msg "#{user.nick} is now subbing in at #{self.server.name}. Subs still needed: #{self.subs_needed.to_s}"
-        user.send "Please #{self.server.text_join}"
+  ##
+  # Request a sub for the match for a given user
+  #
+  # @param [String|User] user
+  # @return [Boolean|NilClass]
+  #
+  def request_sub(user)
+    user = User.fetch(user)
+    if u
+      player = self.get_player_for(u)
+      if player
+        Substitution.request(self,player)
       end
     end
-    placement
   end
 
   def kick_all

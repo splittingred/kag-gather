@@ -46,14 +46,14 @@ module KAG
         if is_admin(m.user)
           user = User(nick)
           if user and !user.unknown
-            ::IgnoreReport.un(user)
+            ::IgnoreReport.unreport(user)
           else
             reply m,"Could not find user #{nick}"
           end
         end
       end
 
-      command :ignore,{nick: :string,hours: :int,reason: :string},
+      command :ignore,{nick: :string,hours: :integer,reason: :string},
         summary: "Ignore (Ban) a user",
         admin: true
       def ignore(m,nick,hours,reason = '')

@@ -10,30 +10,37 @@ class IgnoreReport < KAG::Model
       user = User.fetch(u)
       creator = User.fetch(creator)
       if user and creator
-        report = IgnoreReport.new
-        report.created_by = creator.id
-        report.user_id = user.id
-        report.reason = reason.to_s
-        report.created_at = Time.now
-        report.save
+        if IgnoreReport.exists(user,creator)
+          false
+        else
+          report = IgnoreReport.new
+          report.created_by = creator.id
+          report.user_id = user.id
+          report.reason = reason.to_s
+          report.save
+        end
       else
         false
       end
     end
 
+    def exists(user,creator)
+      IgnoreReport.where(:user_id => user.id,:created_by => creator.id).count > 0
+    end
+
     def total_for(u)
       user = User.fetch(u)
       if user
-        Ignore.where(:user_id => user.id).count
+        IgnoreReport.where(:user_id => user.id).count
       else
         0
       end
     end
 
-    def un(user)
+    def unreport(user)
       user = User.fetch(user)
       if user
-        Ignore.where(:user_id => user.id).each do |r|
+        IgnoreReport.where(:user_id => user.id).each do |r|
           r.destroy
         end
       end

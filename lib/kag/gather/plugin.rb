@@ -2,7 +2,6 @@ require 'cinch'
 require 'kag/common'
 require 'commands/help'
 require 'kag/bot/bot'
-require 'kag/bans/report'
 
 module KAG
   module Gather

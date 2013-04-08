@@ -37,6 +37,7 @@ class User < KAG::Model
         })
         u.save
       end
+      u
     end
   end
 

@@ -3,6 +3,7 @@ require 'kag/models/model'
 class Team < KAG::Model
   has_many :players
   has_many :users, :through => :players
+  has_many :substitutions
   belongs_to :match
 
   def notify_of_match_start(gather)

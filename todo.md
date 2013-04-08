@@ -4,7 +4,6 @@
 
 - Finish mysql data storage conversion
     - Finish converting substitution models and logic
-    - Finish converting ban/report/ignore models and logic
     - Fix unit tests to use testing DB so that they can run
 - Finish bot 2.0, which is bot that controls match logic, adds WARMUP mode, removes need to !end, etc
     - Make tests to ensure multiple threads can be used to manage multiple games without locking mysql connections

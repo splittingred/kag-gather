@@ -7,6 +7,7 @@ class Match < KAG::Model
   has_many :teams
   has_many :players
   has_many :users, :through => :players
+  has_many :substitutions
 
   attr_accessor :gather
 

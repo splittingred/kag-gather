@@ -28,17 +28,7 @@ class GatherQueue < KAG::Model
 
   def add(user)
     added = false
-    u = User.find_by_authname(user.authname)
-    unless u
-      u = User.new({
-        :authname => user.authname,
-        :nick => user.nick,
-        :kag_user => "",
-        :host => user.host,
-        :created_at => Time.now,
-      })
-      u.save
-    end
+    u = User.fetch(user)
     player = GatherQueuePlayer.where(:user_id => u.id).first
     if player # already in queue
       false

@@ -9,7 +9,7 @@ require 'kag/models/model'
 Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 
 require 'kag/gather/plugin'
-require 'kag/bans/plugin'
+require 'kag/ignore/plugin'
 require 'kag/irc/plugin'
 require 'kag/bot/plugin'
 require 'kag/user/plugin'
@@ -37,7 +37,7 @@ module KAG
               Cinch::Commands::Help,
               KAG::Bot::Plugin,
               KAG::Gather::Plugin,
-              KAG::Bans::Plugin,
+              KAG::Ignore::Plugin,
               KAG::IRC::Plugin,
               KAG::User::Plugin,
               KAG::Help::Plugin,

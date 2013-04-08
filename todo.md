@@ -23,5 +23,6 @@
     - report decay
     - !ignorelist, who is ignored and reason
     - !ignore authname hours reason
+    - cache ignore list in ignore plugin to prevent having to do lots of queries
 - REST server for stats support (use Sinatra)
     - Make easily accessible via API

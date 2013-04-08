@@ -7,13 +7,37 @@ class User < KAG::Model
   has_many :queues, :through => :gather_queue_players
   has_many :user_stats
 
-  def self.create(user)
-    u = User.new
-    u.authname = user.authname
-    u.nick = user.nick
-    u.host = user.host
-    u.created_at = Time.now
-    u.save
+  class << self
+    def create(user)
+      u = User.new
+      u.authname = user.authname
+      u.nick = user.nick
+      u.host = user.host
+      u.created_at = Time.now
+      u.save
+    end
+
+    def fetch(user)
+      return user if user.class == User
+      if user.class == String
+        authname = user
+      else
+        return false unless user.authed?
+        authname = user.authname
+      end
+
+      u = User.find_by_authname(authname)
+      unless u
+        u = User.new({
+          :authname => user.class == String ? user : user.authname,
+          :nick => user.class == String ? user : user.nick,
+          :kag_user => "",
+          :host => user.class == String ? '' : user.host,
+          :created_at => Time.now,
+        })
+        u.save
+      end
+    end
   end
 
   def linked?
@@ -91,5 +115,9 @@ class User < KAG::Model
     end
     s.value = s.value.to_i-decrement.to_i
     s.save
+  end
+
+  def ignore(hours,reason = '',creator = nil)
+    Ignore.them(self.authname,hours,reason,creator)
   end
 end

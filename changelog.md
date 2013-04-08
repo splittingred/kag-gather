@@ -1,6 +1,8 @@
 # Changelog for KAG Gather Bot
 
 ## 2.0
+- Add in-game sub requests via !rsub [player-to-sub-out]
+- Full ignore/ban support, as well as !report for reporting players
 - Link your IRC authname to your KAG account for better stats management via sso.kag2d.com
 - Converted data storage to mysql for easier searching of stats overall architectural scalability
 - Added WARMUP mode in matches, !ready to start round

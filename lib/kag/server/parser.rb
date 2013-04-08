@@ -193,7 +193,7 @@ module KAG
       end
 
       ##
-      # TODO Add a queue total for this so ppl cant abuse
+      # Handle !rsub commands
       #
       def evt_request_sub(msg)
         m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!(?:rsub|request_sub) (.*))$/)

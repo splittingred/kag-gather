@@ -57,10 +57,20 @@ module KAG
         end
       end
 
+      command :authname,
+        summary: "Get the your authname"
+      def authname(m)
+        if is_admin(m.user)
+          m.user.refresh
+          reply m,"Authname for #{m.user.nick} is #{m.user.authname}"
+        end
+      end
+
       command :authname,{nick: :string},
         summary: "Get the AUTH name of a user",
-        admin: true
-      def authname(m,nick)
+        admin: true,
+        method: :authname_specific
+      def authname_specific(m,nick)
         if is_admin(m.user)
           user = User(nick)
           user.refresh

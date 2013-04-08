@@ -212,6 +212,6 @@ class User < KAG::Model
   # @return [Boolean]
   #
   def ignored?
-    Ignore.is?(self.authname)
+    Ignore.is_ignored?(self.authname)
   end
 end

@@ -53,6 +53,15 @@ module KAG
         end
       end
 
+      command :ignore_list,{},
+        summary: "Shows a list of ignored users",
+        admin: true
+      def ignore_list(m)
+        if is_admin(m.user)
+          reply m,"IGNORED: "+::Ignore.list
+        end
+      end
+
       command :ignore,{nick: :string,hours: :integer,reason: :string},
         summary: "Ignore (Ban) a user",
         admin: true

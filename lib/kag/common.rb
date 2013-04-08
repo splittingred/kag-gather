@@ -1,4 +1,5 @@
 require 'kag/help/book'
+require 'kag/models/ignore'
 require 'cinch'
 
 module KAG
@@ -18,7 +19,17 @@ module KAG
     end
 
     def is_banned?(user)
-      KAG::Bans::Report.is_banned?(user)
+      if user.authed?
+        if ::Ignore.is_ignored?(user.authname)
+          puts "#{user.authname} is banned"
+          true
+        else
+          false
+        end
+      else
+        puts "user is not authed and therefore not banned"
+        false
+      end
     end
 
     def debug(msg)

@@ -3,20 +3,21 @@ require 'kag/models/model'
 class Ignore < KAG::Model
   belongs_to :user
 
-  attr_accessor :cache, :cached
-
   class << self
+
+    attr_accessor :_cache, :cached
+
     ##
     # See if the user is banned
     #
     # @param [String] authname
     # @return [Boolean] True if banned
     #
-    def is?(authname)
-      unless self.cached
-        self._fetch_cache
+    def is_ignored?(authname)
+      unless Ignore.cached
+        Ignore._fetch_cache
       end
-      self.cache.include?(authname)
+      Ignore._cache.include?(authname)
     end
 
     ##
@@ -72,14 +73,16 @@ class Ignore < KAG::Model
       end
     end
 
-    protected
-
     ##
     # Cache the ignore list into an array for easier lookup
     #
     def _fetch_cache
-      self.cache = Ignore.joins(:user).pluck(:authname)
-      self.cached = true
+      Ignore._cache = Ignore.joins(:user).pluck(:authname)
+      Ignore.cached = true
+    end
+
+    def list
+      Ignore.joins(:user).pluck(:authname).join(", ")
     end
   end
 

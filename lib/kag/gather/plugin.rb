@@ -62,7 +62,7 @@ module KAG
         end
       end
 
-      command :sub,{match_id: :int},
+      command :sub,{match_id: :integer},
         summary: "Sub yourself into a match that needs subs.",
         description: "If a player leaves a match early, you can use this command to sub in and join the match"
       def sub(m,match_id)

@@ -43,6 +43,8 @@ module KAG
           self.evt_player_join_renamed(msg)
         elsif msg.index(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
           self.evt_player_left(msg)
+        elsif msg.index("!request_sub")
+          self.evt_request_sub(msg)
 
         elsif self.live
           puts "[LIVE] "+msg.to_s
@@ -186,6 +188,28 @@ module KAG
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!hello)$/)
         if match
           say "Hello #{match[3]}!"
+        end
+      end
+
+      ##
+      # TODO Add a queue total for this so ppl cant abuse
+      #
+      def evt_request_sub(msg)
+        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!(?:rsub|request_sub) (.*))$/)
+        if m
+          match = self.listener.server.match
+          if match
+            substitution = m.request_sub(m[5].strip)
+            if substitution
+              self.listener.kick(m[5])
+              if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
+                self.listener.kick(substitution.old_player.user.kag_user.to_s)
+              end
+              say "Sub requested for #{m[5].to_s}. Please stand by."
+            else
+              say "Cannot find the User #{m[5].to_s}. Try the person\'s authname or KAG account name instead."
+            end
+          end
         end
       end
 

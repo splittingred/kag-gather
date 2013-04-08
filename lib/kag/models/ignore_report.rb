@@ -1,4 +1,5 @@
 require 'kag/models/model'
+require 'kag/models/user'
 
 class IgnoreReport < KAG::Model
   belongs_to :user

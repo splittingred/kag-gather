@@ -6,7 +6,7 @@ module KAG
   module Server
     class Parser
       attr_accessor :server,:data,:live,:ready,:veto,:listener,:restart_queue
-      attr_accessor :units_depleted,:players_there
+      attr_accessor :units_depleted,:players_there,:sub_requests
       attr_accessor :players,:teams
 
       def initialize(listener,data)
@@ -22,6 +22,7 @@ module KAG
         end
         self.players = ps
         self.players_there = 0
+        self.sub_requests = {}
         self.data = data.merge({
           :units_depleted => false,
           :wins => {},
@@ -197,18 +198,31 @@ module KAG
       def evt_request_sub(msg)
         m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!(?:rsub|request_sub) (.*))$/)
         if m
-          match = self.listener.server.match
-          if match
-            match.gather = self.listener.server.gather
-            substitution = match.request_sub(m[5].strip)
-            if substitution
-              self.listener.kick(m[5])
-              if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
-                self.listener.kick(substitution.old_player.user.kag_user.to_s)
+          player_to_sub = m[5].strip.to_s
+          player_requesting = m[3].strip.to_s
+          self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
+          if self.sub_requests[player_to_sub].include?(player_requesting)
+            say "You can only vote to request a sub for that person once, #{player_requesting}."
+          else
+            self.sub_requests[player_to_sub] << player_requesting
+            votes_needed = (self.players.length / 2).to_i
+            if self.sub_requests[player_to_sub].length > votes_needed
+              match = self.listener.server.match
+              if match
+                match.gather = self.listener.server.gather
+                substitution = match.request_sub(m[5].strip)
+                if substitution
+                  self.listener.kick(m[5])
+                  if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
+                    self.listener.kick(substitution.old_player.user.kag_user.to_s)
+                  end
+                  say "Sub requested for #{m[5].to_s}. Please stand by."
+                else
+                  say "Cannot find the User #{m[5].to_s}. Try the person\'s authname or KAG account name instead."
+                end
               end
-              say "Sub requested for #{m[5].to_s}. Please stand by."
             else
-              say "Cannot find the User #{m[5].to_s}. Try the person\'s authname or KAG account name instead."
+              say "Sub request for #{player_to_sub} made. #{votes_needed.to_s} more votes needed."
             end
           end
         end

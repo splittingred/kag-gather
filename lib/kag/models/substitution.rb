@@ -28,6 +28,8 @@ class Substitution < KAG::Model
       saved = sub.save
       if saved
         player.user.inc_stat(:desertions)
+        player.deserted = true
+        player.save
         sub
       else
         false

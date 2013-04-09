@@ -29,16 +29,18 @@ class GatherQueue < KAG::Model
   def add(user)
     added = false
     u = User.fetch(user)
-    player = GatherQueuePlayer.where(:user_id => u.id).first
-    if player # already in queue
-      false
-    else
-      gp = GatherQueuePlayer.new({
-        :gather_queue_id => self.id,
-        :user_id => u.id,
-        :created_at => Time.now
-      })
-      added = gp.save
+    if u
+      player = GatherQueuePlayer.where(:user_id => u.id).first
+      if player # already in queue
+        false
+      else
+        gp = GatherQueuePlayer.new({
+          :gather_queue_id => self.id,
+          :user_id => u.id,
+          :created_at => Time.now
+        })
+        added = gp.save
+      end
     end
     added
   end

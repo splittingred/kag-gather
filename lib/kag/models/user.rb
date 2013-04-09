@@ -68,7 +68,7 @@ class User < KAG::Model
   # @return [Boolean]
   #
   def linked?
-    u.kag_user != '' and !u.kag_user.nil?
+    self.kag_user != '' and !self.kag_user.nil?
   end
 
   ##
@@ -77,8 +77,8 @@ class User < KAG::Model
   # @return [Boolean]
   #
   def unlink
-    u.kag_user = ""
-    u.save
+    self.kag_user = ""
+    self.save
   end
 
   ##

@@ -26,7 +26,7 @@ module KAG
         end
       end
 
-      command :link,
+      command :link,{},
         summary: "Link your IRC user to your KAG account for stats tracking and other cool features..",
         description: "Link your IRC Auth to your KAG account. This is only required to do once."
       def link(m)
@@ -37,7 +37,7 @@ module KAG
           end
 
           if u.linked?
-            m.user.send("Your IRC user #{m.user.authname} is already linked to the KAG account #{u.authname.to_s}")
+            m.user.send("Your IRC user #{m.user.authname} is already linked to the KAG account #{u.kag_user.to_s}")
           else
             m.user.send("Please go to http://stats.gather.kag2d.nl/sso/?i=#{m.user.authname} to link your main KAG Account with your KAG-Gather account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers.")
           end
@@ -46,14 +46,16 @@ module KAG
         end
       end
 
-      command :unlink,
+      command :unlink,{},
         summary: "Unlink your IRC user from a KAG account",
         description: "This will unlink your IRC AUTH user from a KAG account."
       def unlink(m)
         if m.user.authed?
           u = ::User.find_by_authname(m.user.authname)
           if u and u.linked?
-            u.unlink
+            if u.unlink
+              m.user.send("Your IRC user #{m.user.authname} has been unlinked to your KAG account.")
+            end
           else
             m.user.send("Your IRC user #{m.user.authname} is not linked to any KAG account.")
           end

@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ALL); ini_set('display_errors',true);
 function over($msg = '') {
 	if (!empty($msg)) echo $msg;
 	@session_write_close();
@@ -23,7 +24,7 @@ if (!empty($_REQUEST['stage'])) {
 	    	if (empty($configData)) {
 	    	    over("Could not read config file");
 	    	}
-	    	$config = json_decode($configData);
+	    	$config = json_decode($configData,true);
 	    }
 	    if (empty($config)) {
 	        over("Failed to get config file.");
@@ -47,8 +48,21 @@ if (!empty($_REQUEST['stage'])) {
 			$ircname = mysqli_real_escape_string($mysqli,strip_tags(str_replace(";","",$_SESSION['kag.gather.ircname'])));
 			$ircname = htmlspecialchars($ircname,ENT_COMPAT,'UTF-8');
 
-			if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$uname.'" WHERE `authname` = "'.$ircname.'"') == true) {
-			    $loggedIn = true;
+			$result = $mysqli->query('SELECT * FROM `users` WHERE `authname` = "'.$ircname.'"');
+			$found = false;
+			if ($result) {
+				$row = mysqli_fetch_assoc($result);
+				if (!empty($row) && !empty($row['id'])) {
+					$found = true;
+				}
+			}
+			if (!$found) {
+				$mysqli->query('INSERT INTO `users` (`authname`,`nick`,`kag_user`) VALUES ("'.$ircname.'","'.$ircname.'","'.$uname.'")');
+				$loggedIn = true;
+			} else {
+				if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$uname.'" WHERE `authname` = "'.$ircname.'"') == true) {
+			    	$loggedIn = true;
+				}
 			}
         	$mysqli->close();
 		} catch (Exception $e) {

@@ -156,6 +156,7 @@ module KAG
               check_for_new_match
               true
             else
+              user.send("Failed to add you to queue!")
               false
             end
           end

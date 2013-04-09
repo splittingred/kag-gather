@@ -205,7 +205,7 @@ module KAG
             say "You can only vote to request a sub for that person once, #{player_requesting}."
           else
             self.sub_requests[player_to_sub] << player_requesting
-            votes_needed = (self.players.length / 2).to_i
+            votes_needed = (self.players.length / 4).to_i
             if self.sub_requests[player_to_sub].length > votes_needed
               match = self.listener.server.match
               if match

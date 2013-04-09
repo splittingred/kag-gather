@@ -107,7 +107,7 @@ module KAG
         summary: "List the users signed up for the next match"
       def list(m)
         unless is_banned?(m.user)
-          m.user.send @queue.list_text
+          m.user.notice @queue.list_text
         end
       end
 

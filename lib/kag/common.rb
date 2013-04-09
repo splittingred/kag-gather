@@ -11,10 +11,10 @@ module KAG
       message.reply text
     end
 
-    def send_channels_msg(msg,colorize = true)
+    def send_channels_msg(msg,colorize = true,notice = false)
       KAG::Config.instance[:channels].each do |c|
         msg = Format(:grey,msg) if colorize
-        Channel(c).send(msg)
+        Channel(c).send(msg,notice)
       end
     end
 

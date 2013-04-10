@@ -46,6 +46,8 @@ module KAG
           self.evt_player_left(msg)
         elsif msg.index("!request_sub") or msg.index("!rsub")
           self.evt_request_sub(msg)
+        elsif msg.index("!nerf")
+          self.evt_nerf(msg)
 
         elsif self.live
           puts "[LIVE] "+msg.to_s
@@ -225,6 +227,15 @@ module KAG
               say "Sub request for #{player_to_sub} made. #{votes_needed.to_s} more votes needed."
             end
           end
+        end
+      end
+
+      def evt_nerf(msg)
+        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!nerf (.*))$/)
+        if m
+          if m[3].to_s.strip == "splittingred"
+            t = m[5].to_s.strip
+            say "Nerfing... #{t} was too OP anyway."
         end
       end
 

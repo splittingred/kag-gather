@@ -503,7 +503,7 @@ module KAG
 
         # record K/D for each user
         self.data.players.each do |player,data|
-          p = ::Player.select("*").joins(:user).where(:users => {:kag_user => player}).first
+          p = ::Player.fetch_by_kag_user(player)
           if p
             p.kills = data[:kill]
             p.deaths = data[:death]
@@ -533,6 +533,8 @@ module KAG
         if match
           match.stats = self.data.to_json
           match.save
+        else
+          puts "Could not find match to save stats to!"
         end
 
         KAG::Stats::Main.add_stat(:matches_completed)

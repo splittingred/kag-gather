@@ -209,7 +209,9 @@ module KAG
       def evt_veto(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
         if match
-          unless self.veto.include?(match[3])
+          if self.veto.include?(match[3])
+            say "You have already voted to veto the map, #{match[3]}!"
+          else
             if self.players
               veto_threshold = (self.players.length / 2).to_i
             else
@@ -230,7 +232,9 @@ module KAG
       def evt_restart(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!restart)$/)
         if match
-          unless self.restart_queue.include?(match[3])
+          if self.restart_queue.include?(match[3])
+            say "You have already voted for a restart, #{match[3]}!"
+          else
             restart_threshold = (self.players.length / 2).to_i
             self.restart_queue << match[3]
             if self.restart_queue.length == restart_threshold

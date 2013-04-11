@@ -74,8 +74,8 @@ class Match < KAG::Model
     self.users(true).where(:authname => user.authname)
   end
 
-  def setup_teams(queue_players)
-    queue_players.shuffle!
+  def setup_teams(queue_players,shuffle = true)
+    queue_players.shuffle! if shuffle
 
     match_size = KAG::Config.instance[:match_size].to_i
     match_size = 2 if match_size < 2
@@ -224,6 +224,14 @@ class Match < KAG::Model
       end
     end
     subbed
+  end
+
+  def teams_text
+    ts = []
+    self.teams(true).each do |team|
+      ts << team.name.to_s+": "+team.player_list
+    end
+    ts.join(" --- ")
   end
 
   def kick_all

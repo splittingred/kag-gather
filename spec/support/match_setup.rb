@@ -3,7 +3,7 @@ module KAG
     class MatchSetup
       attr_accessor :server,:queue,:match,:players,:listener,:parser
 
-      def start_match
+      def start_match(shuffle_teams = true)
         self.server = ::Server.new
         self.server.name = "test"
         self.server.ip = "127.0.0.1"
@@ -34,7 +34,7 @@ module KAG
         self.match = ::Match.new({
            :server => self.server,
         })
-        self.match.setup_teams(self.players)
+        self.match.setup_teams(self.players,shuffle_teams)
         self.match.save
 
         self.server.match_in_progress = self.match

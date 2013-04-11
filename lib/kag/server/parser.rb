@@ -49,6 +49,8 @@ module KAG
           self.evt_request_sub(msg)
         elsif msg.index("!score")
           self.evt_score(msg)
+        elsif msg.index("!teams")
+          self.evt_teams(msg)
         elsif msg.index("!nerf")
           self.evt_nerf(msg)
 
@@ -188,6 +190,11 @@ module KAG
         num_of_players.to_i == 2 ? 1 : num_of_players
       end
 
+      def evt_teams(msg)
+        say self.server.match.teams_text
+        :teams
+      end
+
       def evt_veto(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
         if match
@@ -242,6 +249,8 @@ module KAG
         if m
           player_to_sub = m[5].strip.to_s
           player_requesting = m[3].strip.to_s
+          puts "Player To Sub: "+player_to_sub
+          puts "Requesting: "+player_requesting
           self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
           if already_sub_requested?(player_to_sub,player_requesting)
             say "You can only vote to request a sub for that person once, #{player_requesting}."
@@ -260,12 +269,14 @@ module KAG
                     self.listener.kick(substitution.old_player.user.kag_user.to_s) unless self.test
                   end
                   say "Sub requested for #{m[5].to_s}. Please stand by."
+                  :request_sub
                 else
                   say "Cannot find the User #{m[5].to_s}. Try the person\'s authname or KAG account name instead."
                 end
               end
             else
               say "Sub request for #{player_to_sub} made. #{votes_needed.to_s} more votes needed."
+              :request_sub
             end
           end
         end

@@ -2,9 +2,7 @@
 
 ## Current TODO:
 
-- Finish mysql data storage conversion
-    - Test, test, test!
-- Fix issue where you can !rsub in-game other team's players
+- Test, test, test!
 
 ## Future Additions/TODO:
 

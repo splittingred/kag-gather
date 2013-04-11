@@ -28,8 +28,7 @@ class GatherQueue < KAG::Model
     if self.has_player?(user)
       "#{user.authname} is already in the queue!"
     else
-      match = Match.player_in(user)
-      if match
+      if Player.is_playing?(user)
         "#{user.authname} is already in a match!"
       else
         player = GatherQueuePlayer.where(:user_id => user.id).first

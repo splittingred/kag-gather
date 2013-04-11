@@ -9,15 +9,19 @@ module KAG
     # Prevent non-authed or banned users from using bot
     #
     def auth(m)
-      if m.user.authed?
+      if m.params.length > 0 and %w(Quit Part Kick Kill).include?(m.params[0])
         true
-      elsif is_banned?(m.user)
-        false
-      elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
-        send_not_authed_msg(m)
-        false
       else
-        true
+        if m.user.authed?
+          true
+        elsif is_banned?(m.user)
+          false
+        elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
+          send_not_authed_msg(m)
+          false
+        else
+          true
+        end
       end
     end
 

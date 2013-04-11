@@ -67,6 +67,7 @@ class GatherQueue < KAG::Model
 
   def remove(user,silent = false)
     removed = false
+    user = SymbolTable.new({:authname => user}) if user.class == String
     queue_player = self.player(user)
     if queue_player
       queue_player.destroy

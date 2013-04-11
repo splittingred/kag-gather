@@ -28,14 +28,18 @@ module KAG
 
       listen_to :part, :quit, :kill, method: :on_leaving
       def on_leaving(m)
-        match = ::Match.player_in(m.user)
-        if match
-          sub = match.remove_player(m.user)
-          if sub
-            m.channel.msg sub[:msg]
+        if m.params.length > 0 and m.params[0] == "Quit"
+          @queue.remove(m.user.nick)
+        else
+          match = ::Match.player_in(m.user)
+          if match
+            sub = match.remove_player(m.user)
+            if sub
+              m.channel.msg sub[:msg]
+            end
+          elsif @queue.has_player?(m.user)
+            @queue.remove(m.user)
           end
-        elsif @queue.has_player?(m.user)
-          @queue.remove(m.user)
         end
       end
 
@@ -75,7 +79,9 @@ module KAG
         u = ::User.fetch(m.user)
         if u
           r = @queue.add(u)
-          unless r === true
+          if r === true
+            m.user.monitor
+          else
             reply m,r
           end
         end
@@ -89,8 +95,10 @@ module KAG
           match = ::Match.player_in(user)
           if match
             match.remove_player(user)
+            m.user.unmonitor
           elsif @queue.has_player?(user)
             @queue.remove(user)
+            m.user.unmonitor
           end
         end
       end

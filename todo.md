@@ -8,9 +8,6 @@
 - Finish bot 2.0, which is bot that controls match logic, adds WARMUP mode, removes need to !end, etc
     - Make tests to ensure multiple threads can be used to manage multiple games without locking mysql connections
     - Ensure if a rcon listener thread fails the bot can continue on as normal (fail supervision)
-- Fix bug where when user leaves it doesn't remove, and leaves blank name in list
-    - This is due to authname check on_leaving, needs to be smarter
-    - MySQL conversion should add possible workaround routes w/o having to poll entire chan periodically
 - Fix issue where K/D stats arent always being collected (may be only with kag_user != authname users)
 - Fix issue where you can !rsub in-game other team's players
 

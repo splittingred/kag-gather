@@ -15,14 +15,24 @@ module KAG
       end
 
       def remove(user)
-        return false unless user.authname and !user.authname.to_s.empty?
-        if has_player?(user)
-          self.players.delete(user.authname.to_sym)
-          user.inc_stat(:rems)
-          KAG::Stats::Main.add_stat(:rems)
-          true
+        if user.class == String
+          if self.players.has_key?(user.to_sym)
+            self.players.delete(user.to_sym)
+            KAG::Stats::Main.add_stat(:rems)
+            true
+          else
+            false
+          end
         else
-          false
+          return false unless user.authname and !user.authname.to_s.empty?
+          if has_player?(user)
+            self.players.delete(user.authname.to_sym)
+            user.inc_stat(:rems)
+            KAG::Stats::Main.add_stat(:rems)
+            true
+          else
+            false
+          end
         end
       end
 

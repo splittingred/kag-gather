@@ -80,7 +80,7 @@ module KAG
         if u
           r = @queue.add(u)
           if r === true
-            m.user.monitor
+            #m.user.monitor
           else
             reply m,r
           end
@@ -98,7 +98,7 @@ module KAG
             m.user.unmonitor
           elsif @queue.has_player?(user)
             @queue.remove(user)
-            m.user.unmonitor
+            #m.user.unmonitor
           end
         end
       end

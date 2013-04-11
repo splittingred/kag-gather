@@ -5,23 +5,40 @@ module KAG
       class User < Base
         @@class_key = 'User'
 
+
+        def get
+          if @params[:id]
+            self.read(@params[:id])
+          elsif @params[:username]
+            @@primary_key = :username
+            self.read(@params[:username])
+          else
+            self.list
+          end
+        end
+
         def read(id)
-          c = ::User.find(id)
-          if c
-            d = SymbolTable.new(c.attributes)
+          if @@primary_key == :username
+            user = ::User.where("authname = ? OR kag_user = ?",@params[:username],@params[:username]).first
+          else
+            user = ::User.where(:id => id).first
+          end
+          if user
+            d = SymbolTable.new(user.attributes)
             d[:stats] = {}
-            c.stats.each do |s|
+            user.stats.each do |s|
               d[:stats][s.name] = s.value
             end
+            d[:stats][:matches] = user.matches.count
             d.delete(:host)
             self.success('',d)
           else
-            self.failure('err_nf',c)
+            self.failure('err_nf',user)
           end
         end
 
         def list
-          c = Object.const_get(@@class_key).where(@params)
+          c = ::User.where(@params)
           if c
             us = []
             c.each do |u|

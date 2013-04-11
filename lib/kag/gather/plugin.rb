@@ -197,7 +197,7 @@ module KAG
         admin: true
       def clear(m)
         if is_admin(m.user)
-          send_channels_msg "Match queue cleared."
+          reply m,"Match queue cleared."
           @queue.reset
         end
       end

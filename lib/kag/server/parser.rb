@@ -48,8 +48,9 @@ module KAG
           self.evt_request_sub(msg)
         elsif msg.index("!nerf")
           self.evt_nerf(msg)
+        end
 
-        elsif self.live
+        if self.live # live mode
           puts "[LIVE] "+msg.to_s
           if msg.index(/^(.+) (wins the game!)$/)
             self.evt_round_win(msg)
@@ -64,7 +65,7 @@ module KAG
           elsif msg.index("!restart")
             self.evt_veto(msg)
           end
-        else
+        else # warmup
           puts "[WARMUP] "+msg.to_s
           if msg.index("!ready")
             self.evt_ready(msg)
@@ -236,6 +237,7 @@ module KAG
           if m[3].to_s.strip == "splittingred"
             t = m[5].to_s.strip
             say "Nerfing... #{t} was too OP anyway."
+          end
         end
       end
 

@@ -4,7 +4,6 @@
 
 - Finish mysql data storage conversion
     - Test, test, test!
-- Fix issue where K/D stats arent always being collected (may be only with kag_user != authname users)
 - Fix issue where you can !rsub in-game other team's players
 
 ## Future Additions/TODO:

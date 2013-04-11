@@ -7,17 +7,14 @@ require 'kag/database'
 require 'kag/registry'
 require 'kag/models/model'
 Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
-
-require 'kag/gather/plugin'
-require 'kag/ignore/plugin'
-require 'kag/irc/plugin'
-require 'kag/bot/plugin'
-require 'kag/user/plugin'
-require 'kag/help/plugin'
-require 'kag/stats/plugin'
+Dir.glob('lib/kag/plugins/*.rb').each {|f| load f.to_s }
 require 'commands/help'
 
 module KAG
+  class << self
+    attr_accessor :bot,:gather
+  end
+
   module Bot
     class Bot
       attr_accessor :bot

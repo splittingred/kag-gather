@@ -151,4 +151,18 @@ describe KAG::Server::Parser do
     subject._get_ready_threshold(6).should eq(6)
   end
 
+  it "test archive" do
+    subject.live = true
+    subject.parse("[00:00:00] Vidar gibbed Geti into pieces")
+    subject.parse("[00:00:00] Vidar slew Geti with his sword")
+    subject.archive
+    u = User.fetch("Geti")
+    u.stat(:deaths).should eq(2)
+    u.stat("deaths.gibbed").should eq(1)
+
+    u = User.fetch("Vidar")
+    u.stat(:kills).should eq(2)
+    u.stat("kills.gibbed").should eq(1)
+  end
+
 end

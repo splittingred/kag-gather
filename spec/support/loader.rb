@@ -6,4 +6,4 @@ require 'kag/common'
 Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 
 require 'support/match_setup'
-require 'kag/bot/bot'
+require 'kag/bot'

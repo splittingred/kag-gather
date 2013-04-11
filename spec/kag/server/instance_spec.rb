@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'kag/gather/match'
 ##
 # Testing for the server functions
 #

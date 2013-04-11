@@ -3,6 +3,7 @@
 ## Current TODO:
 
 - Test, test, test!
+- Test !report/!ignore stuff
 
 ## Future Additions/TODO:
 
@@ -10,5 +11,3 @@
     - Consider everytime an !add/!rem is done doing afk polling
 - Add !start support for server-specific matches
 - Add !report decay so that they expire after X days
-- REST server for stats support (use Sinatra)
-    - Make easily accessible via API

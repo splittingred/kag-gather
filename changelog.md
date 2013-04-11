@@ -1,6 +1,11 @@
 # Changelog for KAG Gather Bot
 
 ## 2.0
+- Add public API REST server for public stats API
+- Add !who_ready for showing list of ready users
+- Add !unready for going non-ready
+- Add in-game !score for showing current score
+- Add in-game !teams for showing team list
 - Add in-game sub requests via !rsub [player-to-sub-out]
 - Full ignore/ban support, as well as !report for reporting players
 - Link your IRC authname to your KAG account for better stats management via sso.kag2d.com

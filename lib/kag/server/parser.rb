@@ -67,7 +67,7 @@ module KAG
           elsif msg.index("*Match Ended*")
             self.evt_round_ended(msg)
           elsif msg.index("!restart")
-            self.evt_veto(msg)
+            self.evt_restart(msg)
           end
         else # warmup
           puts "[WARMUP] "+msg.to_s

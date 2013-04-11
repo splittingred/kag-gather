@@ -71,7 +71,7 @@ module KAG
       if KAG::Help::Book.instance.key?(key.to_sym)
         text = KAG::Help::Book.instance[key.to_sym].to_s
         params.each do |k,v|
-          text.gsub!("[[+"+k.to_s+"]]",v)
+          text = text.gsub("[[+"+k.to_s+"]]",v)
         end
         text
       else

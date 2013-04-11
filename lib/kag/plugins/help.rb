@@ -24,6 +24,14 @@ module KAG
           }))
         end
       end
+
+      command :reload_lexicon,{},
+        summary: "Reload the lexicon.",
+        admin: true
+      def reload_lexicon(m)
+        KAG::Help::Book.instance.reload
+        m.user.send "Reloaded lexicon."
+      end
     end
   end
 end

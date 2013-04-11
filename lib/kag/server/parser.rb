@@ -47,6 +47,8 @@ module KAG
           self.evt_player_left(msg)
         elsif msg.index("!request_sub") or msg.index("!rsub")
           self.evt_request_sub(msg)
+        elsif msg.index("!score")
+          self.evt_score(msg)
         elsif msg.index("!nerf")
           self.evt_nerf(msg)
 
@@ -122,6 +124,22 @@ module KAG
               channel.send(msg)
             end
           end
+        end
+      end
+
+      def evt_score(msg)
+        say _get_score
+      end
+
+      def _get_score
+        if self.data[:wins]
+          txt = []
+          self.data[:wins].each do |team,score|
+            txt << "#{team.to_s}: #{score.to_s}"
+          end
+          txt.join(", ")
+        else
+          "Red Team: 0, Blue Team: 0"
         end
       end
 

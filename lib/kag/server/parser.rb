@@ -75,6 +75,8 @@ module KAG
             self.evt_ready(msg)
           elsif msg.index("!unready")
             self.evt_unready(msg)
+          elsif msg.index("!who_ready")
+            self.evt_who_ready(msg)
           elsif msg.index("!veto")
             self.evt_veto(msg)
           elsif msg.index("!hello")
@@ -154,7 +156,9 @@ module KAG
       def evt_ready(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready)$/)
         if match
-          unless self.ready.include?(match[3])
+          if self.ready.include?(match[3])
+            say "You are already ready, #{match[3]}!"
+          else
             self.ready << match[3]
             ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
 
@@ -180,8 +184,15 @@ module KAG
 
             say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
             :unready
+          else
+            say "You were never ready, #{match[3]}!"
           end
         end
+      end
+
+      def evt_who_ready(msg)
+        say "Ready: "+self.ready.join(", ")
+        :who_ready
       end
 
       def _get_ready_threshold(num_of_players)

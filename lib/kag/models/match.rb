@@ -9,8 +9,6 @@ class Match < KAG::Model
   has_many :users, :through => :players
   has_many :substitutions
 
-  attr_accessor :gather
-
   class << self
     def total_in_progress
       Match.count(:conditions => {:ended_at => nil})
@@ -37,14 +35,14 @@ class Match < KAG::Model
     end
   end
 
-  def start(gather)
+  def start
     #self.end_votes = 0 unless self.end_votes
     KAG::Stats::Main.add_stat(:matches_started)
     if self.server
       self.started_at = Time.now()
       if self.save
         begin
-          self.server.start(gather,self)
+          self.server.start(self)
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
@@ -55,7 +53,7 @@ class Match < KAG::Model
     end
   end
 
-  def cease(gather = nil)
+  def cease
     data = SymbolTable.new
     self.ended_at = Time.now
     if self.save
@@ -67,12 +65,7 @@ class Match < KAG::Model
           puts e.backtrace.join("\n")
         end
       end
-      if gather
-        msg = "Match #{self.id} at #{self.server.name} finished!"
-        gather.send_channels_msg(msg)
-      else
-        puts "No gather to send message!"
-      end
+      KAG.gather.send_channels_msg("Match #{self.id} at #{self.server.name} finished!")
     end
     data
   end
@@ -153,7 +146,7 @@ class Match < KAG::Model
   def notify_players_of_match_start
     self.send_channel_start_msg
     self.teams.each do |t|
-      t.notify_of_match_start(self.gather)
+      t.notify_of_match_start
     end
   end
 
@@ -163,7 +156,7 @@ class Match < KAG::Model
       msg = msg+" "+team.text_for_match_start
     end
     msg+" \x0301 at #{self.server.name}"
-    self.gather.send_channels_msg(msg,false) if self.gather
+    KAG.gather.send_channels_msg(msg,false)
   end
 
   def get_team_for(user)
@@ -177,6 +170,13 @@ class Match < KAG::Model
 
   def get_player_for(user)
     Player.where(:user_id => user.id,:match_id => self.id).first
+  end
+
+  def remove_player(user)
+    player = get_player_for(user)
+    if player
+      self.request_sub(user)
+    end
   end
 
   ##
@@ -193,7 +193,7 @@ class Match < KAG::Model
       if player
         substitution = Substitution.request(self,player)
         if substitution
-          self.gather.send_channels_msg("Substitute requested for match #{self.id}, team #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.") if self.gather
+          KAG.gather.send_channels_msg("Substitute requested for match #{self.id}, team #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.")
           user.inc_stat(:substitutions_requested)
           requested = substitution
         end
@@ -214,10 +214,9 @@ class Match < KAG::Model
     if user
       substitution = Substitution.find_for(self)
       if substitution
-        substitution.gather = self.gather if self.gather
         if substitution.take(user)
           u.send("Please join #{substitution.match.server.text_join} | Team: \x03#{substitution.team.color}#{substitution.team.name}") if u.class == ::Cinch::User
-          self.gather.send_channels_msg("#{user.authname} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!") if self.gather
+          KAG.gather.send_channels_msg("#{user.authname} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!")
           subbed = true
         else
           u.send("Could not sub into match!") if u.class == ::Cinch::User

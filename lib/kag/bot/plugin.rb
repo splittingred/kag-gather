@@ -8,6 +8,7 @@ module KAG
       include Cinch::Plugin
       include Cinch::Commands
       include KAG::Common
+      hook :pre,method: :auth
 
       listen_to :connect, :method => :on_connect
       def on_connect(m)

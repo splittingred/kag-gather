@@ -18,6 +18,8 @@ module KAG
         return false unless user.authname and !user.authname.to_s.empty?
         if has_player?(user)
           self.players.delete(user.authname.to_sym)
+          user.inc_stat(:rems)
+          KAG::Stats::Main.add_stat(:rems)
           true
         else
           false

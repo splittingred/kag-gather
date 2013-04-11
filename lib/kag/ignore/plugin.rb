@@ -8,6 +8,7 @@ module KAG
       include Cinch::Plugin
       include Cinch::Commands
       include KAG::Common
+      hook :pre,method: :auth
 
       command :report,{nick: :string,reason: :string},
         summary: "Report a user the bot"

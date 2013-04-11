@@ -1,3 +1,9 @@
 require 'kag/bot/bot'
 
-KAG::Bot::Bot.new
+module KAG
+  class << self
+    attr_accessor :bot,:gather
+  end
+end
+KAG.bot = KAG::Bot::Bot.new
+

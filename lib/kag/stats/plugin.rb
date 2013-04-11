@@ -10,6 +10,7 @@ module KAG
       include Cinch::Plugin
       include Cinch::Commands
       include KAG::Common
+      hook :pre,method: :auth
 
       command :stats,{},
         summary: "Get the gather-wide stats"

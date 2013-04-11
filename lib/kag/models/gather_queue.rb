@@ -4,8 +4,6 @@ class GatherQueue < KAG::Model
   has_many :gather_queue_players
   has_many :users, :through => :gather_queue_players
 
-  attr_accessor :gather
-
   def players(bust_cache = false)
     self.gather_queue_players(bust_cache)
   end
@@ -26,34 +24,56 @@ class GatherQueue < KAG::Model
     !self.player(user).nil?
   end
 
-  def add(user)
-    added = false
-    u = User.fetch(user)
-    if u
-      player = GatherQueuePlayer.where(:user_id => u.id).first
-      if player # already in queue
-        false
+  def add(user,silent = false)
+    if self.has_player?(user)
+      "#{user.authname} is already in the queue!"
+    else
+      match = Match.player_in(user)
+      if match
+        "#{user.authname} is already in a match!"
       else
-        gp = GatherQueuePlayer.new({
-          :gather_queue_id => self.id,
-          :user_id => u.id,
-          :created_at => Time.now
-        })
-        added = gp.save
+        player = GatherQueuePlayer.where(:user_id => user.id).first
+        if player # already in queue
+          "#{user.authname} is already in the queue!"
+        else
+          gp = GatherQueuePlayer.new({
+            :gather_queue_id => self.id,
+            :user_id => user.id,
+            :created_at => Time.now
+          })
+          added = gp.save
+          if added
+            KAG.gather.send_channels_msg "Added #{user.authname} to queue (#{::Match.type_as_string}) [#{self.length}]" unless silent
+            user.inc_stat(:adds)
+            KAG::Stats::Main.add_stat(:adds)
+            check_for_new_match
+            true
+          else
+            "Failed to add to queue!"
+          end
+        end
       end
     end
-    added
   end
 
-  def remove(user,send_msg = true)
+  def check_for_new_match
+    if self.is_full?
+      unless self.start_match
+        KAG.gather.send_channels_msg "Could not find any available servers!"
+        debug "FAILED TO FIND UNUSED SERVER"
+      end
+    end
+  end
+
+  def remove(user,silent = false)
     removed = false
     queue_player = self.player(user)
     if queue_player
       queue_player.destroy
-      self.gather.send_channels_msg "Removed #{user.authname} from queue (#{::Match.type_as_string}) [#{self.length}]" if self.gather
+      KAG.gather.send_channels_msg "Removed #{user.authname} from queue (#{::Match.type_as_string}) [#{self.length}]" unless silent
       removed = true
     else
-      puts "Could not find #{user.authname} to remove from queue"
+      puts "User #{user.authname} is not in the queue!"
     end
     removed
   end
@@ -77,7 +97,7 @@ class GatherQueue < KAG::Model
   ##
   # Start the match from the queue and reset it
   #
-  def start_match(gather)
+  def start_match
     server = ::Server.find_unused
     unless server
       return false
@@ -90,10 +110,9 @@ class GatherQueue < KAG::Model
     match = ::Match.new({
        :server => server,
     })
-    match.gather = gather
     match.setup_teams(players)
     match.notify_players_of_match_start
-    match.start(gather)
+    match.start
     true
   end
 end

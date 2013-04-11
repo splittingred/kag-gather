@@ -109,14 +109,14 @@ module KAG
           puts e.backtrace.join("\n")
         ensure
           puts "cease match"
-          self.server.match.cease(self.server.gather)
+          self.server.match.cease
         end
       end
 
       def broadcast(msg)
-        if KAG::Config.instance[:channels] and self.server and self.server.bot
+        if KAG::Config.instance[:channels] and self.server and KAG.gather.bot
           KAG::Config.instance[:channels].each do |c|
-            channel = self.server.bot.channel_list.find_ensured(c)
+            channel = KAG.gather.bot.channel_list.find_ensured(c)
             if channel
               channel.send(msg)
             end
@@ -145,8 +145,9 @@ module KAG
       end
 
       def _get_ready_threshold(num_of_players)
-        half = (num_of_players / 2)
-        half + (half / 2).ceil
+        #half = (num_of_players / 2)
+        #half + (half / 2).ceil
+        num_of_players.to_i == 2 ? 1 : num_of_players
       end
 
       def evt_veto(msg)
@@ -212,7 +213,6 @@ module KAG
             if self.sub_requests[player_to_sub].length > votes_needed
               match = self.listener.server.match
               if match
-                match.gather = self.listener.server.gather
                 substitution = match.request_sub(m[5].strip)
                 if substitution
                   self.listener.kick(m[5])

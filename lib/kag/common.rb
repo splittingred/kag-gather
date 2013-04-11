@@ -5,6 +5,21 @@ require 'cinch'
 module KAG
   module Common
     include Cinch::Plugin
+    ##
+    # Prevent non-authed or banned users from using bot
+    #
+    def auth(m)
+      if m.user.authed?
+        true
+      elsif is_banned?(m.user)
+        false
+      elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
+        send_not_authed_msg(m)
+        false
+      else
+        true
+      end
+    end
 
     def reply(message,text,colorize = true)
       text = Format(:grey,text) if colorize
@@ -30,6 +45,10 @@ module KAG
         puts "user is not authed and therefore not banned"
         false
       end
+    end
+
+    def send_not_authed_msg(m)
+      m.user.send _h("command_not_authed")
     end
 
     def debug(msg)

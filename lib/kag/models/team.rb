@@ -6,7 +6,7 @@ class Team < KAG::Model
   has_many :substitutions
   belongs_to :match
 
-  def notify_of_match_start(gather)
+  def notify_of_match_start
     puts "start of team.notify_of_match_start"
     server = self.match.server
     if server
@@ -21,7 +21,7 @@ class Team < KAG::Model
         player_msg = msg.clone
         #player_msg = player_msg+cls if KAG::Config.instance[:pick_classes] and cls and !cls.empty?
         player_msg = player_msg+" #{self.color}#{self.name} with: #{pl}"
-        irc_user = gather.bot.user_list.find_ensured(user.authname)
+        irc_user = KAG.gather.bot.user_list.find_ensured(user.authname)
         if irc_user
           irc_user.send(player_msg)
           sleep(2) # prevent excess flood stuff

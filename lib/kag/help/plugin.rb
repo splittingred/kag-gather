@@ -8,6 +8,7 @@ module KAG
       include Cinch::Plugin
       include Cinch::Commands
       include KAG::Common
+      hook :pre,method: :auth
 
       command :help,{},
         summary: "Get general help on KAG Gather",

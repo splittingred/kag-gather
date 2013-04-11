@@ -6,16 +6,14 @@ class Server < KAG::Model
   has_many :matches
 
   attr_accessor :match_in_progress
-  attr_accessor :listener,:match_data,:bot,:gather
+  attr_accessor :listener,:match_data
 
   def self.find_unused
     Server.where(:in_use => false).order("RAND()").first
   end
 
 
-  def start(gather,match)
-    self.gather = gather
-    self.bot = gather.bot
+  def start(match)
     self.in_use = match.id
     if self.save
       self.match_in_progress = match

@@ -6,8 +6,6 @@ class Substitution < KAG::Model
   belongs_to :old_player, :class_name => "Player", :foreign_key => "old_player_id"
   belongs_to :new_player, :class_name => "Player", :foreign_key => "new_player_id"
 
-  attr_accessor :gather
-
   class << self
     ##
     # Request a sub for a match

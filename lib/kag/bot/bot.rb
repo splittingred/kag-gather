@@ -20,9 +20,11 @@ require 'commands/help'
 module KAG
   module Bot
     class Bot
+      attr_accessor :bot
+
       def initialize
         config = self.config
-        bot = Cinch::Bot.new do
+        self.bot = Cinch::Bot.new do
           configure do |c|
             c.server = config[:server]
             c.channels = config[:channels]
@@ -57,8 +59,7 @@ module KAG
             end
           end
         end
-
-        bot.start
+        self.bot.start
       end
 
       def config

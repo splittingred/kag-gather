@@ -8,6 +8,7 @@ module KAG
       include Cinch::Plugin
       include Cinch::Commands
       include KAG::Common
+      hook :pre,method: :auth
 
       command :hostname,{nick: :string},
         summary: "Get the hostname for a user",

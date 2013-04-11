@@ -212,14 +212,18 @@ class Match < KAG::Model
     subbed = false
     user = User.fetch(u)
     if user
-      substitution = Substitution.find_for(self)
-      if substitution
-        if substitution.take(user)
-          u.send("Please join #{substitution.match.server.text_join} | Team: \x03#{substitution.team.color}#{substitution.team.name}") if u.class == ::Cinch::User
-          KAG.gather.send_channels_msg("#{user.authname} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!")
-          subbed = true
-        else
-          u.send("Could not sub into match!") if u.class == ::Cinch::User
+      if Player.is_playing?(user)
+        u.send("You cannot sub into a match when you're already playing in one!") if u.class == ::Cinch::User
+      else
+        substitution = Substitution.find_for(self)
+        if substitution
+          if substitution.take(user)
+            u.send("Please join #{substitution.match.server.text_join} | Team: \x03#{substitution.team.color}#{substitution.team.name}") if u.class == ::Cinch::User
+            KAG.gather.send_channels_msg("#{user.authname} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!")
+            subbed = true
+          else
+            u.send("Could not sub into match!") if u.class == ::Cinch::User
+          end
         end
       end
     end

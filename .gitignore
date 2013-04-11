@@ -27,6 +27,7 @@ coverage/
 doc
 rdoc
 pkg/
+projectFilesBackup/
 .yardoc
 .bundle
 Gemfile.lock

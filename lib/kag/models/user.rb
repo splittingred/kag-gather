@@ -62,6 +62,10 @@ class User < KAG::Model
     end
   end
 
+  def name
+    self.kag_user.empty? ? self.authname : self.kag_user
+  end
+
   ##
   # See if the user is linked
   #

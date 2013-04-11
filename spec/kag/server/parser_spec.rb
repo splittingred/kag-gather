@@ -1,37 +1,25 @@
-require 'spec_helper'
+require 'support/loader'
+
 ##
 # Testing for the server functions
 #
 describe KAG::Server::Parser do
+
   subject do
-    ks = KAG::Config.instance[:servers].keys
-    server = KAG::Config.instance[:servers][ks.first]
-
-    player_list = %w(Geti splittingred Vidar Ardivaba killatron Verra Cpa3y Kalikst Ezreli Furai)
-    players = {}
-    player_list.each do |p|
-      players[p.to_sym] = {:authname => p,:nick => p}
-    end
-
-    match = KAG::Gather::Match.new(SymbolTable.new({
-        :server => server,
-        :players => players
-    }))
-    match.setup_teams
-
-    server.match = match
-    listener = KAG::Server::Listener.new(server,SymbolTable.new)
-    KAG::Server::Parser.new(listener,listener.data)
+    ms = KAG::Test::MatchSetup.new
+    ms.start_match
   end
 
   it "test restart map" do
     subject.parse("[00:00:00] *Restarting Map*").should eq(:map_restart)
   end
   it "test match started" do
-    subject.parse("[00:00:00] *Match Started*").should eq(:match_start)
+    subject.live = true
+    subject.parse("[00:00:00] *Match Started*").should eq(:round_start)
   end
   it "test match ended" do
-    subject.parse("[00:00:00] *Match Ended*").should eq(:match_end)
+    subject.live = true
+    subject.parse("[00:00:00] *Match Ended*").should eq(:round_end)
   end
   it "test match win" do
     subject.live = true
@@ -158,9 +146,9 @@ describe KAG::Server::Parser do
   end
 
   it "test ready threshold calculations" do
-    subject._get_ready_threshold(10).should eq(7)
+    subject._get_ready_threshold(10).should eq(10)
     subject._get_ready_threshold(2).should eq(1)
-    subject._get_ready_threshold(6).should eq(4)
+    subject._get_ready_threshold(6).should eq(6)
   end
 
 end

@@ -1,5 +1,4 @@
-require 'spec_helper'
-require 'kag/config'
+require 'support/loader'
 
 ##
 # Testing for the server functions

@@ -1,23 +1,22 @@
-require 'spec_helper'
-require 'kag/gather/match'
+require 'support/loader'
+
 ##
 # Testing for the server functions
 #
-describe KAG::Server::Instance do
+describe Server do
   subject do
-    ks = KAG::Config.instance[:servers].keys
-    server = KAG::Config.instance[:servers][ks.first]
-    KAG::Server::Listener.new(server,server.data)
+    server = Server.new
+    KAG::Server::Listener.new(server)
   end
 
-  it "test players" do
+  #it "test players" do
     #match = KAG::Gather::Match.new
     #subject.start(match)
-    subject.players
-    subject.terminate
+    #subject.players
+    #subject.terminate
     #sleep 0.5
     #server.stop_listening
-  end
+  #end
 
   #it "test kick()" do
     #subject.connect.should eq(true)

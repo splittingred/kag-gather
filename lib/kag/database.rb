@@ -24,7 +24,8 @@ module KAG
     ActiveRecord::Base.logger = Logger.new('log/debug.log') if KAG::Config.instance[:debug]
     config = KAG::Config.instance['database']
     #ActiveRecord::Base.configurations = config
-    db = config[:development]
+    branch = (KAG::Config.instance[:branch].to_sym or :development)
+    db = config[branch]
     ActiveRecord::Base.establish_connection(
       :adapter => db[:adapter].to_sym,
       :host => db[:host].to_s,

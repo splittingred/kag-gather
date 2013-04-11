@@ -6,7 +6,7 @@ module KAG
   module Server
     class Parser
       attr_accessor :server,:data,:live,:ready,:veto,:listener,:restart_queue
-      attr_accessor :units_depleted,:players_there,:sub_requests
+      attr_accessor :units_depleted,:players_there,:sub_requests,:test
       attr_accessor :players,:teams
 
       def initialize(listener,data)
@@ -16,6 +16,7 @@ module KAG
         self.veto = []
         self.restart_queue = []
         self.teams = self.server.match.teams
+        self.test = false
         ps = []
         self.server.match.users.each do |u|
           ps << u.authname
@@ -48,9 +49,8 @@ module KAG
           self.evt_request_sub(msg)
         elsif msg.index("!nerf")
           self.evt_nerf(msg)
-        end
 
-        if self.live # live mode
+        elsif self.live # live mode
           puts "[LIVE] "+msg.to_s
           if msg.index(/^(.+) (wins the game!)$/)
             self.evt_round_win(msg)
@@ -103,7 +103,8 @@ module KAG
           say "Match ended! #{self.data[:winner]} has won!"
 
           archive
-          self.listener.kick_all
+          self.listener.kick_all unless self.test
+          true
         rescue Exception => e
           puts e.message
           puts e.backtrace.join("\n")
@@ -161,7 +162,7 @@ module KAG
             end
             self.veto << match[3]
             if self.veto.length == veto_threshold
-              self.listener.next_map
+              self.listener.next_map unless self.test
               self.ready = []
               self.veto = []
             end
@@ -215,9 +216,9 @@ module KAG
               if match
                 substitution = match.request_sub(m[5].strip)
                 if substitution
-                  self.listener.kick(m[5])
+                  self.listener.kick(m[5]) unless self.test
                   if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
-                    self.listener.kick(substitution.old_player.user.kag_user.to_s)
+                    self.listener.kick(substitution.old_player.user.kag_user.to_s) unless self.test
                   end
                   say "Sub requested for #{m[5].to_s}. Please stand by."
                 else
@@ -243,7 +244,7 @@ module KAG
 
       def start
         #self.listener.players.length
-        self.listener.restart_map
+        self.listener.restart_map unless self.test
         self.live = true
         self.restart_queue = []
         self.units_depleted = false
@@ -266,13 +267,13 @@ module KAG
       end
       def evt_round_started(msg)
         #broadcast "Match has started on #{self.server[:key]}"
-        :match_start
+        :round_start
       end
       def evt_round_ended(msg)
         self.data[:end] = Time.now
         self.ready = []
         self.veto = []
-        :match_end
+        :round_end
       end
       def evt_round_win(msg)
         self.live = false
@@ -350,7 +351,7 @@ module KAG
       def swap_team(player)
         self.teams.each do |team|
           if team.players.include?(player.to_sym)
-            self.listener.switch_team(player)
+            self.listener.switch_team(player) unless self.test
           end
         end
       end
@@ -440,7 +441,7 @@ module KAG
       private
 
       def say(msg)
-        self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg)
+        self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg) and !self.test
       end
 
       def _add_stat(stat,player,increment = 1)

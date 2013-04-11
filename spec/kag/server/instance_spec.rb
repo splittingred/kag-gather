@@ -3,12 +3,13 @@ require 'kag/gather/match'
 ##
 # Testing for the server functions
 #
-describe KAG::Server::Instance do
+describe Server do
   subject do
     ks = KAG::Config.instance[:servers].keys
     KAG::Config.instance[:servers][ks.first]
   end
 
+=begin
   it "test match start" do
     server = KAG::Server::Instance.new({},"test",subject)
 
@@ -30,6 +31,7 @@ describe KAG::Server::Instance do
     #sleep 2
     server.stop
   end
+=end
 
   #it "test kick()" do
     #subject.connect.should eq(true)

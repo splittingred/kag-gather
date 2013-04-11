@@ -249,8 +249,6 @@ module KAG
         if m
           player_to_sub = m[5].strip.to_s
           player_requesting = m[3].strip.to_s
-          puts "Player To Sub: "+player_to_sub
-          puts "Requesting: "+player_requesting
           self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
           if already_sub_requested?(player_to_sub,player_requesting)
             say "You can only vote to request a sub for that person once, #{player_requesting}."

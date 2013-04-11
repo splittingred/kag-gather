@@ -151,6 +151,22 @@ describe KAG::Server::Parser do
     subject._get_ready_threshold(6).should eq(6)
   end
 
+  it "test !ready and !unready" do
+    subject.live = false
+    subject.parse("[00:00:00] <Geti> !ready").should eq(:ready)
+    subject.ready.length.should eq(1)
+    subject.parse("[00:00:00] <Geti> !unready").should eq(:unready)
+    subject.ready.length.should eq(0)
+  end
+
+  it "test !score" do
+    subject.parse("[00:00:00] <[Newb] Geti> !score").should eq(:score)
+    subject.live = true
+    subject.parse("[00:00:00] Red Team wins the game!").should eq(:match_win)
+    subject.live = false
+    subject.parse("[00:00:00] <[Newb] Geti> !score").should eq(:score)
+  end
+
   it "test archive" do
     subject.live = true
     subject.parse("[00:00:00] Vidar gibbed Geti into pieces")

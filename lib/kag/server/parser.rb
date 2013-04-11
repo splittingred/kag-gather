@@ -71,6 +71,8 @@ module KAG
           puts "[WARMUP] "+msg.to_s
           if msg.index("!ready")
             self.evt_ready(msg)
+          elsif msg.index("!unready")
+            self.evt_unready(msg)
           elsif msg.index("!veto")
             self.evt_veto(msg)
           elsif msg.index("!hello")
@@ -129,11 +131,15 @@ module KAG
 
       def evt_score(msg)
         say _get_score
+        :score
       end
 
       def _get_score
-        if self.data[:wins]
+        if self.data[:wins] and self.data[:wins].length > 0
           txt = []
+          if self.data[:wins].length == 1
+            self.data[:wins].keys.first == "Blue Team" ? self.data[:wins]["Red Team".to_sym] = 0 : self.data[:wins]["Blue Team".to_sym] = 0
+          end
           self.data[:wins].each do |team,score|
             txt << "#{team.to_s}: #{score.to_s}"
           end
@@ -159,6 +165,19 @@ module KAG
               say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
             end
             :ready
+          end
+        end
+      end
+
+      def evt_unready(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!unready)$/)
+        if match
+          if self.ready.include?(match[3])
+            self.ready.delete(match[3])
+            ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
+
+            say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
+            :unready
           end
         end
       end
@@ -316,7 +335,7 @@ module KAG
           self.data[:wins][match[1]] = 0 unless self.data[:wins][match[1]]
           self.data[:wins][match[1]] += 1
 
-          say("Round has now ended. #{match[1]} team wins!")
+          say "Round has now ended. #{match[1]} team wins!"
           if _team_has_won
             end_match
           end
@@ -544,7 +563,11 @@ module KAG
       private
 
       def say(msg)
-        self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg) and !self.test
+        if self.test
+          puts "[SAY] #{msg}"
+        else
+          self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg)
+        end
       end
 
       def _add_stat(stat,player,increment = 1)

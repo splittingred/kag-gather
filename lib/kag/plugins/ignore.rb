@@ -13,11 +13,27 @@ module KAG
       command :report,{nick: :string,reason: :string},
         summary: "Report a user the bot"
       def report(m,nick,reason = '')
-        unless is_banned?(m.user)
+        if is_admin(m.user)
           u = User(nick)
           if u and !u.unknown
-            ::IgnoreReport.create(u,m.user,reason)
-            KAG::Bans::Report.new(self,m,u)
+            if ::IgnoreReport.create(u,m.user,reason)
+              reply m,"#{nick} has now been reported for \"#{reason}\"."
+            end
+          else
+            reply m,"User #{nick} not found!"
+          end
+        end
+      end
+
+      command :unreport,{nick: :string},
+        summary: "Clear your report for a user"
+      def unreport(m,nick)
+        if is_admin(m.user)
+          u = User(nick)
+          if u and !u.unknown
+            if ::IgnoreReport.unreport(u,m.user)
+              reply m,"Your reports have been cleared for #{nick}."
+            end
           else
             reply m,"User #{nick} not found!"
           end
@@ -40,21 +56,23 @@ module KAG
         end
       end
 
-      command :unreport,{nick: :string},
+      command :clear_reports,{nick: :string},
         summary: "Clear all reports for a given user",
         admin: true
-      def unreport(m,nick)
+      def clear_reports(m,nick)
         if is_admin(m.user)
           user = User(nick)
           if user and !user.unknown
-            ::IgnoreReport.unreport(user)
+            if ::IgnoreReport.clear(user)
+              reply m,"#{nick} has now been unreported."
+            end
           else
             reply m,"Could not find user #{nick}"
           end
         end
       end
 
-      command :ignore_list,{},
+      command :ban_list,{},
         summary: "Shows a list of ignored users",
         admin: true
       def ignore_list(m)
@@ -63,28 +81,32 @@ module KAG
         end
       end
 
-      command :ignore,{nick: :string,hours: :integer,reason: :string},
+      command :ban,{nick: :string,hours: :integer,reason: :string},
         summary: "Ignore (Ban) a user",
         admin: true
-      def ignore(m,nick,hours,reason = '')
+      def ban(m,nick,hours,reason = '')
         if is_admin(m.user)
           user = User(nick)
           if user and !user.unknown
-            ::Ignore.them(user,hours,reason,m.user)
+            if ::Ignore.them(user,hours,reason,m.user)
+              reply m,"#{nick} has now been banned for #{hours} hours."
+            end
           else
             reply m,"Could not find user #{nick}"
           end
         end
       end
 
-      command :unignore,{nick: :string},
+      command :unban,{nick: :string},
         summary: "Unignore (Unban) a user",
         admin: true
-      def unignore(m,nick)
+      def unban(m,nick)
         if is_admin(m.user)
           user = User(nick)
           if user and !user.unknown
-            ::Ignore.unignore(user)
+            if ::Ignore.unignore(user)
+              reply m,"#{nick} has now been unbanned."
+            end
           else
             reply m,"Could not find user #{nick}"
           end

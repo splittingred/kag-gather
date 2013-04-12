@@ -31,7 +31,7 @@ class Ignore < KAG::Model
     #
     def them(user,hours,reason = '',creator = nil)
       unless user.class == String
-        return false unless user.authed?
+        return false if user.authname.empty?
         user = user.authname
       end
       u = User.fetch(user)
@@ -50,6 +50,7 @@ class Ignore < KAG::Model
       if saved
         u.inc_stat(:ignored)
         creator.inc_stat(:ignored_others) if creator
+        Ignore._fetch_cache
       else
         false
       end
@@ -64,9 +65,11 @@ class Ignore < KAG::Model
         return false unless user.authed?
         user = user.authname
       end
-      ig = Ignore.joins(:user).where(:user => {:authname => user})
+      ig = Ignore.joins(:user).where(:users => {:authname => user})
       if ig
-        ig.destroy
+        ig.each do |ignore|
+          ignore.destroy
+        end
         true
       else
         false

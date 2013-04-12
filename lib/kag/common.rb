@@ -12,15 +12,19 @@ module KAG
       if m.params.length > 0 and %w(Quit Part Kick Kill).include?(m.params[0])
         true
       else
-        if m.user.authed?
-          true
-        elsif is_banned?(m.user)
-          false
-        elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
-          send_not_authed_msg(m)
-          false
+        if m.user
+          if is_banned?(m.user)
+            false
+          elsif m.user.authed?
+            true
+          elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
+            send_not_authed_msg(m)
+            false
+          else
+            true
+          end
         else
-          true
+          false
         end
       end
     end

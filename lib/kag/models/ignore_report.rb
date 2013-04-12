@@ -8,11 +8,11 @@ class IgnoreReport < KAG::Model
   after_save :check_for_ignore_limit
 
   class << self
-    def create(u,creator,reason = '')
+    def create(u,c,reason = '')
       user = User.fetch(u)
-      creator = User.fetch(creator)
+      creator = User.fetch(c)
       if user and creator
-        if IgnoreReport.exists(user,creator)
+        if false#IgnoreReport.exists(user,creator)
           false
         else
           report = IgnoreReport.new
@@ -26,6 +26,8 @@ class IgnoreReport < KAG::Model
           end
         end
       else
+        c.send "Could not find your User!" unless creator
+        c.send "Could not find User to ban!" unless user
         false
       end
     end
@@ -62,13 +64,27 @@ class IgnoreReport < KAG::Model
     # @param [User|String|Cinch::User] user
     # @param [Boolean] do_stats If true, adjust stats of creator/user
     #
-    def unreport(user,do_stats = true)
+    def clear(user,do_stats = true)
       user = User.fetch(user)
       if user
         IgnoreReport.where(:user_id => user.id).each do |r|
           if do_stats
-            r.user.dec_stat(:reported)
-            r.creator.dec_stat(:reported_others)
+            r.user.dec_stat(:reported) if r.user
+            r.creator.dec_stat(:reported_others) if r.creator
+          end
+          r.destroy
+        end
+      end
+    end
+
+    def unreport(user,reporter,do_stats = true)
+      user = User.fetch(user)
+      reporter = User.fetch(reporter)
+      if user and reporter
+        IgnoreReport.where(:user_id => user.id,:created_by => reporter.id).each do |r|
+          if do_stats
+            r.user.dec_stat(:reported) if r.user
+            r.creator.dec_stat(:reported_others) if r.creator
           end
           r.destroy
         end
@@ -81,12 +97,17 @@ class IgnoreReport < KAG::Model
   #
   def check_for_ignore_limit
     ban_points = IgnoreReport.where(:user_id => self.user_id).count
-    matches_count = self.user.matches.count
+    #matches_count = self.user.matches.count
 
-    ban_time = (86400*5) * (ban_points - (matches_count / 100)) * (1.2 ** ban_points)
+    matches_count = 4
+
+    match_leniency = 2.5
+    num_days = 1
+    ban_time = ((24*num_days) * (ban_points - (matches_count / match_leniency)) * (1.2 ** ban_points)).floor
 
     if ban_time > 0
-      Ignore.them(self.user,ban_time,"Temporary ban for exceeding ban points.")
+      Ignore.them(self.user,ban_time,"Temporary ban for exceeding ban points. Matches: #{matches_count}, Ban Points: #{ban_points}")
+      KAG.gather.send_channels_msg "#{self.user.name} has been temporarily banned for #{ban_time} hours for exceeding ban points."
     end
   end
 end

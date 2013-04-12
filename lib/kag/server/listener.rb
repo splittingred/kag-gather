@@ -28,9 +28,13 @@ module KAG
         @twiddle = true
 
         i = 0
-        #z = "[00:00:00] Fake message goes here"
         while (z = get) and @twiddle
-          self.parser.parse(z)
+          begin
+            self.parser.parse(z)
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace.join("\n")
+          end
           sleep 0.5
           i = i+1
         end

@@ -75,9 +75,9 @@ module KAG
       command :ban_list,{},
         summary: "Shows a list of ignored users",
         admin: true
-      def ignore_list(m)
+      def ban_list(m)
         if is_admin(m.user)
-          reply m,"IGNORED: "+::Ignore.list
+          reply m,"Banned: "+::Ignore.list
         end
       end
 

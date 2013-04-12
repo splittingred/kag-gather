@@ -446,8 +446,10 @@ module KAG
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) gibbed (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})? into pieces$/))
           _add_stat(:kill,match[2])
           _add_kill_type(:gibbed,match[2])
-          _add_stat(:death,match[4])
-          _add_death_type(:gibbed,match[4])
+          if !match[4].nil? and !match[4].to_s.empty?
+            _add_stat(:death,match[4])
+            _add_death_type(:gibbed,match[4])
+          end
           :gibbed
 
         # shot
@@ -595,6 +597,7 @@ module KAG
       end
 
       def _add_stat(stat,player,increment = 1)
+        return false if (player.nil? or stat.nil?)
         stat = stat.to_sym
         player = player.to_sym
         if self.data.players
@@ -606,6 +609,7 @@ module KAG
       end
 
       def _add_kill_type(type,player,increment = 1)
+        return false if (player.nil? or type.nil?)
         type = type.to_sym
         player = player.to_sym
         if self.data.players
@@ -617,6 +621,7 @@ module KAG
       end
 
       def _add_death_type(type,player,increment = 1)
+        return false if (player.nil? or type.nil?)
         type = type.to_sym
         player = player.to_sym
         if self.data.players

@@ -224,4 +224,8 @@ class User < KAG::Model
   def ignored?
     Ignore.is_ignored?(self.authname)
   end
+
+  def linked?
+    !self.kag_user.empty?
+  end
 end

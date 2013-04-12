@@ -78,11 +78,15 @@ module KAG
       def add(m)
         u = ::User.fetch(m.user)
         if u
-          r = @queue.add(u)
-          if r === true
-            #m.user.monitor
+          if u.linked?
+            r = @queue.add(u)
+            if r === true
+              #m.user.monitor
+            else
+              reply m,r
+            end
           else
-            reply m,r
+            m.user.notice "Hi #{m.user.nick}, you need to link your KAG account to your IRC AUTH name first before playing in a match. This is needed for in-game management and stats collection. Type !link to get started."
           end
         end
       end

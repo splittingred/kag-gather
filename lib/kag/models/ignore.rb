@@ -70,6 +70,7 @@ class Ignore < KAG::Model
         ig.each do |ignore|
           ignore.destroy
         end
+        Ignore._fetch_cache
         true
       else
         false

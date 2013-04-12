@@ -77,12 +77,16 @@ class IgnoreReport < KAG::Model
   end
 
   ##
-  # Check to see if a user has reached the report limit; if so, then ignore them and clear reports
+  # Calculate ban points and issue ban if needed
   #
   def check_for_ignore_limit
-    if IgnoreReport.where(:user_id => self.user_id).count > KAG::Config.instance[:report_threshold].to_i
-      Ignore.them(self.user,24,"Passed report threshold.")
-      IgnoreReport.unreport(self.user,false)
+    ban_points = IgnoreReport.where(:user_id => self.user_id).count
+    matches_count = self.user.matches.count
+
+    ban_time = (86400*5) * (ban_points - (matches_count / 100)) * (1.2 ** ban_points)
+
+    if ban_time > 0
+      Ignore.them(self.user,ban_time,"Temporary ban for exceeding ban points.")
     end
   end
 end

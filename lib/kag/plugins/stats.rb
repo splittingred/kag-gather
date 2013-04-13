@@ -24,7 +24,7 @@ module KAG
       def stats_specific(m,nick)
         user = User(nick)
         if user and !user.unknown
-          u = ::User.find_by_authname(user.authname)
+          u = ::User.fetch(user.authname)
           if u
             reply m,u.stats_text
           else

@@ -1,5 +1,5 @@
 {
   "command_not_authed":"You must first AUTH on the IRC server via Q before you can use this bot. See !help for more info."
-  ,"general_not_authed": "Hi [[+nick]]. You're not currently AUTHed, and therefore won't be able to use the bot. To register for QuakeNet, see here: http://www.quakenet.org/help/q/how-to-register-an-account-with-q Once registered and AUTHed, do this: /mode mynickhere +x (of course, replace mynickhere with your nickname). Then you should be able to start gather!"
+  ,"general_not_authed": "Hi [[+nick]]. You're not currently AUTHed, and therefore won't be able to use the bot. To register for QuakeNet, see here: http://www.quakenet.org/help/q/how-to-register-an-account-with-q Once registered and AUTHed, do this: /mode mynickhere +x (of course, replace mynickhere with your nickname). Then you should be able to start gather! (Make sure you read the rules via here: "
   ,"general_help": "Hi [[+nick]]! You can get started by typing !add in the channel, and that will add you to the queue. See !h for a longer list of commands."
 }

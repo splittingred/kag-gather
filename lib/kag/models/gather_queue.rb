@@ -81,7 +81,7 @@ class GatherQueue < KAG::Model
   def list
     m = []
     self.users(true).each do |user|
-      m << user.nick
+      m << user.name
     end
     m.join(", ")
   end

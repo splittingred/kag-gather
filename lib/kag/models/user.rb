@@ -72,7 +72,7 @@ class User < KAG::Model
   # @return [Boolean]
   #
   def linked?
-    self.kag_user != '' and !self.kag_user.nil?
+    !self.kag_user.nil? and !self.kag_user.to_s.empty?
   end
 
   ##
@@ -223,9 +223,5 @@ class User < KAG::Model
   #
   def ignored?
     Ignore.is_ignored?(self.authname)
-  end
-
-  def linked?
-    !self.kag_user.empty?
   end
 end

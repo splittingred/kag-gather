@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'patches'
 require 'sinatra'
 require 'kag/config'

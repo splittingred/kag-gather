@@ -56,8 +56,8 @@ module KAG
 
       def connect
         return true if self.connected?
-        puts "[Server] Attempting to connect via socket to #{self.server.host}:#{self.server.port}"
-        self.socket = TCPSocket.new(self.server.host,self.server.port)
+        puts "[Server] Attempting to connect via socket to #{self.server.ip}:#{self.server.port}"
+        self.socket = TCPSocket.new(self.server.ip,self.server.port.to_i)
         self.socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         unless self.socket
           puts "[Server] Could not establish TCP socket to connect"

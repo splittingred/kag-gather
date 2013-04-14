@@ -9,7 +9,7 @@ class Server < KAG::Model
   attr_accessor :listener,:match_data
 
   def self.find_unused
-    Server.where(:in_use => false).order("RAND()").first
+    Server.where(:in_use => false,:status => "active").order("RAND()").first
   end
 
 

@@ -146,7 +146,7 @@ module KAG
         if self.data[:wins] and self.data[:wins].length > 0
           txt = []
           if self.data[:wins].length == 1
-            self.data[:wins].keys.first == "Blue Team" ? self.data[:wins]["Red Team".to_sym] = 0 : self.data[:wins]["Blue Team".to_sym] = 0
+            self.data[:wins].keys.first == "Blue Team" ? self.data[:wins]["Red Team"] = 0 : self.data[:wins]["Blue Team"] = 0
           end
           self.data[:wins].each do |team,score|
             txt << "#{team.to_s}: #{score.to_s}"
@@ -360,10 +360,11 @@ module KAG
         self.live = false
         match = msg.match(/^(.+) (wins the game!)$/)
         if match
-          self.data[:wins][match[1]] = 0 unless self.data[:wins][match[1]]
-          self.data[:wins][match[1]] += 1
+          winner = match[1].to_s.strip
+          self.data[:wins][winner] = 0 unless self.data[:wins][winner]
+          self.data[:wins][winner] += 1
 
-          say "Round has now ended. #{match[1]} team wins!"
+          say "Round has now ended. #{winner} wins!"
           if _team_has_won
             end_match
           end

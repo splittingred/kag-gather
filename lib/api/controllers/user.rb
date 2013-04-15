@@ -31,6 +31,8 @@ module KAG
             end
             d[:stats][:matches] = user.matches.count
             d.delete(:host)
+            d.delete(:authname)
+            d.delete(:nick)
             self.success('',d)
           else
             self.failure('err_nf',user)

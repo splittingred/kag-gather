@@ -32,8 +32,7 @@ module KAG
         end
 
         self.match = ::Match.new({
-           :server => self.server,
-           :status => "active"
+           :server => self.server
         })
         self.match.setup_teams(self.players,shuffle_teams)
         self.match.save

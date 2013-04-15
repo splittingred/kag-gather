@@ -31,13 +31,14 @@ module KAG
         if m.params.length > 0 and m.params[0] == "Quit"
           @queue.remove(m.user.nick)
         else
+          user = ::User.fetch(m.user)
           match = ::Match.player_in(m.user)
-          if match
-            sub = match.remove_player(m.user)
+          if match and user
+            sub = match.remove_player(user)
             if sub
               m.channel.msg sub[:msg]
             end
-          elsif @queue.has_player?(m.user)
+          elsif @queue.has_player?(user)
             @queue.remove(m.user)
           end
         end

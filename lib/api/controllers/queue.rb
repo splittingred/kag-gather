@@ -21,7 +21,7 @@ module KAG
         end
 
         def list
-          queue = GatherQueue.first.
+          queue = GatherQueue.first
           if queue
             data = SymbolTable.new(queue.attributes)
             data[:players] = []

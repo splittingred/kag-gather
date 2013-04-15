@@ -24,7 +24,7 @@ module KAG
         self.test = false
         ps = []
         self.server.match.users.each do |u|
-          ps << u.authname
+          ps << u.name
         end
         self.players = ps
         self.players_there = 0
@@ -82,6 +82,8 @@ module KAG
             self.evt_unready(msg)
           elsif msg.index("!who_ready")
             self.evt_who_ready(msg)
+          elsif msg.index("!who_not_ready")
+            self.evt_who_not_ready(msg)
           elsif msg.index("!veto")
             self.evt_veto(msg)
           elsif msg.index("!hello")
@@ -198,6 +200,11 @@ module KAG
       def evt_who_ready(msg)
         say "Ready: "+self.ready.join(", ")
         :who_ready
+      end
+
+      def evt_who_not_ready(msg)
+        say "Not Ready: "+(self.players - self.ready).join(", ")
+        :who_not_ready
       end
 
       def _get_ready_threshold(num_of_players)

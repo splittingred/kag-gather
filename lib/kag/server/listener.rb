@@ -35,7 +35,7 @@ module KAG
             puts e.message
             puts e.backtrace.join("\n")
           end
-          sleep 0.5
+          sleep 0.3
           i = i+1
         end
         puts "ending..."
@@ -196,7 +196,7 @@ module KAG
       end
 
       def get
-        msg = ""
+        msg = ''
         begin
           ready = IO.select([self.socket],nil,nil,2)
           if ready

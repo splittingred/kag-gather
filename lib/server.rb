@@ -8,6 +8,7 @@ Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 require 'api/controllers/base'
 KAG.ensure_database
 
+set :environment, KAG::Config.instance[:branch].to_sym
 set :root, File.dirname(__FILE__)+'/lib'
 
 get "/*" do

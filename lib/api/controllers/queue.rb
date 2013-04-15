@@ -21,15 +21,15 @@ module KAG
         end
 
         def list
-          c = GatherQueue.where(@params)
-          if c
-            us = []
-            c.each do |u|
-              ud = SymbolTable.new(u.attributes)
-
-              us << ud
+          queue = GatherQueue.first.
+          if queue
+            data = SymbolTable.new(queue.attributes)
+            data[:players] = []
+            queue.users.each do |u|
+              data[:players] << u.name
             end
-            self.success('',us)
+
+            self.success('',data)
           else
             self.failure('err_nf',c)
           end

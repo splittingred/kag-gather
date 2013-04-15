@@ -75,7 +75,7 @@ module KAG
       def record_kd
         # record K/D for each user
         self.data.players.each do |player,data|
-          p = ::Player.fetch_by_kag_user(player)
+          p = ::Player.fetch_by_kag_user(player.to_s)
           if p
             p.kills = data[:kill]
             p.deaths = data[:death]

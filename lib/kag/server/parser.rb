@@ -548,7 +548,7 @@ module KAG
       def _add_stat(stat,player,increment = 1)
         return false if (player.nil? or stat.nil?)
         stat = stat.to_sym
-        player = player.to_sym
+        player = player.to_s
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][stat] = 0 unless self.data.players[player][stat]
@@ -560,7 +560,7 @@ module KAG
       def _add_kill_type(type,player,increment = 1)
         return false if (player.nil? or type.nil?)
         type = type.to_sym
-        player = player.to_sym
+        player = player.to_s
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][:kill_types] = {} unless self.data.players[player][:kill_types]
@@ -572,7 +572,7 @@ module KAG
       def _add_death_type(type,player,increment = 1)
         return false if (player.nil? or type.nil?)
         type = type.to_sym
-        player = player.to_sym
+        player = player.to_s
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][:death_types] = {} unless self.data.players[player][:death_types]

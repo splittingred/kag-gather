@@ -523,11 +523,14 @@ module KAG
       end
 
       def archive
+        winner = _team_has_won
+        puts self.data.inspect
+
         if self.listener.server.match.teams
           self.listener.server.match.teams.each do |team|
             # record user win/loss stats
             team.players.each do |player|
-              if team.name == self.data[:winner]
+              if team.name == winner
                 player.won = true
               else
                 player.won = false

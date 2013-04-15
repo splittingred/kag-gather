@@ -21,7 +21,7 @@ class Team < KAG::Model
         player_msg = msg.clone
         #player_msg = player_msg+cls if KAG::Config.instance[:pick_classes] and cls and !cls.empty?
         player_msg = player_msg+" #{self.color}#{self.name} with: #{pl}"
-        irc_user = KAG.gather.bot.user_list.find_ensured(user.authname)
+        irc_user = KAG.gather.bot.user_list.find_ensured(user.nick)
         if irc_user
           irc_user.send(player_msg)
           sleep(2) # prevent excess flood stuff

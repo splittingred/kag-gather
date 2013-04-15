@@ -41,7 +41,7 @@ class Team < KAG::Model
   def player_list
     ps = []
     self.users(true).each do |user|
-      ps << user.authname
+      ps << user.name
     end
     ps.join(", ")
   end

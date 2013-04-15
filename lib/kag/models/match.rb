@@ -151,11 +151,10 @@ class Match < KAG::Model
   end
 
   def send_channel_start_msg
-    msg = "MATCH #{self.id}: #{::Match.type_as_string} - "
+    msg = "MATCH #{self.id} on Server #{self.server.name}: #{::Match.type_as_string} - "
     self.teams.each do |team|
       msg = msg+" "+team.text_for_match_start
     end
-    msg+" \x0301 at #{self.server.name}"
     KAG.gather.send_channels_msg(msg,false)
   end
 

@@ -14,7 +14,7 @@ module KAG
         self.queue = ::GatherQueue.new
         self.queue.save
 
-        player_list = %w(Geti splittingred Vidar Ardivaba killatron Verra Cpa3y Kalikst Ezreli Furai)
+        player_list = %w(Geti splittingred Ardivaba killatron Verra Cpa3y Kalikst Vidar Ezreli Furai)
         KAG::Config.instance[:match_size] = 10
 
         self.players = []

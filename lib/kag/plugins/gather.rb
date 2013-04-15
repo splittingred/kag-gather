@@ -28,7 +28,7 @@ module KAG
 
       listen_to :part, :quit, :kill, method: :on_leaving
       def on_leaving(m)
-        if m.params.length > 0 and m.params[0] == "Quit"
+        if m.params.length > 0 and ['Quit','Part','Kick','Kill','EOF from client','Read error: EOF from client'].include?(m.params[0])
           @queue.remove(m.user.nick)
         else
           user = ::User.fetch(m.user)

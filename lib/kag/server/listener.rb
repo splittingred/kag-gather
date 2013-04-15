@@ -27,23 +27,24 @@ module KAG
         self.restart_map
         @twiddle = true
 
-        i = 0
-        while (z = get) and @twiddle
-          begin
-            self.parser.parse(z)
-          rescue Exception => e
-            puts e.message
-            puts e.backtrace.join("\n")
+        while (buffer = get) and @twiddle
+          lines = buffer.split("\n")
+          lines.each do |line|
+            begin
+              self.parser.parse(line)
+            rescue Exception => e
+              puts e.message
+              puts e.backtrace.join("\n")
+            end
+            #sleep 0.3
           end
-          sleep 0.3
-          i = i+1
         end
-        puts "ending..."
+        puts 'ending...'
       end
 
       def stop_listening
         @twiddle = false
-        puts "Stopping listener"
+        puts 'Stopping listener'
 
         self.data[:end] = Time.now
         self.data = self.parser.data
@@ -60,7 +61,7 @@ module KAG
         self.socket = TCPSocket.new(self.server.ip,self.server.port.to_i)
         self.socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         unless self.socket
-          puts "[Server] Could not establish TCP socket to connect"
+          puts '[Server] Could not establish TCP socket to connect'
           return false
         end
         success = false
@@ -68,7 +69,7 @@ module KAG
           put self.server.rcon_password
           z = get
           puts "[RCON] "+z.to_s
-          z.include?("now authenticated")
+          z.include?('now authenticated')
           self.connected = true
           success = true
         rescue Exception => e
@@ -81,7 +82,7 @@ module KAG
 
       def disconnect
         if self.socket
-          puts "[RCON] Closing socket..."
+          puts '[RCON] Closing socket...'
           #put "/quit"
           self.socket.close
           self.connected = false
@@ -101,7 +102,7 @@ module KAG
       #
       def players
         return false unless self.connect
-        _command "/players"
+        _command '/players'
 
         players = {}
         while (line = get)
@@ -154,7 +155,7 @@ module KAG
 
       def restart_map
         return false unless self.connect
-        _command "/restartmap"
+        _command '/restartmap'
         _cycle
       end
 
@@ -166,7 +167,7 @@ module KAG
 
       def next_map
         return false unless self.connect
-        _command "/nextmap"
+        _command '/nextmap'
         _cycle
       end
 

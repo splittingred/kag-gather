@@ -2,6 +2,10 @@ require 'symboltable'
 require 'kag/stats/main'
 require 'kag/user/user'
 
+# Stuff left to add:
+# * COLLAPSE by [Clan] nickname (size X blocks)
+#
+
 module KAG
   module Server
     class Parser

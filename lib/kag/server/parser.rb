@@ -88,6 +88,10 @@ module KAG
             self.evt_veto(msg)
           elsif msg.index("!hello")
             self.evt_hello(msg)
+          elsif msg.index("!claim")
+            self.evt_claim(msg)
+          elsif msg.index("!claimed")
+            self.evt_claimed(msg)
           end
         end
       end
@@ -329,6 +333,34 @@ module KAG
             t = m[5].to_s.strip
             say "Nerfing... #{t} was too OP anyway."
           end
+        end
+      end
+
+
+      def evt_claim(msg)
+        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!claim (.*))$/)
+        if m
+          username = m[3].to_s.strip
+          player_class = m[5].to_s.strip.downcase.capitalize
+          if username.empty? or player_class.empty?
+          else
+            if ['Archer','Knight','Builder'].include?(player_class)
+              self.data[:claims] = {} unless self.data[:claims]
+              self.data[:claims][username] = player_class
+            else
+              say "#{username}, #{player_class} is not a valid class."
+            end
+          end
+        end
+        end
+
+      def evt_claimed(msg)
+        if self.data and self.data[:claims]
+          list = []
+          self.data.claims.each do |username,player_class|
+            list << "#{username}: #{player_class}"
+          end
+          list.join(", ")
         end
       end
 

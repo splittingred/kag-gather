@@ -35,6 +35,15 @@ module KAG
         false
       end
 
+      def get_class(player)
+        cls = false
+        if self.data[:claims]
+          if self.data[:claims].key?(player)
+            cls = self.data[:claims][player]
+          end
+        end
+        cls
+      end
 
       def match
         self.server.match
@@ -56,11 +65,19 @@ module KAG
               else
                 player.won = false
               end
+              cls = get_class(player)
+              if cls
+                player.cls = cls
+              end
               if player.save
                 user = player.user
                 if user
                   k = player.won ? :wins : :losses
                   user.inc_stat(k)
+                  if cls
+                    user.inc_stat(cls+'.'+k.to_s)
+                    user.inc_stat(cls+'.matches')
+                  end
                 else
                   puts "Cannot find User for player ID #{player.id}"
                 end
@@ -86,13 +103,19 @@ module KAG
                 user.inc_stat(:deaths,p.deaths)
                 if data[:death_types]
                   data[:death_types].each do |type,v|
-                    user.inc_stat("deaths."+type.to_s,v)
+                    user.inc_stat('deaths.'+type.to_s,v)
                   end
                 end
                 if data[:kill_types]
                   data[:kill_types].each do |type,v|
-                    user.inc_stat("kills."+type.to_s,v)
+                    user.inc_stat('kills.'+type.to_s,v)
                   end
+                end
+
+                cls = get_class(player.to_s)
+                if cls
+                  user.inc_stat(cls+'.kills',p.kills)
+                  user.inc_stat(cls+'.deaths',p.deaths)
                 end
               else
                 puts "Cannot find User for player ID #{p.id}"

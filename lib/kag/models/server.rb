@@ -19,7 +19,7 @@ class Server < KAG::Model
       self.match_in_progress = match
       self.match_data = SymbolTable.new
 
-      puts "setting up listener"
+      puts 'setting up listener'
 
       self.listener = KAG::Server::Listener.new(self)
       KAG::Listener[self.name.to_sym] = self.listener

@@ -26,6 +26,7 @@ module KAG
 
       def start_listening
         return false unless self.connect
+        self.log.info 'Setting up parser'
         self.parser = KAG::Server::Parser.new(self,self.data)
         self.restart_map
         @twiddle = true
@@ -51,6 +52,7 @@ module KAG
         self.log.info 'In Listener.stop_listening'
 
         self.data[:end] = Time.now
+        self.parser.archive
         self.data = self.parser.data
 
         self.socket.close

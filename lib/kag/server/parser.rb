@@ -38,6 +38,9 @@ module KAG
           :players => {},
           :started => false,
         })
+        self.players.each do |p|
+          self.data[:players][p.to_s] = {}
+        end
         self.live = false
       end
       def parse(msg)
@@ -123,11 +126,10 @@ module KAG
         self.log.info "Ending match..."
         begin
           self.data[:end] = Time.now
-
           self.data[:winner] = get_winning_team
           say "Match ended! #{self.data[:winner]} has won!"
 
-          self.archive
+          #self.archive
           #self.listener.kick_all unless self.test
           self.log.info "finished match, quitting"
           true
@@ -626,6 +628,7 @@ module KAG
         return false if (player.nil? or stat.nil?)
         stat = stat.to_sym
         player = player.to_s
+        self.data[:players] = {} unless self.data.players
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][stat] = 0 unless self.data.players[player][stat]
@@ -638,6 +641,7 @@ module KAG
         return false if (player.nil? or type.nil?)
         type = type.to_sym
         player = player.to_s
+        self.data[:players] = {} unless self.data.players
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][:kill_types] = {} unless self.data.players[player][:kill_types]
@@ -650,6 +654,7 @@ module KAG
         return false if (player.nil? or type.nil?)
         type = type.to_sym
         player = player.to_s
+        self.data[:players] = {} unless self.data.players
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][:death_types] = {} unless self.data.players[player][:death_types]

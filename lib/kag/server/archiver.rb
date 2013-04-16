@@ -43,10 +43,10 @@ module KAG
         cls = false
         if self.data[:claims]
           if self.data[:claims].key?(player)
-            cls = self.data[:claims][player]
+            cls = self.data[:claims][player].downcase
           end
         end
-        cls.downcase
+        cls
       end
 
       def match

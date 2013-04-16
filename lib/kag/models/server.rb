@@ -22,7 +22,7 @@ class Server < KAG::Model
       puts "setting up listener"
 
       self.listener = KAG::Server::Listener.new(self)
-      KAG::Listener[self.name.to_sym] = self
+      KAG::Listener[self.name.to_sym] = self.listener
 
       self.listener.async.start_listening
     end
@@ -43,17 +43,18 @@ class Server < KAG::Model
       self.listener = KAG::Listener[self.name.to_sym]
     end
     if self.listener
+      puts "Found listener, now stopping..."
       begin
         self.listener.stop_listening
+        puts "Stopped, terminating thread"
       rescue Exception => e
         puts e.message
         puts e.backtrace.join("\n")
       end
     end
 
-    puts "Stopped, terminating thread"
-    puts "Thread terminated"
     self.listener = nil
+    puts "Thread terminated"
     self.match_in_progress = nil
 
     self.in_use = 0

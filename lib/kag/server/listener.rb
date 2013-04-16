@@ -44,7 +44,7 @@ module KAG
 
       def stop_listening
         @twiddle = false
-        puts 'Stopping listener'
+        puts 'In Listener.stop_listening'
 
         self.data[:end] = Time.now
         self.data = self.parser.data
@@ -52,6 +52,7 @@ module KAG
         self.socket.close
         KAG::Listener.delete_registered(self.server.name.to_sym)
         self.terminate
+        puts 'Listener self.terminate run'
         self.data
       end
 

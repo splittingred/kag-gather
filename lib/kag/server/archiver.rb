@@ -11,6 +11,7 @@ module KAG
       end
 
       def run
+        puts "- Attempting to archive match..."
         match = self.match
         if match
           match.stats = self.data.to_json

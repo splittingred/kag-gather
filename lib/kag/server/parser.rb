@@ -119,6 +119,7 @@ module KAG
 
           archive
           self.listener.kick_all unless self.test
+          puts "finished match, quitting"
           true
         rescue Exception => e
           puts e.message
@@ -279,8 +280,8 @@ module KAG
           self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
           if already_sub_requested?(player_to_sub,player_requesting)
             say "You can only vote to request a sub for that person once, #{player_requesting}."
-          elsif !can_sub_request?(player_to_sub,player_requesting)
-            say "You cannot request a sub for the other team, #{player_requesting}."
+          #elsif !can_sub_request?(player_to_sub,player_requesting)
+          #  say "You cannot request a sub for the other team, #{player_requesting}."
           else
             self.sub_requests[player_to_sub] << player_requesting
             votes_needed = (self.players.length / 4).to_i
@@ -337,7 +338,7 @@ module KAG
         self.live = true
         self.restart_queue = []
         self.units_depleted = false
-        say "Match is now LIVE!"
+        say "Round is now LIVE!"
       end
 
       # stats events

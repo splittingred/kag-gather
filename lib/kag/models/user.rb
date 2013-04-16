@@ -224,4 +224,8 @@ class User < KAG::Model
   def ignored?
     Ignore.is_ignored?(self.authname)
   end
+
+  def authed?
+    !self.authname.to_s.empty?
+  end
 end

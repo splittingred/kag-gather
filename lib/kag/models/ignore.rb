@@ -31,7 +31,7 @@ class Ignore < KAG::Model
     #
     def them(user,hours,reason = '',creator = nil)
       unless user.class == String
-        return false if user.authname.empty?
+        return false unless user.authed?
         user = user.authname
       end
       u = User.fetch(user)

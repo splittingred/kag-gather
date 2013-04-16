@@ -532,7 +532,7 @@ module KAG
 
       def archive
         a = Archiver.new(self.data,self.listener.server)
-        a.process
+        a.run
       end
 
       private

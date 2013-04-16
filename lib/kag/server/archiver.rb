@@ -10,11 +10,7 @@ module KAG
         self.server = server
       end
 
-
-      def process
-        self.record_wins
-        self.record_kd
-
+      def run
         match = self.match
         if match
           match.stats = self.data.to_json
@@ -22,6 +18,9 @@ module KAG
         else
           puts "Could not find match to save stats to!"
         end
+
+        self.record_wins
+        self.record_kd
 
         KAG::Stats::Main.add_stat(:matches_completed)
       end

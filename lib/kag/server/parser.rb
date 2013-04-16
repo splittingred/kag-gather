@@ -401,7 +401,7 @@ module KAG
           self.data[:claims].each do |username,player_class|
             list << "#{username}: #{player_class}"
           end
-          say list.join(", ")
+          say "Claimed: "+list.join(", ")
           :claimed
         end
       end

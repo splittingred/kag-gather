@@ -20,7 +20,7 @@ module KAG
         self.server = server
         self.data = server.match_data
         self.socket = nil
-        self.log = ::Logger.new("log/matches/#{self.server.match.id}.txt")
+        self.log = ::Logger.new("log/matches/#{self.server.match.id}.log")
         self.log.level = ::Logger::INFO
       end
 

@@ -10,12 +10,13 @@ require 'kag/server/archiver'
 module KAG
   module Server
     class Parser
-      attr_accessor :server,:data,:live,:ready,:veto,:listener,:restart_queue
+      attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
       attr_accessor :players,:teams
 
       def initialize(listener,data)
         self.server = listener.server
+        self.log = listener.log
         self.listener = listener
         self.ready = []
         self.veto = []
@@ -42,6 +43,9 @@ module KAG
       def parse(msg)
         return false if msg.to_s.empty? or msg.to_s.length < 11
         msg = msg[11..msg.length]
+
+        self.log.info((self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s)
+
         if msg.index("*Restarting Map*")
           self.evt_map_restart(msg)
         elsif msg.index(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20}) (?:is now known as) (.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20})$/)
@@ -64,7 +68,6 @@ module KAG
           self.evt_claimed(msg)
 
         elsif self.live # live mode
-          puts "[LIVE] "+msg.to_s
           if msg.index(/^(.+) (wins the game!)$/)
             self.evt_round_win(msg)
           elsif msg.index(/^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/)
@@ -79,7 +82,6 @@ module KAG
             self.evt_restart(msg)
           end
         else # warmup
-          puts "[WARMUP] "+msg.to_s
           if msg.index("!ready")
             self.evt_ready(msg)
           elsif msg.index("!unready")
@@ -118,7 +120,7 @@ module KAG
       end
 
       def end_match
-        puts "Ending match..."
+        self.log.info "Ending match..."
         begin
           self.data[:end] = Time.now
 
@@ -127,13 +129,13 @@ module KAG
 
           self.archive
           #self.listener.kick_all unless self.test
-          puts "finished match, quitting"
+          self.log.info "finished match, quitting"
           true
         rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
+          self.log.error e.message
+          self.log.error e.backtrace.join("\n")
         ensure
-          puts "cease match"
+          self.log.info "cease match"
           self.server.match.cease
         end
       end
@@ -490,7 +492,7 @@ module KAG
               say "Down to #{self.players_there.to_s} people of required #{self.players.length} in the match!"
 
               # check here to see if we're down to less than half, if so, then end match
-              puts "Checking for match end threshold: #{self.players_there.to_s} < #{((self.players.length / 2)+1).to_s}"
+              self.log.info "Checking for match end threshold: #{self.players_there.to_s} < #{((self.players.length / 2)+1).to_s}"
               if self.players_there.to_i < ((self.players.length / 2)+1)
                 end_match
               else
@@ -606,7 +608,7 @@ module KAG
       end
 
       def archive
-        a = Archiver.new(self.data,self.listener.server)
+        a = Archiver.new(self.data,self.listener.server,self.log)
         a.run
       end
 
@@ -614,7 +616,7 @@ module KAG
 
       def say(msg)
         if self.test
-          puts "[SAY] #{msg}"
+          self.log.info "[SAY] #{msg}"
         else
           self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg)
         end

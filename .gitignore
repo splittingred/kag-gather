@@ -10,7 +10,8 @@ config/config.json
 config/data.json
 
 # log stuff
-log/
+log/*.log
+log/matches/*.log
 
 # other files
 tmp

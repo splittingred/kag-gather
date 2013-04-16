@@ -4,20 +4,21 @@ require 'kag/server/parser'
 module KAG
   module Server
     class Archiver
-      attr_accessor :data,:server
-      def initialize(data,server)
+      attr_accessor :data,:server,:log
+      def initialize(data,server,logger)
         self.data = data
         self.server = server
+        self.log = logger
       end
 
       def run
-        puts "- Attempting to archive match..."
+        self.log.info "- Attempting to archive match..."
         match = self.match
         if match
           match.stats = self.data.to_json
           match.save
         else
-          puts "Could not find match to save stats to!"
+          self.log.error "Could not find match to save stats to!"
         end
 
         self.record_wins
@@ -25,7 +26,7 @@ module KAG
 
         KAG::Stats::Main.add_stat(:matches_completed)
 
-        puts "Finished archiving"
+        self.log.info "Finished archiving"
         true
       end
 
@@ -72,7 +73,7 @@ module KAG
               if cls
                 player.cls = cls.downcase
               else
-                puts "No class for #{player.to_s}"
+                self.log.error "No class for #{player.to_s}"
               end
               if player.save
                 user = player.user
@@ -84,10 +85,10 @@ module KAG
                     user.inc_stat(cls+'.matches')
                   end
                 else
-                  puts "Cannot find User for player ID #{player.id}"
+                  self.log.error "Cannot find User for player ID #{player.id}"
                 end
               else
-                puts "Cannot save Player #{p.id} record!"
+                self.log.error "Cannot save Player #{p.id} record!"
               end
             end
           end
@@ -123,13 +124,13 @@ module KAG
                   user.inc_stat(cls+'.deaths',p.deaths)
                 end
               else
-                puts "Cannot find User for player ID #{p.id}"
+                self.log.error "Cannot find User for player ID #{p.id}"
               end
             else
-              puts "Cannot save Player #{p.id} record!"
+              self.log.error "Cannot save Player #{p.id} record!"
             end
           else
-            puts "Could not find Player with kag_user #{player.to_s} for stats archiving!"
+            self.log.error "Could not find Player with kag_user #{player.to_s} for stats archiving!"
           end
         end
       end

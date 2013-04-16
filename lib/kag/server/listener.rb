@@ -1,24 +1,27 @@
 require 'symboltable'
 require 'celluloid'
 require 'kag/server/parser'
+require 'logger'
 
 module KAG
   module Server
     class Listener
       include ::Celluloid
 
-      attr_accessor :server,:socket,:connected,:data,:parser,:data
+      attr_accessor :server,:socket,:connected,:data,:parser,:data,:log
 
       trap_exit :actor_died
 
       def actor_died(actor, reason)
-        p "Oh no! #{actor.inspect} has died because of a #{reason.class}"
+        self.log.error "Oh no! #{actor.inspect} has died because of a #{reason.class}"
       end
 
       def initialize(server)
         self.server = server
         self.data = server.match_data
         self.socket = nil
+        self.log = ::Logger.new("log/matches/#{self.server.match.id}.txt")
+        self.log.level = ::Logger::INFO
       end
 
       def start_listening
@@ -33,19 +36,19 @@ module KAG
             begin
               self.parser.parse(line)
             rescue Exception => e
-              puts e.message
-              puts e.backtrace.join("\n")
+              self.log.error e.message
+              self.log.error e.backtrace.join("\n")
             end
           end
-          #puts "twiddling..."
+          #self.log.info "twiddling..."
           sleep 0.2
         end
-        puts 'ending...'
+        self.log.info 'ending...'
       end
 
       def stop_listening
         @twiddle = false
-        puts 'In Listener.stop_listening'
+        self.log.info 'In Listener.stop_listening'
 
         self.data[:end] = Time.now
         self.data = self.parser.data
@@ -55,42 +58,42 @@ module KAG
         begin
           ActiveRecord::Base.connection.close
         rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
+          self.log.error e.message
+          self.log.error e.backtrace.join("\n")
         end
         self.terminate
-        puts 'Listener self.terminate run'
+        self.log.info 'Listener self.terminate run'
         self.data
       end
 
       def connect
         return true if self.connected?
-        puts "[Server] Attempting to connect via socket to #{self.server.ip}:#{self.server.port}"
+        self.log.info "[Server] Attempting to connect via socket to #{self.server.ip}:#{self.server.port}"
         self.socket = TCPSocket.new(self.server.ip,self.server.port.to_i)
         self.socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         unless self.socket
-          puts '[Server] Could not establish TCP socket to connect'
+          self.log.error '[Server] Could not establish TCP socket to connect'
           return false
         end
         success = false
         begin
           put self.server.rcon_password
           z = get
-          puts "[RCON] "+z.to_s
+          self.log.info "[RCON] "+z.to_s
           z.include?('now authenticated')
           self.connected = true
           success = true
         rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
+          self.log.error e.message
+          self.log.error e.backtrace.join("\n")
         end
-        puts "[Server] Connected! #{success.to_s}"
+        self.log.info "[Server] Connected! #{success.to_s}"
         success
       end
 
       def disconnect
         if self.socket
-          puts '[RCON] Closing socket...'
+          self.log.info '[RCON] Closing socket...'
           #put "/quit"
           self.socket.close
           self.connected = false
@@ -133,7 +136,7 @@ module KAG
       end
 
       def switch_team(nick)
-        puts "Swapping #{nick}'s team"
+        self.log.info "Swapping #{nick}'s team"
         players = self.players
         if players.key?(nick.to_sym)
           id = players[nick.to_sym][:id]
@@ -156,7 +159,7 @@ module KAG
             _command "/kick #{nick.to_s}"
           end
         else
-          puts "No Players found on Server #{self[:ip]}!"
+          self.log.info "No Players found on Server #{self[:ip]}!"
         end
         _cycle
       end
@@ -214,8 +217,8 @@ module KAG
             msg = ''
           end
         rescue Exception => e
-          puts e.message
-          puts e.backtrace.join("\n")
+          self.log.error e.message
+          self.log.error e.backtrace.join("\n")
         end
         msg
       end
@@ -226,7 +229,7 @@ module KAG
 
       def _command(cmd)
         return false unless self.connected?
-        puts "[RCON] #{cmd.to_s}"
+        self.log.info "[RCON] #{cmd.to_s}"
         put cmd
       end
     end

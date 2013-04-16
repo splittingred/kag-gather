@@ -178,7 +178,7 @@ module KAG
           nicks.each do |nick|
             u = User(nick)
             if u
-              @queue.remove(u,false)
+              @queue.remove(u,true)
             else
               reply m,"Could not find user #{nick}"
             end
@@ -222,7 +222,7 @@ module KAG
             if u
               user = ::User.fetch(u)
               if user
-                @queue.add(user,false)
+                @queue.add(user,true)
               end
             else
               reply m,"Could not find user #{nick}"

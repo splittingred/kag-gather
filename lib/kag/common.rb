@@ -86,5 +86,14 @@ module KAG
     def _load_db
       KAG.ensure_database
     end
+
+    def _close_db
+      begin
+        ActiveRecord::Base.connection.close
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+    end
   end
 end

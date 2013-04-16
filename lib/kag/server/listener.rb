@@ -36,8 +36,9 @@ module KAG
               puts e.message
               puts e.backtrace.join("\n")
             end
-            #sleep 0.3
           end
+          #puts "twiddling..."
+          sleep 0.2
         end
         puts 'ending...'
       end
@@ -51,6 +52,12 @@ module KAG
 
         self.socket.close
         KAG::Listener.delete_registered(self.server.name.to_sym)
+        begin
+          ActiveRecord::Base.connection.close
+        rescue Exception => e
+          puts e.message
+          puts e.backtrace.join("\n")
+        end
         self.terminate
         puts 'Listener self.terminate run'
         self.data

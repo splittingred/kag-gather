@@ -59,7 +59,7 @@ class GatherQueue < KAG::Model
     if self.is_full?
       unless self.start_match
         KAG.gather.send_channels_msg "Could not find any available servers!"
-        debug "FAILED TO FIND UNUSED SERVER"
+        puts "FAILED TO FIND UNUSED SERVER"
       end
     end
   end

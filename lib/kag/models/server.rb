@@ -45,7 +45,7 @@ class Server < KAG::Model
     if self.listener
       puts "Found listener, now stopping..."
       begin
-        self.listener.stop_listening
+        self.listener.async.stop_listening
         puts "Stopped, terminating thread"
       rescue Exception => e
         puts e.message

@@ -38,6 +38,16 @@ class Team < KAG::Model
     "#{self.color}#{self.player_list} (#{self.name})"
   end
 
+  def has_player?(name)
+    has = false
+    self.users(true).each do |user|
+      if user.name == name
+        has = true
+      end
+    end
+    has
+  end
+
   def player_list
     ps = []
     self.users(true).each do |user|

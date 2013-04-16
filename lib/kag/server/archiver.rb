@@ -24,6 +24,9 @@ module KAG
         self.record_kd
 
         KAG::Stats::Main.add_stat(:matches_completed)
+
+        puts "Finished archiving"
+        true
       end
 
       def winning_team
@@ -42,7 +45,7 @@ module KAG
             cls = self.data[:claims][player]
           end
         end
-        cls
+        cls.downcase
       end
 
       def match
@@ -65,9 +68,11 @@ module KAG
               else
                 player.won = false
               end
-              cls = get_class(player)
+              cls = get_class(player.user.kag_user)
               if cls
-                player.cls = cls
+                player.cls = cls.downcase
+              else
+                puts "No class for #{player.to_s}"
               end
               if player.save
                 user = player.user

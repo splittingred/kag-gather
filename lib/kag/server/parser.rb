@@ -56,8 +56,12 @@ module KAG
           self.evt_score(msg)
         elsif msg.index("!teams")
           self.evt_teams(msg)
+        elsif msg.index("!team")
+          self.evt_team(msg)
         elsif msg.index("!nerf")
           self.evt_nerf(msg)
+        elsif msg.index("!claimed")
+          self.evt_claimed(msg)
 
         elsif self.live # live mode
           puts "[LIVE] "+msg.to_s
@@ -90,8 +94,8 @@ module KAG
             self.evt_hello(msg)
           elsif msg.index("!claim")
             self.evt_claim(msg)
-          elsif msg.index("!claimed")
-            self.evt_claimed(msg)
+          elsif msg.index("!unclaim")
+            self.evt_unclaim(msg)
           end
         end
       end
@@ -121,8 +125,8 @@ module KAG
           self.data[:winner] = get_winning_team
           say "Match ended! #{self.data[:winner]} has won!"
 
-          archive
-          self.listener.kick_all unless self.test
+          self.archive
+          #self.listener.kick_all unless self.test
           puts "finished match, quitting"
           true
         rescue Exception => e
@@ -223,19 +227,38 @@ module KAG
         :teams
       end
 
-      def evt_veto(msg)
-        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
+      def evt_team(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!team)$/)
         if match
-          if self.veto.include?(match[3])
-            say "You have already voted to veto the map, #{match[3]}!"
+          username = match[3].to_s.strip
+          say "#{username} is on: #{get_team(username)}"
+        end
+      end
+
+      def get_team(username)
+        t = 'Spectator'
+        self.teams.each do |team|
+          if team.has_player?(username)
+            t = team.name
+          end
+        end
+        t
+      end
+
+      def evt_veto(msg)
+        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
+        if m
+          username = m[3].to_s.strip
+          if self.veto.include?(username)
+            say "You have already voted to veto the map, #{username}!"
           else
             if self.players
               veto_threshold = (self.players.length / 2).to_i
             else
               veto_threshold = (KAG::Config.instance[:veto_threshold] or 5)
             end
-            self.veto << match[3]
-            if self.veto.length == veto_threshold
+            self.veto << username
+            if self.veto.length >= veto_threshold
               self.listener.next_map unless self.test
               self.ready = []
               self.veto = []
@@ -336,31 +359,50 @@ module KAG
         end
       end
 
-
       def evt_claim(msg)
         m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!claim (.*))$/)
         if m
           username = m[3].to_s.strip
           player_class = m[5].to_s.strip.downcase.capitalize
-          if username.empty? or player_class.empty?
-          else
+          unless username.empty? or player_class.empty?
             if ['Archer','Knight','Builder'].include?(player_class)
+              team = get_team(username)
+
               self.data[:claims] = {} unless self.data[:claims]
               self.data[:claims][username] = player_class
+              say "#{username} has claimed #{player_class} for: #{team}."
+              :claim
             else
               say "#{username}, #{player_class} is not a valid class."
             end
           end
         end
+      end
+
+      def evt_unclaim(msg)
+        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!unclaim)$/)
+        if m
+          username = m[3].to_s.strip
+          unless username.empty?
+            self.data[:claims] = {} unless self.data[:claims]
+            if self.data[:claims].key?(username)
+              self.data[:claims].delete(username)
+              say "#{username} class claim removed."
+              :unclaim
+            end
+          end
         end
+      end
 
       def evt_claimed(msg)
-        if self.data and self.data[:claims]
+        if self.data
+          self.data[:claims] = [] unless self.data.key?(:claims)
           list = []
-          self.data.claims.each do |username,player_class|
+          self.data[:claims].each do |username,player_class|
             list << "#{username}: #{player_class}"
           end
-          list.join(", ")
+          say list.join(", ")
+          :claimed
         end
       end
 

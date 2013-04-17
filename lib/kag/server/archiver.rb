@@ -18,15 +18,18 @@ module KAG
           match.stats = self.data.to_json
           match.save
         else
-          self.log.error "Could not find match to save stats to!"
+          self.log.error 'Could not find match to save stats to!'
         end
 
+        self.log.info '- Archiving wins/losses'
         self.record_wins
+
+        self.log.info '- Archiving k/d'
         self.record_kd
 
         KAG::Stats::Main.add_stat(:matches_completed)
 
-        self.log.info "Finished archiving"
+        self.log.info 'Finished archiving'
         true
       end
 
@@ -78,6 +81,7 @@ module KAG
               if player.save
                 user = player.user
                 if user
+                  self.log.info "Logging won/matches for #{user.name.to_s}"
                   k = player.won ? :wins : :losses
                   user.inc_stat(k)
                   if cls
@@ -98,6 +102,7 @@ module KAG
       def record_kd
         # record K/D for each user
         self.data.players.each do |player,data|
+          self.log.info "Attempting to record K/D for #{player.to_s}"
           p = ::Player.fetch_by_kag_user(player.to_s)
           if p
             p.kills = data[:kill]

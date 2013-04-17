@@ -281,7 +281,7 @@ module KAG
           else
             restart_threshold = (self.players.length / 2).to_i
             self.restart_queue << match[3]
-            if self.restart_queue.length == restart_threshold
+            if self.restart_queue.length >= restart_threshold
               self.ready = []
               self.veto = []
               self.live = false

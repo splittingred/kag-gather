@@ -1,6 +1,8 @@
+require 'bundler/setup'
 require 'json'
 require 'logger'
 require 'kag/config'
+Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 require 'active_record'
 
 namespace :db do

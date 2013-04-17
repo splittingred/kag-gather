@@ -78,6 +78,13 @@ class Ignore < KAG::Model
     end
 
     ##
+    # Refreshes cache
+    #
+    def refresh
+      Ignore._fetch_cache
+    end
+
+    ##
     # Cache the ignore list into an array for easier lookup
     #
     def _fetch_cache

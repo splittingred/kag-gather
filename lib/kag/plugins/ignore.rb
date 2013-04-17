@@ -113,6 +113,12 @@ module KAG
         end
       end
 
+      command :refresh_ban_cache,{},
+        summary: 'Refresh ban list',
+        admin: true
+      def refresh_ban_cache(m)
+        ::Ignore.refresh
+      end
     end
   end
 end

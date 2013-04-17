@@ -4,7 +4,7 @@ require 'kag/config'
 require 'active_record'
 
 namespace :db do
-  def create_database config
+  def create_database(config)
     options = {:charset => 'utf8', :collation => 'utf8_unicode_ci'}
 
     create_db = lambda do |c|

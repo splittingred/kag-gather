@@ -31,6 +31,19 @@ module KAG
           end
         end
       end
+
+      command :win_leaders,{},
+        summary: 'Get top 10 winning leaders'
+      def win_leaders(m)
+        unless is_banned?(m.user)
+          users = ::User.select('users.*,user_stats.value AS value').joins(:user_stats).where(:user_stats => {:name => 'wins'}).order('user_stats.value DESC')
+          list = []
+          users.each do |u|
+            list << "#{u.name}: #{u.value.to_s}"
+          end
+          reply m, 'TOP 10 Winners: '+list.join(', ')
+        end
+      end
     end
   end
 end

@@ -80,6 +80,7 @@ module KAG
       def add(m)
         u = ::User.fetch(m.user)
         if u
+          u.synchronize(m.user)
           if u.linked?
             r = @queue.add(u)
             if r === true
@@ -98,6 +99,7 @@ module KAG
       def rem(m)
         user = ::User.fetch(m.user)
         if user
+          user.synchronize(m.user)
           match = ::Match.player_in(user)
           if match
             match.remove_player(user)

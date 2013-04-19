@@ -259,4 +259,10 @@ class User < KAG::Model
     self.host = ''
     self.save
   end
+
+  def synchronize(user)
+    self.nick = user.nick
+    self.host = user.host
+    self.save
+  end
 end

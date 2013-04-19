@@ -66,17 +66,6 @@ class User < KAG::Model
       u
     end
 
-    def connect_quest(kag_user)
-      u = User.new
-      u.authname = kag_user
-      u.hostname = m.user.host
-      u.kag_user = kag_user
-      u.temp = true
-      u.temp_end_at = Time.now + 3600
-      u.save
-      u
-    end
-
     def start_quest(m,kag_user)
       exists = User.find_by_kag_user(kag_user)
       if exists

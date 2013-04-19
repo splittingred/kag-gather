@@ -250,6 +250,10 @@ class User < KAG::Model
   end
 
   def logout
+    self.queues.each do |q|
+      q.remove(self)
+    end
+
     self.authname = ''
     self.nick = ''
     self.host = ''

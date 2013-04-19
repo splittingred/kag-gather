@@ -15,7 +15,18 @@ module KAG
         summary: 'Login to Gather through the KAG SSO'
       def login(m)
         unless is_banned?(m.user)
-          ::User.login(m)
+          if m.user.authed?
+            u = ::User.fetch(m.user)
+            if u and u.linked?
+              m.user.send 'You are already AUTHed and linked via AUTH. No need to !login.'
+            elsif u
+              m.user.send 'You are already AUTHed, so you just need to !link to proceed.'
+            else
+              ::User.login(m)
+            end
+          else
+            ::User.login(m)
+          end
         end
       end
 

@@ -11,16 +11,16 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
-      command :quest,{string: :nick},
-        summary: 'Start a temporary Gather session by logging into SSO'
-      def quest(m,nick)
+      command :login,{},
+        summary: 'Login to Gather through the KAG SSO'
+      def login(m)
         unless is_banned?(m.user)
-          ::User.start_quest(m,nick)
+          ::User.login(m)
         end
       end
 
       command :linked?,{},
-        summary: "See if your IRC account is linked to your KAG Account."
+        summary: 'See if your IRC account is linked to your KAG Account.'
       def linked?(m)
         if m.user.authed?
           u = ::User.find_by_authname(m.user.authname)
@@ -30,13 +30,13 @@ module KAG
             m.user.send("Your IRC user #{m.user.authname} is not linked to any KAG account.")
           end
         else
-          m.user.send("You will need to AUTH with IRC before linking. Do !help for more information.")
+          m.user.send('You will need to AUTH with IRC before linking. Do !help for more information.')
         end
       end
 
       command :link,{},
-        summary: "Link your IRC user to your KAG account for stats tracking and other cool features..",
-        description: "Link your IRC Auth to your KAG account. This is only required to do once."
+        summary: 'Link your IRC user to your KAG account for stats tracking and other cool features..',
+        description: 'Link your IRC Auth to your KAG account. This is only required to do once.'
       def link(m)
         if m.user.authed?
           u = ::User.find_by_authname(m.user.authname)
@@ -50,7 +50,7 @@ module KAG
             m.user.send("Please go to http://stats.gather.kag2d.nl/sso/?i=#{m.user.authname} to link your main KAG Account with your KAG-Gather account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers.")
           end
         else
-          m.user.send("You will need to AUTH with IRC before linking. Do !help for more information.")
+          m.user.send('You will need to AUTH with IRC before linking. Do !help for more information.')
         end
       end
 

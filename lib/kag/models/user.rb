@@ -1,4 +1,5 @@
 require 'kag/models/model'
+require 'open-uri'
 ##
 # Abstraction of a User record
 #
@@ -66,18 +67,13 @@ class User < KAG::Model
       u
     end
 
-    def start_quest(m,kag_user)
-      exists = User.find_by_kag_user(kag_user)
-      if exists
-        m.send "You cannot quest as #{kag_user}, that nick is already registered. Please login via AUTH to use that name."
-      else
-        m.send "Please go to http://stats.gather.kag2d.nl/sso/?t=#{m.host} to link your main KAG Account with your KAG-Gather account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers."
-      end
+    def login(m)
+      m.user.send "Please go to http://stats.gather.kag2d.nl/sso/?t=#{URI::encode(m.host)} to link login to your main KAG Account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers."
     end
 
     def clear_expired_quests
       User.where('temp_end_at <= ? AND temp = ?',Time.now,true).each do |u|
-        u.destroy
+        u.logout
       end
     end
 
@@ -105,7 +101,7 @@ class User < KAG::Model
   # @return [Boolean]
   #
   def unlink
-    self.kag_user = ""
+    self.kag_user = ''
     self.save
   end
 
@@ -125,7 +121,7 @@ class User < KAG::Model
   # @return [String]
   #
   def stats_text
-    kd_ratio = self.stat("kills").to_s+'/'+self.stat("deaths").to_s
+    kd_ratio = self.stat('kills').to_s+'/'+self.stat('deaths').to_s
 
     t = []
     self.stats(true).each do |stat|
@@ -251,5 +247,12 @@ class User < KAG::Model
 
   def authed?
     !self.authname.to_s.empty?
+  end
+
+  def logout
+    self.authname = ''
+    self.nick = ''
+    self.host = ''
+    self.save
   end
 end

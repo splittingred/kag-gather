@@ -50,7 +50,7 @@ function get_db() {
 
 $loggedIn = false;
 session_start();
-if (!empty($_REQUEST['stage'])) {
+if (!empty($_REQUEST['stage']) && $_REQUEST['stage'] == 'loginSuccess') {
 	if (empty($_SESSION['kag.gather.ircname']) && empty($_SESSION['kag.gather.temp_host'])) {
 		over('Please enable sessions in your browser and try again from the start.');
 		
@@ -75,14 +75,14 @@ if (!empty($_REQUEST['stage'])) {
 				$mysqli->query('INSERT INTO `users` (`authname`,`nick`,`kag_user`,`host`,`temp`,`temp_end_at`) VALUES ("'.$uname.'","'.$uname.'","'.$uname.'","'.$hostname.'",1,"'.$end.'")');
 				$loggedIn = true;
 			} else {
-				if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$uname.'" WHERE `authname` = "'.$ircname.'"') == true) {
+				if ($mysqli->query('UPDATE `users` SET `authname` = "'.$uname.'", `nick` = "'.$uname.'", `host` = "'.$hostname.'" WHERE `kag_user` = "'.$uname.'"') == true) {
 			    	$loggedIn = true;
 				}
 			}
         	$mysqli->close();
 		}
 		unset($_SESSION['kag.gather.temp_host']);
-	} elseif ($_REQUEST['stage'] == 'loginSuccess') {   
+	} elseif (!empty($_SESSION['kag.gather.ircname'])) {   
 	    try {
 		    $mysqli = get_db();
 		    			
@@ -111,6 +111,7 @@ if (!empty($_REQUEST['stage'])) {
 		} catch (Exception $e) {
 		    over($e->getMessage());
 		}
+		unset($_SESSION['kag.gather.ircname']);
 	} else {
 		$message = 'Invalid username/password. Please try again.';
 	}
@@ -123,4 +124,4 @@ if (!empty($_REQUEST['stage'])) {
 if ($loggedIn) {
 	echo '<h3>Successfully connected your KAG Account to KAG Gather!</h3>';
 }
-
+@session_write_close();

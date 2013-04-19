@@ -90,7 +90,7 @@ class SSO {
 				$mysqli->query('INSERT INTO `users` (`authname`,`nick`,`kag_user`) VALUES ("'.$ircName.'","'.$ircName.'","'.$username.'")');
 				$loggedIn = true;
 			} else {
-				if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$username.'" WHERE `authname` = "'.$ircName.'"') == true) {
+				if ($mysqli->query('UPDATE `users` SET `kag_user` = "'.$username.'", `temp` = 0, `temp_end_at` = NULL WHERE `authname` = "'.$ircName.'"') == true) {
 			    	$loggedIn = true;
 				}
 			}

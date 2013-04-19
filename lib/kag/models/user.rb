@@ -121,14 +121,14 @@ class User < KAG::Model
   # @return [String]
   #
   def stats_text
-    kd_ratio = self.stat('kills').to_s+'/'+self.stat('deaths').to_s
+    wl_ratio = self.stat('wins').to_s+'/'+self.stat('losses').to_s
 
     t = []
     self.stats(true).each do |stat|
       t << "#{stat.name} #{stat.value}"
     end
 
-    "#{self.authname} has played in #{self.matches(true).count.to_s} matches, with a K/D ratio of: #{kd_ratio}. Other stats: #{t.join(", ")}"
+    "#{self.authname} has played in #{self.matches(true).count.to_s} matches, with a W/L ratio of: #{wl_ratio}. Other stats: #{t.join(', ')}"
   end
 
   ##

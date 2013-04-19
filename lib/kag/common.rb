@@ -18,8 +18,13 @@ module KAG
           elsif m.user.authed?
             true
           elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
-            send_not_authed_msg(m)
-            false
+            u = ::User.fetch(m.user)
+            if u
+              true
+            else
+              send_not_authed_msg(m)
+              false
+            end
           else
             true
           end

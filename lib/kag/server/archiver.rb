@@ -62,6 +62,7 @@ module KAG
 
       def record_wins
         winner = self.winning_team
+        puts "Winner was #{winner.to_s}."
         if winner
           teams = self.teams
           teams.each do |team|
@@ -81,13 +82,14 @@ module KAG
               if player.save
                 user = player.user
                 if user
-                  self.log.info "Logging won/matches for #{user.name.to_s}"
+                  self.log.info "- Logging won/matches for #{user.name.to_s}"
                   k = player.won ? :wins : :losses
                   user.inc_stat(k)
                   if cls
                     user.inc_stat(cls+'.'+k.to_s)
                     user.inc_stat(cls+'.matches')
                   end
+                  self.log.info '-- Done!'
                 else
                   self.log.error "Cannot find User for player ID #{player.id}"
                 end
@@ -105,11 +107,13 @@ module KAG
           self.log.info "Attempting to record K/D for #{player.to_s}"
           p = ::Player.fetch_by_kag_user(player.to_s)
           if p
+            self.log.info "- Found Player record with ID #{p.id}"
             p.kills = data[:kill]
             p.deaths = data[:death]
             if p.save
               user = p.user
               if user
+                self.log.info "- Logging K/D for User #{user.kag_user}"
                 user.inc_stat(:kills,p.kills)
                 user.inc_stat(:deaths,p.deaths)
                 if data[:death_types]

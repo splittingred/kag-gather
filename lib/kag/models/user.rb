@@ -1,4 +1,5 @@
 require 'kag/models/model'
+require 'kag/models/score/scorer'
 require 'open-uri'
 ##
 # Abstraction of a User record
@@ -79,6 +80,10 @@ class User < KAG::Model
 
     def find_login_by_host(host)
       User.where(:host => host,:temp => true).first
+    end
+
+    def score(user)
+      User.find_by_kag_user(user).score
     end
   end
 
@@ -264,5 +269,9 @@ class User < KAG::Model
     self.nick = user.nick
     self.host = user.host
     self.save
+  end
+
+  def score
+    KAG::Scorer.score(self)
   end
 end

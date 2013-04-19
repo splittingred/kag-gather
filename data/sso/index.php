@@ -11,12 +11,12 @@ if (!empty($_REQUEST['stage']) && $_REQUEST['stage'] == 'loginSuccess') {
 		
 	} elseif (!empty($_SESSION['kag.gather.temp_host'])) {
 
-	    $sso->login($_REQUEST['uname'],$_SESSION['kag.gather.temp_host']);
+	    $loggedIn = $sso->login($_REQUEST['uname'],$_SESSION['kag.gather.temp_host']);
 		unset($_SESSION['kag.gather.temp_host']);
 
 	} elseif (!empty($_SESSION['kag.gather.ircname'])) {
 
-	    $sso->link($_REQUEST['uname'],$_SESSION['kag.gather.ircname']);
+	    $loggedIn = $sso->link($_REQUEST['uname'],$_SESSION['kag.gather.ircname']);
 		unset($_SESSION['kag.gather.ircname']);
 
 	} else {
@@ -29,6 +29,7 @@ if (!empty($_REQUEST['stage']) && $_REQUEST['stage'] == 'loginSuccess') {
 }
 
 if ($loggedIn) {
-	echo '<h3>Successfully connected your KAG Account to KAG Gather!</h3>';
+    $username = !empty($_REQUEST['uname']) ? $_REQUEST['uname'] : '';
+	echo '<h3>Successfully connected your KAG Account '.$username.' to KAG Gather!</h3>';
 }
 @session_write_close();

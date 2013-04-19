@@ -55,13 +55,12 @@ module KAG
           false
         end
       else
-        puts "user is not authed and therefore not banned"
         false
       end
     end
 
     def send_not_authed_msg(m)
-      m.user.send _h("command_not_authed")
+      m.user.send _h('command_not_authed')
     end
 
     def debug(msg)
@@ -80,11 +79,11 @@ module KAG
       if KAG::Help::Book.instance.key?(key.to_sym)
         text = KAG::Help::Book.instance[key.to_sym].to_s
         params.each do |k,v|
-          text = text.gsub("[[+"+k.to_s+"]]",v)
+          text = text.gsub("[[+#{k.to_s}]]",v)
         end
         text
       else
-        ""
+        ''
       end
     end
 
@@ -94,7 +93,7 @@ module KAG
 
     def _close_db
       begin
-        ActiveRecord::Base.connection.close
+        ::ActiveRecord::Base.connection.close
       rescue Exception => e
         puts e.message
         puts e.backtrace.join("\n")

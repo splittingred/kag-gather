@@ -11,8 +11,6 @@ module KAG
       include KAG::Common
       hook :pre,method: :auth
 
-      #ActiveRecord::Base.connection.close
-
       attr_accessor :queue
 
       def initialize(*args)
@@ -38,8 +36,11 @@ module KAG
             if sub
               m.channel.msg sub[:msg]
             end
-          elsif @queue.has_player?(user)
-            @queue.remove(m.user)
+          else
+            user = ::User.fetch(m.user)
+            if user
+              @queue.remove(user)
+            end
           end
         end
       end
@@ -52,8 +53,8 @@ module KAG
       #end
 
       command :rsub,{user: :string},
-        summary: "Request a sub for a match",
-        description: "If a player leaves a match early, you can use this command to request a sub for the match"
+        summary: 'Request a sub for a match',
+        description: 'If a player leaves a match early, you can use this command to request a sub for the match'
       def rsub(m,nick)
         match = ::Match.player_in(m.user)
         if match
@@ -65,8 +66,8 @@ module KAG
       end
 
       command :sub,{match_id: :integer},
-        summary: "Sub yourself into a match that needs subs.",
-        description: "If a player leaves a match early, you can use this command to sub in and join the match"
+        summary: 'Sub yourself into a match that needs subs.',
+        description: 'If a player leaves a match early, you can use this command to sub in and join the match'
       def sub(m,match_id)
         match = ::Match.find(match_id)
         if match
@@ -75,7 +76,7 @@ module KAG
       end
 
       command :add,{},
-        summary: "Add yourself to the active queue for the next match"
+        summary: 'Add yourself to the active queue for the next match'
       def add(m)
         u = ::User.fetch(m.user)
         if u
@@ -93,7 +94,7 @@ module KAG
       end
 
       command :rem,{},
-        summary: "Remove yourself from the active queue for the next match"
+        summary: 'Remove yourself from the active queue for the next match'
       def rem(m)
         user = ::User.fetch(m.user)
         if user
@@ -109,20 +110,20 @@ module KAG
       end
 
       command :list,{},
-        summary: "List the users signed up for the next match"
+        summary: 'List the users signed up for the next match'
       def list(m)
         m.user.notice @queue.list_text
       end
 
       command :status,{},
-        summary: "Show the number of ongoing matches"
+        summary: 'Show the number of ongoing matches'
       def status(m)
         reply m,"Matches in progress: #{::Match.total_in_progress.to_s}"
       end
 
       command :end,{},
-        summary: "End the current match",
-        description: "End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end."
+        summary: 'End the current match',
+        description: 'End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end.'
       def end(m)
         match = ::Match.player_in(m.user)
         if match
@@ -142,97 +143,90 @@ module KAG
       # admin methods
 
       command :clear,{},
-        summary: "Clear (empty) the ongoing queue",
+        summary: 'Clear (empty) the ongoing queue',
         admin: true
       def clear(m)
         if is_admin(m.user)
-          reply m,"Match queue cleared."
+          reply m,'Match queue cleared.'
           @queue.reset
         end
       end
 
-      command :rem,{nicks: :string},
-        summary: "Remove a specific user from the queue",
+      command :rem,{names: :string},
+        summary: 'Remove a specific user from the queue',
         method: :rem_admin,
         admin: true
-      def rem_admin(m, nicks)
+      def rem_admin(m, names)
         if is_admin(m.user)
-          nicks = nicks.split(",")
-          nicks.each do |nick|
-            u = User(nick)
+          names = names.split(',')
+          names.each do |name|
+            u = ::User.fetch(name)
             if u
               @queue.remove(u)
             else
-              reply m,"Could not find user #{nick}"
+              reply m,"Could not find user #{name}"
             end
           end
         end
       end
 
-      command :rem_silent,{nicks: :string},
-        summary: "Remove a specific user from the queue without pinging the user in the channel",
+      command :rem_silent,{names: :string},
+        summary: 'Remove a specific user from the queue without pinging the user in the channel',
         admin: true
-      def rem_silent(m, nicks)
+      def rem_silent(m, names)
         if is_admin(m.user)
-          nicks = nicks.split(",")
-          nicks.each do |nick|
-            u = User(nick)
+          names = names.split(',')
+          names.each do |name|
+            u = ::User.fetch(name)
             if u
               @queue.remove(u,true)
             else
-              reply m,"Could not find user #{nick}"
+              reply m,"Could not find user #{name}"
             end
           end
         end
       end
 
-      command :add,{nicks: :string},
-        summary: "Add a specific user to the queue",
+      command :add,{names: :string},
+        summary: 'Add a specific user to the queue',
         method: :add_admin,
         admin: true
-      def add_admin(m, nicks)
+      def add_admin(m, names)
         if is_admin(m.user)
-          nicks = nicks.split(",")
-          nicks.each do |nick|
-            u = User(nick)
-            if u
-              user = ::User.fetch(u)
-              if user
-                r = @queue.add(user)
-                unless r === true
-                  reply m,r
-                end
+          names = names.split(',')
+          names.each do |name|
+            user = ::User.fetch(name)
+            if user
+              r = @queue.add(user)
+              unless r === true
+                reply m,r
               end
             else
-              reply m,"Could not find user #{nick}"
+              reply m,"Could not find user #{name}"
             end
           end
         end
       end
 
-      command :add_silent,{nicks: :string},
-        summary: "Add a specific user to the queue without pinging the user in the channel",
+      command :add_silent,{names: :string},
+        summary: 'Add a specific user to the queue without pinging the user in the channel',
         admin: true
-      def add_silent(m, nicks)
+      def add_silent(m, names)
         if is_admin(m.user)
-          nicks = nicks.split(",")
-          puts nicks.inspect
-          nicks.each do |nick|
-            u = User(nick)
-            if u
-              user = ::User.fetch(u)
-              if user
-                @queue.add(user,true)
-              end
+          names = names.split(',')
+          names.each do |name|
+            user = ::User.fetch(name)
+            if user
+              @queue.add(user,true)
             else
-              reply m,"Could not find user #{nick}"
+              reply m,"Could not find user #{name}"
             end
           end
         end
       end
 
       command :restart_map,{},
-        summary: "Restart the map of the match you are in",
+        summary: 'Restart the map of the match you are in',
         admin: true
       def restart_map(m)
         if is_admin(m.user)
@@ -244,7 +238,7 @@ module KAG
       end
 
       command :restart_map,{server: :string},
-        summary: "Restart the map of a given server",
+        summary: 'Restart the map of a given server',
         method: :restart_map_specify,
         admin: true
       def restart_map_specify(m,server)
@@ -258,8 +252,8 @@ module KAG
         end
       end
 
-      command :restart_map,{},
-        summary: "Next map the match of the server you are in",
+      command :next_map,{},
+        summary: 'Next map the match of the server you are in',
         admin: true
       def next_map(m)
         if is_admin(m.user)
@@ -271,7 +265,7 @@ module KAG
       end
 
       command :next_map,{server: :string},
-        summary: "Next map a given server",
+        summary: 'Next map a given server',
         method: :next_map_specify,
         admin: true
       def next_map_specify(m,server)
@@ -286,7 +280,7 @@ module KAG
       end
 
       command :kick_from_match,{nick: :string},
-        summary: "Actually kick a user from a match",
+        summary: 'Actually kick a user from a match',
         admin: true
       def kick_from_match(m,nick)
         if is_admin(m.user)
@@ -307,7 +301,7 @@ module KAG
       end
 
       command :quit,{},
-        summary: "Quit the bot",
+        summary: 'Quit the bot',
         admin: true
       def quit(m)
         if is_admin(m.user)
@@ -316,12 +310,12 @@ module KAG
               s.listener.async.disconnect
             end
           end
-          m.bot.quit("Shutting down...")
+          m.bot.quit('Shutting down...')
         end
       end
 
       command :restart,{},
-        summary: "Restart the bot",
+        summary: 'Restart the bot',
         admin: true
       def restart(m)
         if is_admin(m.user)
@@ -334,7 +328,7 @@ module KAG
           pid = spawn cmd
           debug "Restarting bot, new process ID is #{pid.to_s} ..."
           if m.bot
-            m.bot.quit "Restarting! Back in a second!"
+            m.bot.quit 'Restarting! Back in a second!'
           end
           sleep(0.5)
           exit

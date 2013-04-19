@@ -93,7 +93,7 @@ class Ignore < KAG::Model
     end
 
     def list
-      Ignore.joins(:user).pluck(:authname).join(", ")
+      Ignore.joins(:user).pluck(:kag_user).join(', ')
     end
   end
 

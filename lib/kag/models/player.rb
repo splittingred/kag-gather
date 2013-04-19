@@ -7,13 +7,13 @@ class Player < KAG::Model
 
   class << self
     def fetch_by_kag_user(kag_user)
-      Player.select("*").joins(:user).where(:users => {:kag_user => kag_user.to_s}).first
+      Player.select('*').joins(:user).where(:users => {:kag_user => kag_user.to_s}).first
     end
 
     def is_playing?(user)
-      authname = user.class == String ? user : user.authname
+      kag_user = user.class == String ? user : user.kag_user
 
-      !Player.select("*").joins(:match).joins(:user).where(:matches => {:ended_at => nil},:users => {:authname => authname}).first.nil?
+      !Player.select('*').joins(:match).joins(:user).where(:matches => {:ended_at => nil},:users => {:kag_user => kag_user}).first.nil?
     end
   end
 end

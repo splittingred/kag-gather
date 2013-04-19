@@ -106,6 +106,8 @@ class CreateTables < ActiveRecord::Migration
       t.string     :nick, :limit => 120, :null => false, :default => ''
       t.string     :kag_user, :limit => 120, :null => false, :default => ''
       t.string     :host, :limit => 255, :null => false, :default => ''
+      t.boolean    :temp, :limit => 1,:null => false,:default => false
+      t.datetime   :temp_end_at
       t.timestamps
     end
 

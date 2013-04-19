@@ -11,6 +11,14 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
+      command :quest,{string: :nick},
+        summary: 'Start a temporary Gather session by logging into SSO'
+      def quest(m,nick)
+        unless is_banned?(m.user)
+          ::User.start_quest(m,nick)
+        end
+      end
+
       command :linked?,{},
         summary: "See if your IRC account is linked to your KAG Account."
       def linked?(m)

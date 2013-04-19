@@ -40,8 +40,13 @@ class User < KAG::Model
       if user.class == String
         authname = user
       else
-        return false unless user.authed?
-        authname = user.authname
+        if user.authed?
+          authname = user.authname
+        else
+          u = User.find_quest_by_host(user.host)
+          return false unless u
+          authname = u.authname
+        end
       end
 
       u = User.find_by_authname(authname)
@@ -59,6 +64,36 @@ class User < KAG::Model
         u.save
       end
       u
+    end
+
+    def connect_quest(kag_user)
+      u = User.new
+      u.authname = kag_user
+      u.hostname = m.user.host
+      u.kag_user = kag_user
+      u.temp = true
+      u.temp_end_at = Time.now + 3600
+      u.save
+      u
+    end
+
+    def start_quest(m,kag_user)
+      exists = User.find_by_kag_user(kag_user)
+      if exists
+        m.send "You cannot quest as #{kag_user}, that nick is already registered. Please login via AUTH to use that name."
+      else
+        m.send "Please go to http://stats.gather.kag2d.nl/sso/?t=#{m.host} to link your main KAG Account with your KAG-Gather account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers."
+      end
+    end
+
+    def clear_expired_quests
+      User.where('temp_end_at <= ? AND temp = ?',Time.now,true).each do |u|
+        u.destroy
+      end
+    end
+
+    def find_quest_by_host(host)
+      User.where(:host => host,:temp => true).first
     end
   end
 

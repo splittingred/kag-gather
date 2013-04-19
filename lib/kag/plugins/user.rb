@@ -11,6 +11,12 @@ module KAG
       include Cinch::Commands
       include KAG::Common
 
+      # every 15 min clear temps
+      timer 600, method: :clear_expired_logins
+      def clear_expired_logins
+        ::User.clear_expired_logins
+      end
+
       command :login,{},
         summary: 'Login to Gather through the KAG SSO'
       def login(m)

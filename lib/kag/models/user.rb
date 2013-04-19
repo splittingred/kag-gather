@@ -44,7 +44,7 @@ class User < KAG::Model
         if user.authed?
           authname = user.authname
         else
-          u = User.find_quest_by_host(user.host)
+          u = User.find_login_by_host(user.host)
           return false unless u
           authname = u.authname
         end
@@ -71,13 +71,13 @@ class User < KAG::Model
       m.user.send "Please go to http://stats.gather.kag2d.nl/sso/?t=#{URI::encode(m.user.host)} to link login to your main KAG Account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers."
     end
 
-    def clear_expired_quests
+    def clear_expired_logins
       User.where('temp_end_at <= ? AND temp = ?',Time.now,true).each do |u|
         u.logout
       end
     end
 
-    def find_quest_by_host(host)
+    def find_login_by_host(host)
       User.where(:host => host,:temp => true).first
     end
   end

@@ -44,12 +44,6 @@ module KAG
         end
       end
 
-      # every 15 min clear temps
-      timer 600, method: :clear_expired_quests
-      def clear_expired_quests
-        ::User.clear_expired_quests
-      end
-
       #timer KAG::Config.instance[:idle][:check_period], method: :check_for_afk
       #def check_for_afk
       #  KAG::Config.instance[:channels].each do |c|

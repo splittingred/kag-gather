@@ -68,7 +68,7 @@ class User < KAG::Model
     end
 
     def login(m)
-      m.user.send "Please go to http://stats.gather.kag2d.nl/sso/?t=#{URI::encode(m.host)} to link login to your main KAG Account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers."
+      m.user.send "Please go to http://stats.gather.kag2d.nl/sso/?t=#{URI::encode(m.user.host)} to link login to your main KAG Account. This will redirect you to a secure, official KAG-sponsored SSO site that keeps your information secure and only on the kag2d.com servers."
     end
 
     def clear_expired_quests

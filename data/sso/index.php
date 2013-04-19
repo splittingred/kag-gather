@@ -13,11 +13,17 @@ if (!empty($_REQUEST['stage']) && $_REQUEST['stage'] == 'loginSuccess') {
 
 	    $loggedIn = $sso->login($_REQUEST['uname'],$_SESSION['kag.gather.temp_host']);
 		unset($_SESSION['kag.gather.temp_host']);
+		if ($loggedIn) {
+		    echo '<h3>Successfully logged in to your KAG Account '.$_REQUEST['uname'].', granting a temporary, one-hour login to KAG Gather. Welcome!</h3>';
+		}
 
 	} elseif (!empty($_SESSION['kag.gather.ircname'])) {
 
 	    $loggedIn = $sso->link($_REQUEST['uname'],$_SESSION['kag.gather.ircname']);
 		unset($_SESSION['kag.gather.ircname']);
+		if ($loggedIn) {
+            echo '<h3>Successfully permanently connected your KAG Account '.$_REQUEST['uname'].' to your IRC Account. Welcome to KAG Gather!</h3>';
+		}
 
 	} else {
 		$message = 'Invalid username/password. Please try again.';
@@ -28,8 +34,4 @@ if (!empty($_REQUEST['stage']) && $_REQUEST['stage'] == 'loginSuccess') {
 	$sso->redirectLogin($_REQUEST['t']);
 }
 
-if ($loggedIn) {
-    $username = !empty($_REQUEST['uname']) ? $_REQUEST['uname'] : '';
-	echo '<h3>Successfully connected your KAG Account '.$username.' to KAG Gather!</h3>';
-}
 @session_write_close();

@@ -70,7 +70,7 @@ module KAG
         description: 'If a player leaves a match early, you can use this command to sub in and join the match'
       def sub(m,match_id)
         match = ::Match.find(match_id)
-        if match
+        if match and match.active
           match.sub_in(m.user)
         end
       end
@@ -103,7 +103,7 @@ module KAG
           match = ::Match.player_in(user)
           if match
             match.remove_player(user)
-            m.user.unmonitor
+            #m.user.unmonitor
           elsif @queue.has_player?(user)
             @queue.remove(user)
             #m.user.unmonitor

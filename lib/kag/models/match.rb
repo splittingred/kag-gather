@@ -122,6 +122,10 @@ class Match < KAG::Model
     self.save
   end
 
+  def active
+    self.ended_at.nil?
+  end
+
   def add_end_vote
     self.end_votes += 1
     self.save

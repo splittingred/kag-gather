@@ -76,7 +76,7 @@ module KAG
           list = []
           idx = 1
           users.each do |u|
-            list << "#{idx}: #{u.name} - #{u.score.to_s}"
+            list << "##{idx}: #{u.name} - #{u.score.to_s}"
             idx += 1
           end
           reply m,"TOP 10: #{list.join(', ')}"

@@ -87,7 +87,15 @@ class User < KAG::Model
     end
 
     def rank_top(num)
-      User.order('score DESC').limit(num)
+      users = User.select('GROUP_CONCAT(`kag_user`) AS `kag_user`, `score`').group('score').order('score DESC').limit(num)
+      list = []
+      idx = 1
+      users.each do |u|
+        name = u.kag_user.split(',').join(', ')
+        list << "##{idx}: #{name} - #{u.score.to_s}"
+        idx += 1
+      end
+      "TOP 10: #{list.join(' | ')}"
     end
   end
 

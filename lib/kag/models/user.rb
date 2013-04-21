@@ -86,16 +86,20 @@ class User < KAG::Model
       User.find_by_kag_user(user).do_score
     end
 
-    def rank_top(num)
+    def rank_top(num,return_string = true)
       users = User.select('GROUP_CONCAT(`kag_user`) AS `kag_user`, `score`').group('score').order('score DESC').limit(num)
       list = []
       idx = 1
       users.each do |u|
         name = u.kag_user.split(',').join(', ')
-        list << "##{idx}: #{name} - #{u.score.to_s}"
+        if return_string
+          list << "##{idx}: #{name} - #{u.score.to_s}"
+        else
+          list << {:name => name,:score => u.score}
+        end
         idx += 1
       end
-      "TOP 10: #{list.join(' | ')}"
+      return_string ? "TOP 10: #{list.join(' | ')}" : list
     end
 
     def rescore_all

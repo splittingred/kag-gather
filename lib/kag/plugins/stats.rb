@@ -44,6 +44,14 @@ module KAG
           reply m, 'TOP 10 Winners: '+list.join(', ')
         end
       end
+
+      command :rank,{},
+        summary: 'Get your rank.'
+      def rank(m)
+        unless is_banned?(m.user)
+
+        end
+      end
     end
   end
 end

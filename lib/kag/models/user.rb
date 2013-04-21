@@ -83,7 +83,7 @@ class User < KAG::Model
     end
 
     def score(user)
-      User.find_by_kag_user(user).score
+      User.find_by_kag_user(user).do_score
     end
   end
 
@@ -271,7 +271,7 @@ class User < KAG::Model
     self.save
   end
 
-  def score
+  def do_score
     KAG::Scorer.score(self)
   end
 end

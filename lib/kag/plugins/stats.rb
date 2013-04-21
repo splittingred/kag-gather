@@ -49,7 +49,37 @@ module KAG
         summary: 'Get your rank.'
       def rank(m)
         unless is_banned?(m.user)
+          u = ::User.fetch(m.user)
+          if u
+            m.user.send "#{u.name} is ranked ##{u.rank}"
+          end
+        end
+      end
 
+      command :rank,{name: :string},
+        summary: 'Get your rank.',
+        method: :rank_specific
+      def rank_specific(m,name)
+        unless is_banned?(m.user)
+          u = ::User.fetch(name)
+          if u
+            m.user.send "#{u.name} is ranked ##{u.rank}"
+          end
+        end
+      end
+
+      command :top10,{},
+        summary: 'Get the top 10'
+      def top10(m)
+        unless is_banned?(m.user)
+          users = ::User.rank_top(10)
+          list = []
+          idx = 1
+          users.each do |u|
+            list << "#{idx}: #{u.name} - #{u.score.to_s}"
+            idx += 1
+          end
+          reply m,"TOP 10: #{list.join(', ')}"
         end
       end
     end

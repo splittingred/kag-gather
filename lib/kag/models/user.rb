@@ -85,6 +85,10 @@ class User < KAG::Model
     def score(user)
       User.find_by_kag_user(user).do_score
     end
+
+    def rank_top(num)
+      User.order('score DESC').limit(num)
+    end
   end
 
   def name
@@ -273,5 +277,9 @@ class User < KAG::Model
 
   def do_score
     KAG::Scorer.score(self)
+  end
+
+  def rank
+    User.where('score > ?',self.score).count + 1
   end
 end

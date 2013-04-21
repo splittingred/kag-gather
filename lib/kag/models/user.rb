@@ -97,6 +97,10 @@ class User < KAG::Model
       end
       "TOP 10: #{list.join(' | ')}"
     end
+
+    def rescore_all
+      User.all.each {|u| u.do_score}
+    end
   end
 
   def name

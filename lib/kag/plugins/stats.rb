@@ -51,7 +51,7 @@ module KAG
         unless is_banned?(m.user)
           u = ::User.fetch(m.user)
           if u
-            m.user.send "#{u.name} is ranked ##{u.rank}"
+            m.user.send "#{u.name} is ranked ##{u.rank} with a score of #{u.score}"
           end
         end
       end
@@ -63,7 +63,7 @@ module KAG
         unless is_banned?(m.user)
           u = ::User.fetch(name)
           if u
-            m.user.send "#{u.name} is ranked ##{u.rank}"
+            m.user.send "#{u.name} is ranked ##{u.rank} with a score of #{u.score}"
           end
         end
       end

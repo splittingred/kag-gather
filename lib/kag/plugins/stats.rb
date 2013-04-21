@@ -25,9 +25,9 @@ module KAG
         unless is_banned?(m.user)
           u = ::User.fetch(name)
           if u
-            m.user.send u.stats_text
+            m.user.notice u.stats_text
           else
-            reply m,"User #{name} has not played any matches, and therefore is not in the stats table."
+            m.user.notice "User #{name} has not played any matches, and therefore is not in the stats table."
           end
         end
       end
@@ -41,7 +41,7 @@ module KAG
           users.each do |u|
             list << "#{u.name}: #{u.value.to_s}"
           end
-          reply m, 'TOP 10 Winners: '+list.join(', ')
+          m.user.notice 'TOP 10 Winners: '+list.join(', ')
         end
       end
 
@@ -51,7 +51,7 @@ module KAG
         unless is_banned?(m.user)
           u = ::User.fetch(m.user)
           if u
-            m.user.send "#{u.name} is ranked ##{u.rank} with a score of #{u.score}"
+            m.user.notice "#{u.name} is ranked ##{u.rank} with a score of #{u.score}"
           end
         end
       end
@@ -63,7 +63,7 @@ module KAG
         unless is_banned?(m.user)
           u = ::User.fetch(name)
           if u
-            m.user.send "#{u.name} is ranked ##{u.rank} with a score of #{u.score}"
+            m.user.notice "#{u.name} is ranked ##{u.rank} with a score of #{u.score}"
           end
         end
       end
@@ -72,7 +72,7 @@ module KAG
         summary: 'Get the top 10'
       def top10(m)
         unless is_banned?(m.user)
-          reply m, ::User.rank_top(10)
+          m.user.notice ::User.rank_top(10)
         end
       end
     end

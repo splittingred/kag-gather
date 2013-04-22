@@ -12,10 +12,25 @@ module KAG
       include KAG::Common
       hook :pre,method: :auth
 
-      command :stats,{},
+      command :gstats,{},
         summary: 'Get the gather-wide stats'
-      def stats(m)
+      def gstats(m)
         reply m,KAG::Stats::Main.instance.collect { |k,v| "#{k}: #{v}" }.join(", ")
+      end
+
+
+      command :stats,{},
+        summary: 'Get the stats for yourself',
+        method: :stats
+      def stats(m)
+        unless is_banned?(m.user)
+          u = ::User.fetch(m.user)
+          if u
+            m.user.notice u.stats_text
+          else
+            m.user.notice "User #{name} has not played any matches, and therefore is not in the stats table."
+          end
+        end
       end
 
       command :stats,{name: :string},

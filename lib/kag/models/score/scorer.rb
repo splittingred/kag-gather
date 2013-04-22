@@ -21,6 +21,11 @@ module KAG
       scorer.score
     end
 
+
+    ##
+    # Score the user
+    # TODO: Optimize the crap out of this, no need to do so many @user.stat calls, get em all in one call
+    #
     def score
       return 0 unless @user
       wins = @user.stat('wins')

@@ -33,6 +33,7 @@ module KAG
             d.delete(:host)
             d.delete(:authname)
             d.delete(:nick)
+            d[:rank] = user.rank
             self.success('',d)
           else
             self.failure('err_nf',user)

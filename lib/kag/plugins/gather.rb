@@ -95,6 +95,17 @@ module KAG
         end
       end
 
+      match /say ((?:\w+\S){2})(.*)/, method: :say
+      def say(m,server,msg)
+        if is_admin(m.user)
+          server = ::Server.find_by_name(server)
+          if server
+            server.say('['+m.user.nick+'] '+msg.strip)
+          end
+        end
+      end
+
+
       command :rem,{},
         summary: 'Remove yourself from the active queue for the next match'
       def rem(m)

@@ -222,10 +222,12 @@ class Match < KAG::Model
         if substitution
           if substitution.take(user)
             u.send("Please join #{substitution.match.server.text_join} | Team: \x03#{substitution.team.color}#{substitution.team.name}") if u.class == ::Cinch::User
-            KAG.gather.send_channels_msg("#{user.authname} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!")
+            msg = "#{user.name} has subbed into Match #{substitution.match.id} for the #{substitution.team.name}!"
+            KAG.gather.send_channels_msg(msg)
+            self.server.say(msg)
             subbed = true
           else
-            u.send("Could not sub into match!") if u.class == ::Cinch::User
+            u.send('Could not sub into match!') if u.class == ::Cinch::User
           end
         end
       end

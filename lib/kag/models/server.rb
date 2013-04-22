@@ -76,4 +76,8 @@ class Server < KAG::Model
       self.listener.async.send(meth.to_sym,*args,&block)
     end
   end
+
+  def say(msg)
+    KAG::Listener[self.name.to_sym].async.msg(msg)
+  end
 end

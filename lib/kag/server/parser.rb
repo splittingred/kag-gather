@@ -307,7 +307,7 @@ module KAG
         if match
           user = match[2].to_s.strip+' '+match[3].to_s.strip
           msg = match[5].to_s
-          broadcast('<'+user+'> '+msg)
+          broadcast('<'+user+'@'+self.server.name+'> '+msg)
         end
       end
 

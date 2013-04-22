@@ -136,7 +136,7 @@ module KAG
                   user.inc_stat(cls+'.deaths',p.deaths)
                 end
 
-                self.log.info "Scoring #{user.name} to : #{score.to_s}"
+                self.log.info "Scoring #{user.name} to : #{user.score.to_s}"
               else
                 self.log.error "Cannot find User for player ID #{p.id}"
               end

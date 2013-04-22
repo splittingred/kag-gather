@@ -122,6 +122,9 @@ module KAG
         summary: 'Show the number of ongoing matches'
       def status(m)
         reply m,"Matches in progress: #{::Match.total_in_progress.to_s}"
+        ::Match.select('*,servers.name AS server_name').joins(:server).all(:conditions => {:ended_at => nil}).each do |match|
+          m.user.notice "Match #{match.id} at #{match.server_name}: #{match.teams_text}"
+        end
       end
 
       command :end,{},

@@ -238,7 +238,7 @@ class Match < KAG::Model
     self.teams(true).each do |team|
       ts << team.name.to_s+": "+team.player_list
     end
-    ts.join(" --- ")
+    ts.join(' --- ')
   end
 
   def kick_all

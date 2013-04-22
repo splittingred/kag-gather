@@ -69,6 +69,8 @@ module KAG
           self.evt_nerf(msg)
         elsif msg.index("!claimed")
           self.evt_claimed(msg)
+        elsif msg.index("!say")
+          self.evt_say(msg)
 
         elsif self.live # live mode
           if msg.index(/^(.+) (wins the game!)$/)
@@ -118,12 +120,12 @@ module KAG
         if self.data[:wins]
           self.data[:wins].max[0]
         else
-          "Neither Team"
+          'Neither Team'
         end
       end
 
       def end_match
-        self.log.info "Ending match..."
+        self.log.info 'Ending match...'
         begin
           self.data[:end] = Time.now
           self.data[:winner] = get_winning_team
@@ -131,7 +133,7 @@ module KAG
 
           #self.archive
           #self.listener.kick_all unless self.test
-          self.log.info "finished match, quitting"
+          self.log.info 'finished match, quitting'
           true
         rescue Exception => e
           self.log.error e.message
@@ -297,6 +299,15 @@ module KAG
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!hello)$/)
         if match
           say "Hello #{match[3]}!"
+        end
+      end
+
+      def evt_say(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!say) (.*)$/)
+        if match
+          user = match[2].to_s.strip+' '+match[3].to_s.strip
+          msg = match[5].to_s
+          broadcast('<'+user+'> '+msg)
         end
       end
 

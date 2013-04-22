@@ -34,7 +34,7 @@ module KAG
       if wins > 0 or losses > 0
         player_matches = wins+losses
         win_percentage = wins.to_f / player_matches.to_f
-        total_matches = ::Match.count
+        total_matches = ::Match.where('stats IS NOT NULL').count
         percentage_of_matches = (player_matches.to_f / total_matches.to_f)
         win_multiplier = percentage_of_matches * win_percentage
       else

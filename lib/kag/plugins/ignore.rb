@@ -9,6 +9,7 @@ module KAG
       include Cinch::Commands
       include KAG::Common
       hook :pre,method: :auth
+      hook :post, method: :close_db_connection
 
       command :report,{nick: :string,reason: :string},
         summary: "Report a user the bot"

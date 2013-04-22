@@ -10,6 +10,7 @@ module KAG
       include Cinch::Plugin
       include Cinch::Commands
       include KAG::Common
+      hook :post, method: :close_db_connection
 
       # every 15 min clear temps
       timer 600, method: :clear_expired_logins

@@ -9,6 +9,7 @@ module KAG
       include Cinch::Commands
       include KAG::Common
       hook :pre,method: :auth
+      hook :post, method: :close_db_connection
 
       listen_to :connect, :method => :on_connect
       def on_connect(m)

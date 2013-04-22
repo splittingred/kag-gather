@@ -34,6 +34,16 @@ module KAG
       end
     end
 
+    def close_db_connection(m)
+      begin
+        ::ActiveRecord::Base.connection.close
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.join("\n")
+      end
+      true
+    end
+
     def reply(message,text,colorize = true)
       text = Format(:grey,text) if colorize
       message.reply text
@@ -93,7 +103,7 @@ module KAG
 
     def _close_db
       begin
-        ::ActiveRecord::Base.connection.close
+        ActiveRecord::Base.connection.close
       rescue Exception => e
         puts e.message
         puts e.backtrace.join("\n")

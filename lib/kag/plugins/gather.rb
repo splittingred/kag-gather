@@ -10,6 +10,7 @@ module KAG
       include Cinch::Commands
       include KAG::Common
       hook :pre,method: :auth
+      hook :post, method: :close_db_connection
 
       attr_accessor :queue
 

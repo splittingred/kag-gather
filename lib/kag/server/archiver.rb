@@ -29,6 +29,9 @@ module KAG
 
         KAG::Stats::Main.add_stat(:matches_completed)
 
+        self.log.info '- Scoring all'
+        ::User.rescore_all
+
         self.log.info 'Finished archiving'
         true
       end
@@ -133,7 +136,6 @@ module KAG
                   user.inc_stat(cls+'.deaths',p.deaths)
                 end
 
-                score = user.do_score
                 self.log.info "Scoring #{user.name} to : #{score.to_s}"
               else
                 self.log.error "Cannot find User for player ID #{p.id}"

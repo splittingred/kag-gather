@@ -115,7 +115,7 @@ module KAG
       command :list,{},
         summary: 'List the users signed up for the next match'
       def list(m)
-        m.user.notice @queue.list_text
+        m.user.send @queue.list_text
       end
 
       command :status,{},

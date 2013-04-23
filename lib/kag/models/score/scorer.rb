@@ -1,11 +1,11 @@
 module KAG
   class Scorer
 
-    WIN_RATIO_MULTIPLIER = 600
+    WIN_RATIO_MULTIPLIER = 400
     GENERIC_KILL_MULTIPLIER = 1.5
     KNIGHT_KILL_MULTIPLIER = 3
     ARCHER_KILL_MULTIPLIER = 2
-    BUILDER_KILL_MULTIPLIER = 8
+    BUILDER_KILL_MULTIPLIER = 6
 
     def initialize(user)
       @user = user

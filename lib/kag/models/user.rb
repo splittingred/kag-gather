@@ -304,6 +304,6 @@ class User < KAG::Model
   end
 
   def rank
-    User.select('GROUP_CONCAT(`kag_user`) AS `kag_user`, `score`').where("kag_user != '' AND score > ?",self.score).order('score DESC').count + 1
+    User.select('DISTINCT `score`').where("kag_user != '' AND score > ?",self.score).order('score DESC').count + 1
   end
 end

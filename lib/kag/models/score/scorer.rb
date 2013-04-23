@@ -65,7 +65,8 @@ module KAG
       score += calc_kr_add(@ratios[:archer_kill],stats['archer.kills'].to_i,stats['archer.deaths'].to_i)
       score += calc_kr_add(@ratios[:builder_kill],stats['builder.kills'].to_i,stats['builder.deaths'].to_i)
 
-      @user.score = score
+      user_count = ::User.where('kag_user IS NOT NULL').count
+      @user.score = (score*user_count.to_f)/((user_count/7.2)*3.1337)
       @user.save
       score
     end

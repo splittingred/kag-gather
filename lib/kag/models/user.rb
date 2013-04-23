@@ -87,7 +87,7 @@ class User < KAG::Model
     end
 
     def rank_top(num,return_string = true)
-      users = User.select('GROUP_CONCAT(`kag_user`) AS `kag_user`, `score`').group('score').order('score DESC').limit(num)
+      users = User.select('GROUP_CONCAT(`kag_user`) AS `kag_user`, `score`').where('score > 0').group('score').order('score DESC').limit(num)
       list = []
       idx = 1
       users.each do |u|

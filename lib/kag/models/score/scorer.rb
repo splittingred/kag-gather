@@ -37,7 +37,7 @@ module KAG
       wins = stats['wins'].to_i
       losses = stats['losses'].to_i
 
-      if (wins+losses) > 5
+      if (wins+losses) >= 5
         player_matches = wins+losses
         win_percentage = wins.to_f / player_matches.to_f
         total_matches = ::Match.where('stats IS NOT NULL AND ended_at IS NOT NULL').count

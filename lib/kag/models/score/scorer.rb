@@ -2,10 +2,10 @@ module KAG
   class Scorer
 
     WIN_RATIO_MULTIPLIER = 400
-    GENERIC_KILL_MULTIPLIER = 1.5
-    KNIGHT_KILL_MULTIPLIER = 3
-    ARCHER_KILL_MULTIPLIER = 2
-    BUILDER_KILL_MULTIPLIER = 6
+    GENERIC_KILL_MULTIPLIER = 12
+    KNIGHT_KILL_MULTIPLIER = 24
+    ARCHER_KILL_MULTIPLIER = 16
+    BUILDER_KILL_MULTIPLIER = 48
 
     def initialize(user)
       @user = user
@@ -24,34 +24,26 @@ module KAG
 
     ##
     # Score the user
-    # TODO: Optimize the crap out of this, no need to do so many @user.stat calls, get em all in one call
     #
     def score
       return 0 unless @user
-      wins = @user.stat('wins')
-      losses = @user.stat('losses')
+      stats = @user.stats_as_hash
+      wins = stats['wins'].to_i
+      losses = stats['losses'].to_i
 
-      if wins > 0 or losses > 0
+      if (wins+losses) > 5
         player_matches = wins+losses
         win_percentage = wins.to_f / player_matches.to_f
-        total_matches = ::Match.where('stats IS NOT NULL').count
+        total_matches = ::Match.where('stats IS NOT NULL AND ended_at IS NOT NULL').count
         percentage_of_matches = (player_matches.to_f / total_matches.to_f)
-        win_multiplier = percentage_of_matches * win_percentage
+        win_multiplier = (percentage_of_matches * win_percentage) - (losses*0.03)
       else
         win_multiplier = 0
       end
 
-      kills = @user.stat('kills')
-      deaths = @user.stat('deaths')
-      kills_a = @user.stat('archer.kills')
-      deaths_a = @user.stat('archer.deaths')
-      kills_b = @user.stat('builder.kills')
-      deaths_b = @user.stat('builder.deaths')
-      kills_k = @user.stat('knight.kills')
-      deaths_k = @user.stat('knight.deaths')
 
-      generic_kills = kills-kills_a-kills_b-kills_k
-      generic_deaths = deaths-deaths_a-deaths_b-deaths_k
+      generic_kills = stats['kills'].to_i - stats['archer.kills'].to_i - stats['builder.kills'].to_i - stats['knight.kills'].to_i
+      generic_deaths = stats['deaths'].to_i - stats['archer.deaths'].to_i - stats['builder.deaths'].to_i - stats['knight.deaths'].to_i
 
       score = 0
       if win_multiplier > 0
@@ -59,10 +51,15 @@ module KAG
         score += win_multiplier * WIN_RATIO_MULTIPLIER
       end
 
+      b_wins = stats['builder.wins'].to_i
+      b_losses = stats['builder.losses'].to_i
+      score += b_wins # slight bonus to builder wins since builder is less dependent on k/d
+      score -= b_losses/2 # slight detract to builder losses since builder is less dependent on k/d
+
       score += calc_kr_add(GENERIC_KILL_MULTIPLIER,generic_kills,generic_deaths)
-      score += calc_kr_add(KNIGHT_KILL_MULTIPLIER,kills_k,deaths_k)
-      score += calc_kr_add(ARCHER_KILL_MULTIPLIER,kills_a,deaths_a)
-      score += calc_kr_add(BUILDER_KILL_MULTIPLIER,kills_b,deaths_b)
+      score += calc_kr_add(KNIGHT_KILL_MULTIPLIER,stats['knight.kills'].to_i,stats['knight.deaths'].to_i)
+      score += calc_kr_add(ARCHER_KILL_MULTIPLIER,stats['archer.kills'].to_i,stats['archer.deaths'].to_i)
+      score += calc_kr_add(BUILDER_KILL_MULTIPLIER,stats['builder.kills'].to_i,stats['builder.deaths'].to_i)
 
       @user.score = score
       @user.save

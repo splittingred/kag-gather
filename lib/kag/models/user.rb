@@ -140,6 +140,14 @@ class User < KAG::Model
     self.user_stats(bust_cache)
   end
 
+  def stats_as_hash
+    h = SymbolTable.new
+    self.stats(true).each do |s|
+      h[s.name.to_sym] = s.value.to_i
+    end
+    h
+  end
+
   ##
   # Get the stats text for the user
   #
@@ -296,6 +304,6 @@ class User < KAG::Model
   end
 
   def rank
-    User.where('score > ?',self.score).count + 1
+    User.where("kag_user != '' AND score > ?",self.score).count + 1
   end
 end

@@ -12,7 +12,7 @@ module KAG
         :builder_win => 1,
         :builder_loss => 2,
         :loss => 0.03,
-        :death_weight => 1.75,
+        :death_weight => 3.75,
       })
     end
 

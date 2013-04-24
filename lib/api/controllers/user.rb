@@ -27,7 +27,10 @@ module KAG
             d = SymbolTable.new(user.attributes)
             d[:stats] = {}
             user.stats.each do |s|
-              d[:stats][s.name] = s.value
+              d[:stats][s.name] = {
+                  :times => s.value,
+                  :rank => s.rank
+              }
             end
             d[:stats][:matches] = user.matches.count
             d.delete(:host)

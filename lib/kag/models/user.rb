@@ -137,7 +137,7 @@ class User < KAG::Model
   # @return [Array]
   #
   def stats(bust_cache = true)
-    self.user_stats(bust_cache)
+    UserStat.select('*,(SELECT COUNT(*) FROM `user_stats` AS `us2` WHERE `us2`.`name` = `user_stats`.`name` AND `us2`.`user_id` != 8 AND `us2`.`value` > `user_stats`.`value` ) AS `rank`').where('user_id = ?',self.id)
   end
 
   def stats_as_hash

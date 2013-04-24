@@ -68,6 +68,7 @@ module KAG
         score = 0.00
       end
 
+      score = score <= 0 ? 0 : score
       @user.score = score
       @user.save
       score

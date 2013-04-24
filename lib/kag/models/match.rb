@@ -77,48 +77,43 @@ class Match < KAG::Model
   def setup_teams(queue_players,shuffle = true)
     queue_players.shuffle! if shuffle
 
-    match_size = KAG::Config.instance[:match_size].to_i
-    match_size = 2 if match_size < 2
+    queue_players.sort_by do |qp|
+      qp.user.score
+    end
 
-    team_list = [{
+    teams = []
+    teams << {
       :color => "\x0312",
-      :name => "Blue Team"
-    },{
+      :name => 'Blue Team',
+      :players => []
+    }
+    teams << {
        :color => "\x0304",
-       :name => "Red Team"
-    }]
-    players_per_team = (match_size / 2).floor.to_i
+       :name => 'Red Team',
+       :players => []
+    }
 
-    puts "MATCH SIZE #{match_size.to_s}"
-    puts "Players Per Team: #{players_per_team.to_s}"
+    idx = 0
+    queue_players.each do |qp|
+      teams.at(idx)[:players] << Player.new({
+        :user_id => qp.user_id,
+        :match => self
+      })
+      idx += 1
+      idx = 0 if idx >= teams.length
+    end
 
-    lb = 0
-    team_list.each do |ts|
-      eb = lb+players_per_team-1
-      eb = queue_players.length if eb > queue_players.length-1
-      x = 0
-      ps = []
-      queue_players.each do |qp|
-        if x >= lb and x <= eb
-          ps << Player.new({
-            :user_id => qp.user_id,
-            :match => self
-          })
-        end
-        x = x + 1
-      end
-      lb = players_per_team
-
+    teams.each do |t|
       self.teams << Team.new({
-        :num_players => ps.length,
-        :players => ps,
-        :name => ts[:name],
-        :color => ts[:color],
+        :num_players => t[:players].length,
+        :players => t[:players],
+        :name => t[:name],
+        :color => t[:color],
       })
     end
 
-    self.num_players = match_size
-    self.num_teams = team_list.length
+    self.num_players = queue_players.length
+    self.num_teams = teams.length
     self.save
   end
 

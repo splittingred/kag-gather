@@ -25,18 +25,7 @@ module KAG
         end
 
         def list
-          c = ::User.where(@params)
-          if c
-            us = []
-            c.each do |u|
-              ud = SymbolTable.new(u.attributes)
-              ud.delete(:host)
-              us << ud
-            end
-            self.success('',us)
-          else
-            self.failure('err_nf',c)
-          end
+          self.failure('err_nf')
         end
 
       end

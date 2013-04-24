@@ -9,8 +9,8 @@ module KAG
         def read(name)
           limit = @params[:limit] || 20
           times = ::UserStat.where(:name => name).sum('value')
-          users_count = ::UserStat.select('user_stats.*,users.kag_user').joins(:user).where(:name => name).count
-          users = ::UserStat.select('user_stats.*,users.kag_user').joins(:user).where(:name => name).limit(limit).order('value DESC')
+          users_count = ::UserStat.select('*,users.kag_user').joins(:user).where(:name => name).count
+          users = ::UserStat.select('*,users.kag_user').joins(:user).where(:name => name).limit(limit).order('value DESC')
           list = []
           users.each do |u|
             list << {

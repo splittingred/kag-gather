@@ -156,9 +156,9 @@ module KAG
           rv
         end
 
-        def collection(results = {},total = nil)
+        def collection(results = {},total = nil,other = {})
           total = results.count unless total
-          {:results => results,:total => total}
+          other.merge({:results => results,:total => total})
         end
 
         def set_error(f,v)

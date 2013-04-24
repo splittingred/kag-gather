@@ -69,7 +69,7 @@ module KAG
           self.evt_nerf(msg)
         elsif msg.index("!claimed")
           self.evt_claimed(msg)
-        elsif msg.index("!say")
+        elsif msg.index("!say") or msg.index('@') === 0
           self.evt_say(msg)
 
         elsif self.live # live mode
@@ -304,9 +304,10 @@ module KAG
 
       def evt_say(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!say) (.*)$/)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:\@)(.*)$/) unless match
         if match
           user = match[2].to_s.strip+' '+match[3].to_s.strip
-          msg = match[5].to_s
+          msg = match[5].to_s.strip
           broadcast('<'+user+'@'+self.server.name+'> '+msg)
         end
       end

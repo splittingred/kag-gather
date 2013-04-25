@@ -167,6 +167,10 @@ describe KAG::Server::Parser do
     subject.parse("[00:00:00] <[Newb] Geti> !score").should eq(:score)
   end
 
+  it "test say" do
+    subject.parse("[00:00:00] <[Newb] Geti> @this is a message").should eq(:say)
+  end
+
   it "test archive" do
     subject.live = true
     subject.parse("[00:00:00] Vidar gibbed Geti into pieces")

@@ -5,10 +5,10 @@ module KAG
 
       def start_match(shuffle_teams = true)
         self.server = ::Server.new
-        self.server.name = "test"
-        self.server.ip = "127.0.0.1"
+        self.server.name = 'test'
+        self.server.ip = '127.0.0.1'
         self.server.port = 50301
-        self.server.password = "1234"
+        self.server.password = '1234'
         self.server.save
 
         self.queue = ::GatherQueue.new

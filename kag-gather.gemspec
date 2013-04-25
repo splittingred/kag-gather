@@ -19,15 +19,16 @@ Gem::Specification.new do |gem|
   gem.files        = Dir['readme.md', 'lib/**/*', 'config/config.sample.json']
   gem.require_path = 'lib'
 
-  gem.add_runtime_dependency "cinch", "2.0.4"
-  gem.add_runtime_dependency "cinch-identify", "1.4.1"
-  gem.add_runtime_dependency "celluloid",">=0.13.0"
-  gem.add_runtime_dependency "json"
-  gem.add_runtime_dependency "symboltable", "1.0.2"
-  gem.add_runtime_dependency "kagerator", "1.0.4"
-  gem.add_runtime_dependency "activerecord"
-  gem.add_runtime_dependency "mysql2"
-  gem.add_runtime_dependency "sinatra"
+  gem.add_runtime_dependency 'cinch', '2.0.4'
+  gem.add_runtime_dependency 'cinch-identify', '1.4.1'
+  gem.add_runtime_dependency 'celluloid','>=0.13.0'
+  gem.add_runtime_dependency 'json'
+  gem.add_runtime_dependency 'symboltable', '1.0.2'
+  gem.add_runtime_dependency 'kagerator', '1.0.4'
+  gem.add_runtime_dependency 'activerecord'
+  gem.add_runtime_dependency 'mysql2'
+  gem.add_runtime_dependency 'sinatra'
+  gem.add_runtime_dependency 'seed-fu'
   #gem.add_runtime_dependency 'timers', '>= 1.0.0'
 
   #if RUBY_PLATFORM =~ /java/
@@ -38,5 +39,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'guard-rspec'
   gem.add_development_dependency 'trollop'
+  gem.add_development_dependency 'database_cleaner'
   #gem.add_development_dependency 'benchmark_suite'
 end

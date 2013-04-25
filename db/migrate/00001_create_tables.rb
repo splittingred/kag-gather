@@ -1,5 +1,7 @@
 class CreateTables < ActiveRecord::Migration
   def self.up
+    return true if ActiveRecord::Base.connection.table_exists? 'gather_queues'
+
     create_table :gather_queues do |t|
       t.datetime :ended_at
       t.timestamps
@@ -108,6 +110,7 @@ class CreateTables < ActiveRecord::Migration
       t.string     :host, :limit => 255, :null => false, :default => ''
       t.boolean    :temp, :limit => 1,:null => false,:default => false
       t.datetime   :temp_end_at
+      t.float      :score, :precision => 2,:null =>false,:default => 0.00
       t.timestamps
     end
 

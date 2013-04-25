@@ -88,7 +88,9 @@ module KAG
             self.evt_restart(msg)
           end
         else # warmup
-          if msg.index("!ready")
+          if msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i)
+            self.evt_ready_specified(msg)
+          elsif msg.index("!ready")
             self.evt_ready(msg)
           elsif msg.index("!unready")
             self.evt_unready(msg)
@@ -187,17 +189,44 @@ module KAG
             say "You are already ready, #{match[3]}!"
             nil
           else
-            self.ready << match[3]
-            ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
-
-            # if match is ready to go live, start it
-            if self.ready.length == ready_threshold
-              start
-            # otherwise notify how many left are needed
-            else
-              say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
-            end
+            say "#{match[3]}, please specify a class via !ready [classname]"
             :ready
+          end
+        end
+      end
+
+      def evt_ready_specified(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i)
+        if match
+          username = match[3].to_s.strip
+          if self.ready.include?(username)
+            say "You are already ready, #{username}!"
+            nil
+          else
+            player_class = match[5].to_s.strip.downcase.capitalize
+            unless username.empty? or player_class.empty?
+              if %w(Archer Knight Builder).include?(player_class)
+                team = get_team(username)
+
+                self.data[:claims] = {} unless self.data[:claims]
+                self.data[:claims][username] = player_class
+                self.ready << username
+                say "#{username} is ready and has claimed #{player_class} for: #{team}."
+
+                ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
+
+                # if match is ready to go live, start it
+                if self.ready.length == ready_threshold
+                  start
+                # otherwise notify how many left are needed
+                else
+                  say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
+                end
+                :ready
+              else
+                say "#{username}, #{player_class} is not a valid class."
+              end
+            end
           end
         end
       end

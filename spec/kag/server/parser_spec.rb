@@ -45,19 +45,19 @@ describe KAG::Server::Parser do
 
   it "test player ready" do
     subject.live = false
-    subject.parse("[00:00:00] <[Newb] Geti> !ready").should eq(:ready)
+    subject.parse("[00:00:00] <[Newb] Geti> !ready Archer").should eq(:ready)
     subject.live = false
-    subject.parse("[00:00:00] <[Pk#] master4523> !ready").should eq(:ready)
+    subject.parse("[00:00:00] <[Pk#] master4523> !ready Knight").should eq(:ready)
     subject.live = false
-    subject.parse("[00:00:00] <[Pk#] name_with_underscore> !ready").should eq(:ready)
+    subject.parse("[00:00:00] <[Pk#] Ardi_vaba> !ready Knight").should eq(:ready)
     subject.live = false
-    subject.parse("[00:00:00] <[Pk#] dot.me.up> !ready").should eq(:ready)
+    subject.parse("[00:00:00] <[Pk#] killa.tron> !ready Builder").should eq(:ready)
   end
 
   it "prevent multiple ready calls" do
     subject.live = false
-    subject.parse("[00:00:00] <[Newb] Geti> !ready").should eq(:ready)
-    subject.parse("[00:00:00] <[Newb] Geti> !ready").should eq(nil)
+    subject.parse("[00:00:00] <[Newb] Geti> !ready Archer").should eq(:ready)
+    subject.parse("[00:00:00] <[Newb] Geti> !ready Archer").should eq(nil)
   end
 
   it "test player veto" do
@@ -157,7 +157,7 @@ describe KAG::Server::Parser do
 
   it "test !ready and !unready" do
     subject.live = false
-    subject.parse("[00:00:00] <Geti> !ready").should eq(:ready)
+    subject.parse("[00:00:00] <Geti> !ready Archer").should eq(:ready)
     subject.ready.length.should eq(1)
     subject.parse("[00:00:00] <Geti> !unready").should eq(:unready)
     subject.ready.length.should eq(0)

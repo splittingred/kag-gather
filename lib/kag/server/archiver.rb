@@ -111,8 +111,8 @@ module KAG
           p = ::Player.fetch_by_kag_user(player.to_s)
           if p
             self.log.info "- Found Player record with ID #{p.id}"
-            p.kills = data[:kill]
-            p.deaths = data[:death]
+            p.kills = data[:kill].to_i
+            p.deaths = data[:death].to_i
             if p.save
               user = p.user
               if user

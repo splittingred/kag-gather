@@ -3,7 +3,7 @@ require 'support/loader'
 ##
 # Testing for the server functions
 #
-describe KAG::Server::Parser do
+describe KAG::Server::Archiver do
 
   subject do
     ms = KAG::Test::MatchSetup.new
@@ -13,11 +13,13 @@ describe KAG::Server::Parser do
   it "test archive" do
     subject.live = true
     subject.parse("[00:00:00] Vidar gibbed Geti into pieces")
-    subject.parse("[00:00:00] Vidar slew Geti with his sword")
+    subject.parse("[00:00:00] Vidar slew Geti with his sword").should eq(:slew)
     subject.parse("[00:00:00] Red Team wins the game!").should eq(:match_win)
     subject.live = true
-    subject.parse("[00:00:00] Vidar gibbed Geti into pieces")
-    subject.parse("[00:00:00] Vidar slew Geti with his sword")
+    subject.parse("[00:00:00] Vidar gibbed Geti into pieces").should eq(:gibbed)
+    subject.live = true
+    subject.parse("[00:00:00] Vidar slew Geti with his sword").should eq(:slew)
+    subject.live = true
     subject.parse("[00:00:00] Red Team wins the game!").should eq(:match_win)
     subject.archive
 

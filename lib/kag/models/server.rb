@@ -4,6 +4,7 @@ require 'symboltable'
 
 class Server < KAG::Model
   has_many :matches
+  has_one :match, :primary_key => 'in_use'
 
   attr_accessor :match_in_progress
   attr_accessor :listener,:match_data
@@ -13,10 +14,10 @@ class Server < KAG::Model
   end
 
 
-  def start(match)
-    self.in_use = match.id
+  def start(mt)
+    self.in_use = mt.id
     if self.save
-      self.match_in_progress = match
+      self.match_in_progress = mt
       self.match_data = SymbolTable.new
 
       puts 'setting up listener'
@@ -28,7 +29,7 @@ class Server < KAG::Model
     end
   end
 
-  def match
+  def get_match
     if self.in_use > 0
       ::Match.find(self.in_use)
     else

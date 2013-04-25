@@ -48,8 +48,9 @@ module KAG
         msg = msg[11..msg.length]
 
         self.log.info((self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s)
+        puts (self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s if self.test
 
-        if msg.index("*Restarting Map*")
+        if msg.index('*Restarting Map*')
           self.evt_map_restart(msg)
         elsif msg.index(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20}) (?:is now known as) (.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20})$/)
           self.evt_player_renamed(msg)
@@ -63,13 +64,13 @@ module KAG
           self.evt_score(msg)
         elsif msg.index("!teams")
           self.evt_teams(msg)
-        elsif msg.index("!team")
+        elsif msg.index('!team')
           self.evt_team(msg)
-        elsif msg.index("!nerf")
+        elsif msg.index('!nerf')
           self.evt_nerf(msg)
-        elsif msg.index("!claimed")
+        elsif msg.index('!claimed')
           self.evt_claimed(msg)
-        elsif msg.index("!say") or msg.index('@') === 0
+        elsif msg.index('!say') or !msg.index('@').nil?
           self.evt_say(msg)
 
         elsif self.live # live mode
@@ -145,11 +146,15 @@ module KAG
       end
 
       def broadcast(msg)
-        if KAG::Config.instance[:channels] and self.server and KAG.gather.bot
-          KAG::Config.instance[:channels].each do |c|
-            channel = KAG.gather.bot.channel_list.find_ensured(c)
-            if channel
-              channel.send(msg)
+        if self.test
+          puts msg
+        else
+          if KAG::Config.instance[:channels] and self.server and KAG.gather.bot
+            KAG::Config.instance[:channels].each do |c|
+              channel = KAG.gather.bot.channel_list.find_ensured(c)
+              if channel
+                channel.send(msg)
+              end
             end
           end
         end
@@ -180,6 +185,7 @@ module KAG
         if match
           if self.ready.include?(match[3])
             say "You are already ready, #{match[3]}!"
+            nil
           else
             self.ready << match[3]
             ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
@@ -187,7 +193,6 @@ module KAG
             # if match is ready to go live, start it
             if self.ready.length == ready_threshold
               start
-
             # otherwise notify how many left are needed
             else
               say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
@@ -304,7 +309,7 @@ module KAG
 
       def evt_say(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!say) (.*)$/)
-        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:@)(.*)$/) if match.nil?
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:\@)(.*)$/) if match.nil?
         if match
           user = match[2].to_s.strip+' '+match[3].to_s.strip
           msg = match[5].to_s.strip
@@ -459,6 +464,7 @@ module KAG
       def evt_round_win(msg)
         self.live = false
         match = msg.match(/^(.+) (wins the game!)$/)
+        puts match.inspect
         if match
           winner = match[1].to_s.strip
           self.data[:wins][winner] = 0 unless self.data[:wins][winner]

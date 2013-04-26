@@ -56,9 +56,7 @@ module KAG
         last_match = @user.matches.where(:end_votes => 0).last
         if last_match
           days_since_last_match = (Time.now - last_match.ended_at) / 86400
-          puts @user.name+': '+days_since_last_match.to_s
           if days_since_last_match > 4.00
-            puts (days_since_last_match * @ratios[:inactive_penalty_multiplier]).to_s
             score -= (days_since_last_match * @ratios[:inactive_penalty_multiplier])
           end
         end

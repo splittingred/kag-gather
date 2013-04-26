@@ -103,7 +103,7 @@ class User < KAG::Model
     end
 
     def rescore_all
-      User.all.each {|u| u.do_score}
+      User.order('score DESC').each {|u| u.do_score}
     end
   end
 

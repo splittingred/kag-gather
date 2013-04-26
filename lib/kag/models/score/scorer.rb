@@ -11,9 +11,10 @@ module KAG
         :builder_kill => 48,
         :builder_win => 1,
         :builder_loss => 2,
-        :loss => 0.3,
+        :loss => 0.02,
         :death_weight => 2.00,
         :inactive_penalty_multiplier => 10,
+        :match_percentage_multiplier => 350,
       })
     end
 
@@ -44,14 +45,16 @@ module KAG
         loss_percentage = (100.00 - (win_percentage*100))/100.00
         total_matches = ::Match.where('stats IS NOT NULL AND ended_at IS NOT NULL').count
         percentage_of_matches = (player_matches.to_f / total_matches.to_f)
-        win_multiplier = (percentage_of_matches * win_percentage) - (loss_percentage*@ratios[:loss])
+        win_multiplier = (win_percentage) - (loss_percentage*@ratios[:loss])
+        #puts "#{@user.name}: (W: #{win_percentage.to_s}) - (L: #{loss_percentage.to_s} * #{@ratios[:loss].to_s}) == #{win_multiplier.to_s}"
 
         generic_kills = stats['kills'].to_i - stats['archer.kills'].to_i - stats['builder.kills'].to_i - stats['knight.kills'].to_i
         generic_deaths = stats['deaths'].to_i - stats['archer.deaths'].to_i - stats['builder.deaths'].to_i - stats['knight.deaths'].to_i
 
         if win_multiplier > 0
-          #puts "#{@user.name} : #{wins.to_s}-#{losses.to_s} : #{player_matches.to_s} / #{total_matches.to_s} : #{percentage_of_matches.to_s} * #{win_percentage.to_s} : #{win_multiplier.to_s}"
-          score += win_multiplier * @ratios[:win_ratio]
+          score += (win_multiplier * @ratios[:win_ratio]) + (percentage_of_matches * @ratios[:match_percentage_multiplier])
+
+          #puts "(#{win_multiplier.to_s} * #{@ratios[:win_ratio].to_s}) + (#{percentage_of_matches.to_s} * #{@ratios[:match_percentage_multiplier].to_s})"
         end
 
         last_match = @user.matches.where(:end_votes => 0).last

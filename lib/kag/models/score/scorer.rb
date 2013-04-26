@@ -22,6 +22,7 @@ module KAG
         :loss => 2.0,
         :inactive_penalty_multiplier => 10,
         :match_percentage_multiplier => 400,
+        :minimum_matches => 8,
       })
     end
 
@@ -46,7 +47,7 @@ module KAG
       wins = stats['wins'].to_i
       losses = stats['losses'].to_i
 
-      if (wins+losses) >= 5
+      if (wins+losses) >= @ratios[:minimum_matches]
 
         total_matches = ::Match.where('stats IS NOT NULL AND ended_at IS NOT NULL').count
         player_matches = wins+losses

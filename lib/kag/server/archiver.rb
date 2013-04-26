@@ -60,47 +60,56 @@ module KAG
       end
 
       def teams
-        self.server.match_in_progress.teams if self.server.match_in_progress
+        if self.server and self.server.match_in_progress
+          self.server.match_in_progress.teams
+        elsif self.server
+          self.log.error 'COULD NOT FIND MATCH'
+        else
+          self.log.error 'COULD NOT FIND SERVER'
+        end
       end
 
       def record_wins
         winner = self.winning_team
-        puts "Winner was #{winner.to_s}."
+        self.log.info "Winner was #{winner.to_s}."
         if winner
           teams = self.teams
-          teams.each do |team|
-            # record user win/loss stats
-            team.players.each do |player|
-              if team.name == winner
-                player.won = true
-              else
-                player.won = false
-              end
-              cls = get_class(player.user.kag_user)
-              if cls
-                player.cls = cls.downcase
-              else
-                self.log.error "No class for #{player.to_s}"
-              end
-              if player.save
-                user = player.user
-                if user
-                  self.log.info "- Logging won/matches for #{user.name.to_s}"
-                  k = player.won ? :wins : :losses
-                  user.inc_stat(k)
-                  if cls
-                    user.inc_stat(cls+'.'+k.to_s)
-                    user.inc_stat(cls+'.matches')
-                  end
-                  self.log.info '-- Done!'
+          if teams
+            teams.each do |team|
+              # record user win/loss stats
+              team.players.each do |player|
+                if team.name == winner
+                  player.won = true
                 else
-                  self.log.error "Cannot find User for player ID #{player.id}"
+                  player.won = false
                 end
-              else
-                self.log.error "Cannot save Player #{p.id} record!"
+                cls = get_class(player.user.kag_user)
+                if cls
+                  player.cls = cls.downcase
+                else
+                  self.log.error "No class for #{player.to_s}"
+                end
+                if player.save
+                  user = player.user
+                  if user
+                    self.log.info "- Logging won/matches for #{user.name.to_s}"
+                    k = player.won ? :wins : :losses
+                    user.inc_stat(k)
+                    if cls
+                      user.inc_stat(cls+'.'+k.to_s)
+                      user.inc_stat(cls+'.matches')
+                    end
+                    self.log.info '-- Done!'
+                  else
+                    self.log.error "Cannot find User for player ID #{player.id}"
+                  end
+                else
+                  self.log.error "Cannot save Player #{p.id} record!"
+                end
               end
             end
-          end
+          else
+            self.log.error 'COULD NOT GET TEAMS in record_wins'
         end
       end
 

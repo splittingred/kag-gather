@@ -56,11 +56,11 @@ module KAG
       end
 
       def match
-        self.server.match
+        self.server.match_in_progress
       end
 
       def teams
-        self.server.match.teams
+        self.server.match_in_progress.teams if self.server.match_in_progress
       end
 
       def record_wins

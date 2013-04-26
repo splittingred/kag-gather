@@ -56,10 +56,6 @@ module KAG
         cls
       end
 
-      def match
-        self.server.match_in_progress
-      end
-
       def teams
         if self.match
           self.match.teams

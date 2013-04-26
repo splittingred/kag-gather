@@ -110,6 +110,7 @@ module KAG
             end
           else
             self.log.error 'COULD NOT GET TEAMS in record_wins'
+          end
         end
       end
 

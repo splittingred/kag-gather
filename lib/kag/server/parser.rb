@@ -94,9 +94,9 @@ module KAG
             self.evt_ready(msg)
           elsif msg.index("!unready")
             self.evt_unready(msg)
-          elsif msg.index("!who_ready")
+          elsif msg.index("!who_ready") or msg.index('!wr')
             self.evt_who_ready(msg)
-          elsif msg.index("!who_not_ready")
+          elsif msg.index("!who_not_ready") or msg.index('!wnr')
             self.evt_who_not_ready(msg)
           elsif msg.index("!veto")
             self.evt_veto(msg)
@@ -247,12 +247,12 @@ module KAG
       end
 
       def evt_who_ready(msg)
-        say "Ready: "+self.ready.join(", ")
+        say 'Ready: '+self.ready.join(", ")
         :who_ready
       end
 
       def evt_who_not_ready(msg)
-        say "Not Ready: "+(self.players - self.ready).join(", ")
+        say 'Not Ready: '+(self.players - self.ready).join(', ')
         :who_not_ready
       end
 

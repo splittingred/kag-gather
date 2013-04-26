@@ -73,7 +73,7 @@ module KAG
           puts "#{@user.name}:  (#{wins.to_s} * #{@ratios[:win_ratio].to_s}) - (#{losses.to_s} * #{@ratios[:loss_ratio].to_s}) + (#{percentage_of_matches.to_s} * #{@ratios[:match_percentage_multiplier].to_s}) == #{win_adder.to_s} * #{win_multiplier.to_s} == #{win_adder2.to_s}"
         end
 
-        last_match = @user.matches.where(:end_votes => 0).last
+        last_match = @user.matches.where('end_votes = 0 AND ended_at IS NOT NULL').last
         if last_match
           days_since_last_match = (Time.now - last_match.ended_at) / 86400
           if days_since_last_match > 4.00

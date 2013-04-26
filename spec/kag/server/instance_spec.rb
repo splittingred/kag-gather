@@ -18,10 +18,6 @@ describe Server do
       players[p.to_sym] = {:authname => p,:nick => p}
     end
 
-    match = KAG::Gather::Match.new(SymbolTable.new({
-        :server => server,
-        :players => players
-    }))
     match.setup_teams
 
     server.start(match)

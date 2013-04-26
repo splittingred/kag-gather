@@ -13,6 +13,7 @@ module KAG
         :builder_loss => 2,
         :loss => 0.02,
         :death_weight => 2.00,
+        :inactive_penalty_multiplier => 10,
       })
     end
 
@@ -50,6 +51,16 @@ module KAG
         if win_multiplier > 0
           #puts "#{@user.name} : #{wins.to_s}-#{losses.to_s} : #{player_matches.to_s} / #{total_matches.to_s} : #{percentage_of_matches.to_s} * #{win_percentage.to_s} : #{win_multiplier.to_s}"
           score += win_multiplier * @ratios[:win_ratio]
+        end
+
+        last_match = @user.matches.where(:end_votes => 0).last
+        if last_match
+          days_since_last_match = (Time.now - last_match.ended_at) / 86400
+          puts @user.name+': '+days_since_last_match.to_s
+          if days_since_last_match > 4.00
+            puts (days_since_last_match * @ratios[:inactive_penalty_multiplier]).to_s
+            score -= (days_since_last_match * @ratios[:inactive_penalty_multiplier])
+          end
         end
 
         b_wins = stats['builder.wins'].to_i

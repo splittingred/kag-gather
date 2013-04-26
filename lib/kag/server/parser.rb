@@ -21,10 +21,10 @@ module KAG
         self.ready = []
         self.veto = []
         self.restart_queue = []
-        self.teams = self.server.match.teams
+        self.teams = self.server.match_in_progress.teams
         self.test = false
         ps = []
-        self.server.match.users.each do |u|
+        self.server.match_in_progress.users.each do |u|
           ps << u.name
         end
         self.players = ps
@@ -143,7 +143,7 @@ module KAG
           self.log.error e.backtrace.join("\n")
         ensure
           self.log.info "cease match"
-          self.server.match.cease
+          self.server.match_in_progress.cease
         end
       end
 
@@ -263,7 +263,7 @@ module KAG
       end
 
       def evt_teams(msg)
-        say self.server.match.teams_text
+        say self.server.match_in_progress.teams_text
         :teams
       end
 
@@ -364,9 +364,9 @@ module KAG
             self.sub_requests[player_to_sub] << player_requesting
             votes_needed = (self.players.length / 4).to_i
             if self.sub_requests[player_to_sub].length > votes_needed
-              match = self.listener.server.match
-              if match
-                substitution = match.request_sub(m[5].strip)
+              match_in_progress = self.listener.server.match_in_progress
+              if match_in_progress
+                substitution = match_in_progress.request_sub(m[5].strip)
                 if substitution
                   self.listener.kick(m[5]) unless self.test
                   if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
@@ -493,7 +493,6 @@ module KAG
       def evt_round_win(msg)
         self.live = false
         match = msg.match(/^(.+) (wins the game!)$/)
-        puts match.inspect
         if match
           winner = match[1].to_s.strip
           self.data[:wins][winner] = 0 unless self.data[:wins][winner]

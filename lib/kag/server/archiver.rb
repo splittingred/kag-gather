@@ -4,11 +4,12 @@ require 'kag/server/parser'
 module KAG
   module Server
     class Archiver
-      attr_accessor :data,:server,:log
-      def initialize(data,server,logger)
+      attr_accessor :data,:server,:log,:match
+      def initialize(data,server,match,logger)
         self.data = data
         self.server = server
         self.log = logger
+        self.match = match
       end
 
       def run
@@ -60,12 +61,11 @@ module KAG
       end
 
       def teams
-        if self.server and self.server.match_in_progress
-          self.server.match_in_progress.teams
-        elsif self.server
-          self.log.error 'COULD NOT FIND MATCH'
+        if self.match
+          self.match.teams
         else
-          self.log.error 'COULD NOT FIND SERVER'
+          self.log.error 'COULD NOT FIND MATCH'
+          false
         end
       end
 

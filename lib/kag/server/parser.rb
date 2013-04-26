@@ -12,7 +12,7 @@ module KAG
     class Parser
       attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
-      attr_accessor :players,:teams
+      attr_accessor :players,:teams,:match
 
       def initialize(listener,data)
         self.server = listener.server
@@ -21,6 +21,7 @@ module KAG
         self.ready = []
         self.veto = []
         self.restart_queue = []
+        self.match = self.server.match_in_progress
         self.teams = self.server.match_in_progress.teams
         self.test = false
         ps = []
@@ -145,7 +146,7 @@ module KAG
           self.log.error e.backtrace.join("\n")
         ensure
           self.log.info "cease match"
-          self.server.match_in_progress.cease
+          self.match.cease
         end
       end
 
@@ -265,7 +266,7 @@ module KAG
       end
 
       def evt_teams(msg)
-        say self.server.match_in_progress.teams_text
+        say self.match.teams_text
         :teams
       end
 
@@ -366,7 +367,7 @@ module KAG
             self.sub_requests[player_to_sub] << player_requesting
             votes_needed = (self.players.length / 4).to_i
             if self.sub_requests[player_to_sub].length > votes_needed
-              match_in_progress = self.listener.server.match_in_progress
+              match_in_progress = self.match
               if match_in_progress
                 substitution = match_in_progress.request_sub(m[5].strip)
                 if substitution
@@ -670,7 +671,7 @@ module KAG
       end
 
       def archive
-        a = Archiver.new(self.data,self.listener.server,self.log)
+        a = Archiver.new(self.data,self.listener.server,self.match,self.log)
         a.run
       end
 

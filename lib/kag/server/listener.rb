@@ -234,6 +234,10 @@ module KAG
         self.log.info "[RCON] #{cmd.to_s}"
         put cmd
       end
+
+      def sub_in(old_user,new_user,team)
+        self.parser.sub_in(old_user,new_user,team)
+      end
     end
   end
 end

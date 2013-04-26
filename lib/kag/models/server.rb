@@ -81,4 +81,8 @@ class Server < KAG::Model
   def say(msg)
     KAG::Listener[self.name.to_sym].async.msg(msg)
   end
+
+  def sub_in(old_user,new_user,team)
+    KAG::Listener[self.name.to_sym].async.sub_in(old_user,new_user,team)
+  end
 end

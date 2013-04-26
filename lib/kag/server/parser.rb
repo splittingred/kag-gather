@@ -560,6 +560,15 @@ module KAG
         :player_chat
       end
 
+      def sub_in(old_user,new_user,team)
+        msg = "#{new_user.name} has subbed for #{old_user.name} for the #{team.name}!"
+        say msg.to_s
+        if self.players.include?(old_user.name.to_s.to_sym)
+          self.players.delete(old_user.name.to_s.to_sym)
+        end
+        self.players << new_user.name
+      end
+
       def request_sub(player_left)
 
       end

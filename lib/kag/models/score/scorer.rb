@@ -4,14 +4,14 @@ module KAG
     def initialize(user)
       @user = user
       @ratios = SymbolTable.new({
-        :win_ratio => 325,
+        :win_ratio => 500,
         :generic_kill => 12,
         :knight_kill => 24,
         :archer_kill => 16,
         :builder_kill => 48,
         :builder_win => 1,
         :builder_loss => 2,
-        :loss => 0.02,
+        :loss => 0.1,
         :death_weight => 2.00,
         :inactive_penalty_multiplier => 10,
       })
@@ -41,9 +41,10 @@ module KAG
       if (wins+losses) >= 5
         player_matches = wins+losses
         win_percentage = wins.to_f / player_matches.to_f
+        loss_percentage = (100.00 - (win_percentage*100))/100.00
         total_matches = ::Match.where('stats IS NOT NULL AND ended_at IS NOT NULL').count
         percentage_of_matches = (player_matches.to_f / total_matches.to_f)
-        win_multiplier = (percentage_of_matches * win_percentage) - (losses*@ratios[:loss])
+        win_multiplier = (percentage_of_matches * win_percentage) - (loss_percentage*@ratios[:loss])
 
         generic_kills = stats['kills'].to_i - stats['archer.kills'].to_i - stats['builder.kills'].to_i - stats['knight.kills'].to_i
         generic_deaths = stats['deaths'].to_i - stats['archer.deaths'].to_i - stats['builder.deaths'].to_i - stats['knight.deaths'].to_i

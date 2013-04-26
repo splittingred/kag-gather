@@ -50,7 +50,7 @@ class Team < KAG::Model
 
   def player_list
     ps = []
-    self.users(true).each do |user|
+    self.users(true).where(:players => {:deserted => 0}).each do |user|
       ps << user.name
     end
     ps.join(", ")

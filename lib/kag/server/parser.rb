@@ -60,10 +60,12 @@ module KAG
           self.evt_player_left(msg)
         elsif msg.index("!request_sub") or msg.index("!rsub")
           self.evt_request_sub(msg)
-        elsif msg.index("!score")
+        elsif msg.index('!score')
           self.evt_score(msg)
-        elsif msg.index("!teams")
+        elsif msg.index('!teams')
           self.evt_teams(msg)
+        elsif msg.index('!players')
+          self.evt_players(msg)
         elsif msg.index('!team')
           self.evt_team(msg)
         elsif msg.index('!nerf')
@@ -560,12 +562,14 @@ module KAG
         :player_chat
       end
 
+      def evt_players(msg)
+        say 'Players: '+self.players.join(', ')
+      end
+
       def sub_in(old_user,new_user,team)
         msg = "#{new_user.name} has subbed for #{old_user.name} for the #{team.name}!"
         say msg.to_s
-        if self.players.include?(old_user.name.to_s.to_sym)
-          self.players.delete(old_user.name.to_s.to_sym)
-        end
+        self.players.delete(old_user.name)
         self.players << new_user.name
       end
 

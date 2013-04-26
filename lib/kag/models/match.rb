@@ -221,7 +221,7 @@ class Match < KAG::Model
             KAG.gather.send_channels_msg(msg)
 
             if substitution and substitution.old_player and substitution.old_player.user
-              self.server.sub_in(msg,substitution.old_player.user,user,substitution.team)
+              self.server.sub_in(substitution.old_player.user,user,substitution.team)
             end
             subbed = true
           else
@@ -236,7 +236,7 @@ class Match < KAG::Model
   def teams_text
     ts = []
     self.teams(true).each do |team|
-      ts << team.name.to_s+": "+team.player_list
+      ts << team.name.to_s+': '+team.player_list
     end
     ts.join(' --- ')
   end

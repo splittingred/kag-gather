@@ -98,11 +98,13 @@ module KAG
         if match
           if !match[2].to_s.empty? and !match[3].to_s.empty?
             clan_name = match[2].to_s.strip
-            unless self.clans.include?(clan_name)
-              self.clans[clan_name.to_s] = clan_name
-              clan = ::Clan.fetch(clan_name)
-              if clan
-                clan.add_member(match[3])
+            unless self.clans.keys.include?(clan_name)
+              self.clans[clan_name.to_s] = {}
+            end
+            if self.clans[clan_name.to_s]
+              self.clans[clan_name.to_s][:obj] = ::Clan.fetch(clan_name) unless self.clans[clan_name.to_s][:obj].class == ::Clan
+              if self.clans[clan_name.to_s][:obj]
+                self.clans[clan_name.to_s][:obj].add_member(match[3])
               end
             end
           end

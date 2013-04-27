@@ -10,6 +10,7 @@ class User < KAG::Model
   has_many :gather_queue_players
   has_many :queues, :through => :gather_queue_players
   has_many :user_stats
+  belongs_to :clan
 
   class << self
     ##

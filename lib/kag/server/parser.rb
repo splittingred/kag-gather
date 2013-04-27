@@ -16,7 +16,7 @@ module KAG
       attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
       attr_accessor :players,:teams,:match
-      attr_accessor :last_killer,:last_killer_streak
+      attr_accessor :last_killer,:last_killer_streak,:clans
 
       def initialize(listener,data)
         self.server = listener.server
@@ -30,6 +30,7 @@ module KAG
         self.test = false
         self.last_killer = nil
         self.last_killer_streak = 0
+        self.clans = {}
         ps = []
         self.server.match_in_progress.users.each do |u|
           ps << u.name
@@ -84,10 +85,28 @@ module KAG
         return false if msg.to_s.empty? or msg.to_s.length < 11
         msg = msg[11..msg.length].strip
 
+        self.check_for_clan(msg) unless self.live
+
         self.log.info((self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s)
         puts (self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s if self.test
 
         self.process_event(msg)
+      end
+
+      def check_for_clan(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:.*)/i)
+        if match
+          if !match[2].to_s.empty? and !match[3].to_s.empty?
+            clan_name = match[2].to_s.strip
+            unless self.clans.include?(clan_name)
+              self.clans[clan.name.to_s] = clan_name
+              clan = ::Clan.fetch(clan_name)
+              if clan
+                clan.add_member(match[3])
+              end
+            end
+          end
+        end
       end
 
       def _team_has_won

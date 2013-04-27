@@ -173,6 +173,17 @@ describe KAG::Server::Parser do
     subject.parse("[00:00:00] <[Newb] Geti> !score").should eq(:score)
   end
 
+  it 'test killstreak' do
+    subject.live = true
+    subject.parse("[00:00:00] Vidar slew Geti with his sword").should eq(:slew)
+    subject.parse("[00:00:00] Vidar slew splittingred with his sword").should eq(:slew)
+    subject.parse("[00:00:00] Vidar slew Ardivaba with his sword").should eq(:slew)
+    subject.parse("[00:00:00] Vidar slew Kalikst with his sword").should eq(:slew)
+    subject.parse("[00:00:00] Vidar slew Ej with his sword").should eq(:slew)
+    subject.parse("[00:00:00] Vidar slew WarrFork with his sword").should eq(:slew)
+    subject.parse("[00:00:00] splittingred slew Vidar with his sword").should eq(:slew)
+  end
+
   it "test archive" do
     subject.live = true
     subject.parse("[00:00:00] Vidar gibbed Geti into pieces")

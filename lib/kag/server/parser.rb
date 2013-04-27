@@ -16,6 +16,7 @@ module KAG
       attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
       attr_accessor :players,:teams,:match
+      attr_accessor :last_killer,:last_killer_streak
 
       def initialize(listener,data)
         self.server = listener.server
@@ -27,6 +28,8 @@ module KAG
         self.match = self.server.match_in_progress
         self.teams = self.server.match_in_progress.teams
         self.test = false
+        self.last_killer = nil
+        self.last_killer_streak = 0
         ps = []
         self.server.match_in_progress.users.each do |u|
           ps << u.name
@@ -565,6 +568,7 @@ module KAG
       def evt_kill(msg)
         # slew
         if (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) slew (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) with (?:his|her) sword$/))
+          _add_kill(match[2])
           _add_stat(:kill,match[2])
           _add_kill_type(:slew,match[2])
           _add_stat(:death,match[4])
@@ -573,6 +577,7 @@ module KAG
 
         # gibbed
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) gibbed (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})? into pieces$/))
+          _add_kill(match[2])
           _add_stat(:kill,match[2])
           _add_kill_type(:gibbed,match[2])
           if !match[4].nil? and !match[4].to_s.empty?
@@ -583,6 +588,7 @@ module KAG
 
         # shot
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) shot (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) with (?:his|her) arrow$/))
+          _add_kill(match[2])
           _add_stat(:kill,match[2])
           _add_kill_type(:shot,match[2])
           _add_stat(:death,match[4])
@@ -591,6 +597,7 @@ module KAG
 
         # hammered
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) hammered (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) to death$/))
+          _add_kill(match[2])
           _add_stat(:kill,match[2])
           _add_kill_type(:hammered,match[2])
           _add_stat(:death,match[4])
@@ -599,6 +606,7 @@ module KAG
 
         # pushed
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) pushed (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:on a spike trap|to his death)$/))
+          _add_kill(match[2])
           _add_stat(:kill,match[2])
           _add_kill_type(:pushed,match[2])
           _add_stat(:death,match[4])
@@ -607,6 +615,7 @@ module KAG
 
         # assisted
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) assisted in(?: squashing)? (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})(?: dying)? under (?:a collapse|falling rocks)$/))
+          _add_kill(match[2])
           _add_stat(:kill,match[2])
           _add_kill_type(:assisted,match[2])
           if match[4].strip == "dying"
@@ -646,16 +655,33 @@ module KAG
         end
       end
 
+      def _add_kill(username)
+        if self.last_killer == username
+          self.last_killer_streak += 1
+          if self.last_killer_streak == KAG::Config.instance[:killstreak].to_i
+            say "#{username} is on a kill streak!"
+            self._add_stat(:killstreaks,username)
+          end
+        else
+          if self.last_killer_streak >= KAG::Config.instance[:killstreak].to_i
+            say "#{username} ended #{self.last_killer}'s killstreak of #{self.last_killer_streak.to_s}"
+            self._add_stat(:ended_others_killstreak,username)
+          end
+          self.last_killer = username
+          self.last_killer_streak = 1
+        end
+      end
+
       def archive
         a = Archiver.new(self.data,self.listener.server,self.match,self.log)
         a.run
       end
 
-      private
+      protected
 
       def say(msg)
         if self.test
-          self.log.info "[SAY] #{msg}"
+          puts "[SAY] #{msg}"
         else
           self.listener.msg(msg) if self.listener and self.listener.respond_to?(:msg)
         end

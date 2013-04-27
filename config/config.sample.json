@@ -13,6 +13,7 @@
   ,"debug": true
   ,"end_vote_threshold": 3
   ,"report_threshold": 7
+  ,"killstreak": 5
   ,"restart_method": "nohup sh gather.sh &"
   ,"idle": {
     "max": 1800

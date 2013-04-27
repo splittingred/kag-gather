@@ -10,6 +10,22 @@ require 'kag/server/archiver'
 module KAG
   module Server
     class Parser
+      class << self
+        attr_accessor :events
+
+        def event(method,exp,occurring = :all)
+          Parser.events = {:live => {},:all => {},:warmup => {}} unless Parser.events
+          Parser.events[occurring.to_sym] = {} unless Parser.events[occurring.to_sym]
+          if exp.class == Array
+            exp.each do |e|
+              Parser.events[occurring.to_sym][e] = method.to_sym
+            end
+          else
+            Parser.events[occurring.to_sym][exp] = method.to_sym
+          end
+        end
+      end
+
       attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
       attr_accessor :players,:teams,:match
@@ -44,73 +60,79 @@ module KAG
         end
         self.live = false
       end
+
+      event :evt_map_restart, '*Restarting Map*'
+      event :evt_player_renamed, /^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20}) (?:is now known as) (.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20})$/
+      event :evt_player_join_renamed, /^Unnamed player is now known as (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})$/
+      event :evt_player_left, /^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/
+      event :evt_request_sub, %w(!request_sub !rsub)
+      event :evt_score, '!score'
+      event :evt_teams, '!teams'
+      event :evt_team, '!team'
+      event :evt_players, '!players'
+      event :evt_claimed, '!claimed'
+      event :evt_say, %w(!say @)
+
+      event :evt_round_win, /^(.+) (wins the game!)$/, :live
+      event :evt_kill, /^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/, :live
+      event :evt_units_depleted, "Can't spawn units depleted", :live
+      event :evt_round_started, '*Match Started*', :live
+      event :evt_round_ended, '*Match Ended*', :live
+      event :evt_restart, '!restart', :live
+
+      event :evt_ready_specified, [/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i,/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!r (.*))$/i], :warmup
+      event :evt_ready, %w(!ready !r), :warmup
+      event :evt_unready, %w(!unready !ur), :warmup
+      event :evt_who_ready, %w(!who_ready !wr), :warmup
+      event :evt_who_not_ready, %w(!who_not_ready !wnr), :warmup
+      event :evt_veto, '!veto', :warmup
+      event :evt_hello, '!hello', :warmup
+      event :evt_claim, '!claim', :warmup
+      event :evt_unclaim, '!unclaim', :warmup
+
+      def _test_event(msg,exp)
+        if msg.class == String
+          !msg.index(exp).nil?
+        else
+          msg.match(exp)
+        end
+      end
+
+      def process_event(msg)
+        found = false
+        Parser.events[:all].each do |exp,method|
+          if _test_event(msg,exp)
+            found = self.send(method,msg)
+            break
+          end
+        end
+        if !found and self.live
+          Parser.events[:live].each do |exp,method|
+            if _test_event(msg,exp)
+              found = self.send(method,msg)
+              break
+            end
+          end
+        elsif !found
+          Parser.events[:warmup].each do |exp,method|
+            if _test_event(msg,exp)
+              found = self.send(method,msg)
+              break
+            end
+          end
+        end
+        found
+      end
+
+
       def parse(msg)
         return false if msg.to_s.empty? or msg.to_s.length < 11
-        msg = msg[11..msg.length]
+        msg = msg[11..msg.length].strip
 
         self.log.info((self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s)
         puts (self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s if self.test
 
-        if msg.index('*Restarting Map*')
-          self.evt_map_restart(msg)
-        elsif msg.index(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20}) (?:is now known as) (.{0,6}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\S]{1,20})$/)
-          self.evt_player_renamed(msg)
-        elsif msg.index(/^Unnamed player is now known as (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})$/)
-          self.evt_player_join_renamed(msg)
-        elsif msg.index(/^(?:Player) (.{0,7}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:left the game \(players left [0-9]+\))$/)
-          self.evt_player_left(msg)
-        elsif msg.index("!request_sub") or msg.index("!rsub")
-          self.evt_request_sub(msg)
-        elsif msg.index('!score')
-          self.evt_score(msg)
-        elsif msg.index('!teams')
-          self.evt_teams(msg)
-        elsif msg.index('!players')
-          self.evt_players(msg)
-        elsif msg.index('!team')
-          self.evt_team(msg)
-        elsif msg.index('!nerf')
-          self.evt_nerf(msg)
-        elsif msg.index('!claimed')
-          self.evt_claimed(msg)
-        elsif msg.index('!say') or !msg.index('@').nil?
-          self.evt_say(msg)
-
-        elsif self.live # live mode
-          if msg.index(/^(.+) (wins the game!)$/)
-            self.evt_round_win(msg)
-          elsif msg.index(/^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/)
-            self.evt_kill(msg)
-          elsif msg.index("Can't spawn units depleted")
-            self.evt_units_depleted(msg)
-          elsif msg.index("*Match Started*")
-            self.evt_round_started(msg)
-          elsif msg.index("*Match Ended*")
-            self.evt_round_ended(msg)
-          elsif msg.index("!restart")
-            self.evt_restart(msg)
-          end
-        else # warmup
-          if msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i)
-            self.evt_ready_specified(msg)
-          elsif msg.index("!ready")
-            self.evt_ready(msg)
-          elsif msg.index("!unready")
-            self.evt_unready(msg)
-          elsif msg.index("!who_ready") or msg.index('!wr')
-            self.evt_who_ready(msg)
-          elsif msg.index("!who_not_ready") or msg.index('!wnr')
-            self.evt_who_not_ready(msg)
-          elsif msg.index("!veto")
-            self.evt_veto(msg)
-          elsif msg.index("!hello")
-            self.evt_hello(msg)
-          elsif msg.index("!claim")
-            self.evt_claim(msg)
-          elsif msg.index("!unclaim")
-            self.evt_unclaim(msg)
-          end
-        end
+        self.process_event(msg)
       end
 
       def _team_has_won
@@ -188,11 +210,12 @@ module KAG
       def evt_ready(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready)$/)
         if match
-          if self.ready.include?(match[3])
-            say "You are already ready, #{match[3]}!"
+          username = match[3].to_s.strip
+          if self.ready.include?(username)
+            say "You are already ready, #{username}!"
             nil
           else
-            say "#{match[3]}, please specify a class via !ready [classname]"
+            say "#{username}, please specify a class via !ready [classname]"
             :ready
           end
         end
@@ -200,6 +223,7 @@ module KAG
 
       def evt_ready_specified(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!r (.*))$/i) if match.nil?
         if match
           username = match[3].to_s.strip
           if self.ready.include?(username)

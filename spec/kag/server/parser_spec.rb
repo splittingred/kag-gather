@@ -43,21 +43,23 @@ describe KAG::Server::Parser do
     subject.parse("[00:00:00] [Newb] Geti is now known as [Dev] Geti").should eq(:player_renamed)
   end
 
-  it "test player ready" do
+  it 'test player ready' do
     subject.live = false
-    subject.parse("[00:00:00] <[Newb] Geti> !ready Archer").should eq(:ready)
+    subject.parse('[00:00:00] <[Newb] Geti> !ready Archer').should eq(:ready)
     subject.live = false
-    subject.parse("[00:00:00] <[Pk#] master4523> !ready Knight").should eq(:ready)
+    subject.parse('[00:00:00] <[Pk#] master4523> !ready Knight').should eq(:ready)
     subject.live = false
-    subject.parse("[00:00:00] <[Pk#] Ardi_vaba> !ready Knight").should eq(:ready)
+    subject.parse('[00:00:00] <[Pk#] Ardi_vaba> !ready Knight').should eq(:ready)
     subject.live = false
-    subject.parse("[00:00:00] <[Pk#] killa.tron> !ready Builder").should eq(:ready)
+    subject.parse('[00:00:00] <[Pk#] killa.tron> !ready Builder').should eq(:ready)
+    subject.live = false
+    subject.parse('[00:00:00] <[Pk#] boo> !r Builder').should eq(:ready)
   end
 
-  it "prevent multiple ready calls" do
+  it 'prevent multiple ready calls' do
     subject.live = false
-    subject.parse("[00:00:00] <[Newb] Geti> !ready Archer").should eq(:ready)
-    subject.parse("[00:00:00] <[Newb] Geti> !ready Archer").should eq(nil)
+    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
+    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(nil)
   end
 
   it "test player veto" do

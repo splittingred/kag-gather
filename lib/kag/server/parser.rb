@@ -99,7 +99,7 @@ module KAG
           if !match[2].to_s.empty? and !match[3].to_s.empty?
             clan_name = match[2].to_s.strip
             unless self.clans.include?(clan_name)
-              self.clans[clan.name.to_s] = clan_name
+              self.clans[clan_name.to_s] = clan_name
               clan = ::Clan.fetch(clan_name)
               if clan
                 clan.add_member(match[3])

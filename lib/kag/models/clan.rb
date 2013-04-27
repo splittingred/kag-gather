@@ -7,7 +7,6 @@ class Clan < KAG::Model
 
     def fetch(name)
       clan = ::Clan.find_by_name(name)
-      clan = ::Clan.find(name) unless clan
       unless clan
         clan = ::Clan.new
         clan.name = name
@@ -17,9 +16,11 @@ class Clan < KAG::Model
       end
       clan
     end
+  end
 
-    def add_member(user)
-      user = User.fetch(user) unless user.class == User
+  def add_member(user)
+    user = User.fetch(user) unless user.class == User
+    unless user.clan_id == self.id
       user.clan_id = self.id
       user.save
     end

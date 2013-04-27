@@ -2,6 +2,19 @@ class CreateTables < ActiveRecord::Migration
   def self.up
     return true if ActiveRecord::Base.connection.table_exists? 'gather_queues'
 
+    create_table :clans do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :clan_stats do |t|
+      t.integer    :clan_id, :null => false, :default => 0
+      t.string     :name, :limit => 255, :null => false, :default => ''
+      t.integer    :value, :null => false, :default => 0
+      t.timestamps
+    end
+    add_index :clan_stats, :clan_id
+
     create_table :gather_queues do |t|
       t.datetime :ended_at
       t.timestamps
@@ -51,6 +64,7 @@ class CreateTables < ActiveRecord::Migration
       t.integer    :match_id, :null => false, :default => 0
       t.integer    :team_id, :null => false, :default => 0
       t.string     :cls, :limit => 100, :default => ''
+      t.integer    :kills, :null => false, :default => 0
       t.integer    :deaths, :null => false, :default => 0
       t.boolean    :won, :null => false, :default => 0
       t.boolean    :deserted, :null => false, :default => 0
@@ -104,6 +118,7 @@ class CreateTables < ActiveRecord::Migration
     add_index :user_stats, :user_id
 
     create_table :users do |t|
+      t.integer    :clan_id, :limit => 11, :null => false, :default => 0
       t.string     :authname, :limit => 120, :null => false, :default => ''
       t.string     :nick, :limit => 120, :null => false, :default => ''
       t.string     :kag_user, :limit => 120, :null => false, :default => ''
@@ -113,8 +128,7 @@ class CreateTables < ActiveRecord::Migration
       t.float      :score, :precision => 2,:null =>false,:default => 0.00
       t.timestamps
     end
-
-    GatherQueue.create
+    add_index :users, :clan_id
   end
 
   def self.down

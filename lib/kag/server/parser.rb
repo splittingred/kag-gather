@@ -1,4 +1,5 @@
 require 'symboltable'
+require 'kag/eventable'
 require 'kag/stats/main'
 require 'kag/user/user'
 require 'kag/server/archiver'
@@ -10,21 +11,7 @@ require 'kag/server/archiver'
 module KAG
   module Server
     class Parser
-      class << self
-        attr_accessor :events
-
-        def event(method,exp,occurring = :all)
-          Parser.events = {:live => {},:all => {},:warmup => {}} unless Parser.events
-          Parser.events[occurring.to_sym] = {} unless Parser.events[occurring.to_sym]
-          if exp.class == Array
-            exp.each do |e|
-              Parser.events[occurring.to_sym][e] = method.to_sym
-            end
-          else
-            Parser.events[occurring.to_sym][exp] = method.to_sym
-          end
-        end
-      end
+      include KAG::Eventable
 
       attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
@@ -89,41 +76,6 @@ module KAG
       event :evt_hello, '!hello', :warmup
       event :evt_claim, '!claim', :warmup
       event :evt_unclaim, '!unclaim', :warmup
-
-      def _test_event(msg,exp)
-        if msg.class == String
-          !msg.index(exp).nil?
-        else
-          msg.match(exp)
-        end
-      end
-
-      def process_event(msg)
-        found = false
-        Parser.events[:all].each do |exp,method|
-          if _test_event(msg,exp)
-            found = self.send(method,msg)
-            break
-          end
-        end
-        if !found and self.live
-          Parser.events[:live].each do |exp,method|
-            if _test_event(msg,exp)
-              found = self.send(method,msg)
-              break
-            end
-          end
-        elsif !found
-          Parser.events[:warmup].each do |exp,method|
-            if _test_event(msg,exp)
-              found = self.send(method,msg)
-              break
-            end
-          end
-        end
-        found
-      end
-
 
       def parse(msg)
         return false if msg.to_s.empty? or msg.to_s.length < 11

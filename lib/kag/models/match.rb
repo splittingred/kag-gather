@@ -191,7 +191,7 @@ class Match < KAG::Model
       if player
         substitution = Substitution.request(self,player)
         if substitution
-          KAG.gather.send_channels_msg("Substitute requested for match #{self.id}, team #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.")
+          KAG.gather.send_channels_msg("Substitute requested for match #{self.id}, team #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.") if KAG.gather
           user.inc_stat(:substitutions_requested)
           requested = substitution
         end

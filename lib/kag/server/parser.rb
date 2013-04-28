@@ -357,33 +357,37 @@ module KAG
         if m
           player_to_sub = m[5].strip.to_s
           player_requesting = m[3].strip.to_s
-          self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
-          if already_sub_requested?(player_to_sub,player_requesting)
-            say "You can only vote to request a sub for that person once, #{player_requesting}."
-          #elsif !can_sub_request?(player_to_sub,player_requesting)
-          #  say "You cannot request a sub for the other team, #{player_requesting}."
-          else
-            self.sub_requests[player_to_sub] << player_requesting
-            votes_needed = (self.players.length / 4).to_i
-            if self.sub_requests[player_to_sub].length > votes_needed
-              match_in_progress = self.match
-              if match_in_progress
-                substitution = match_in_progress.request_sub(m[5].strip)
-                if substitution
-                  self.listener.kick(m[5]) unless self.test
-                  if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
-                    self.listener.kick(substitution.old_player.user.kag_user.to_s) unless self.test
-                  end
-                  say "Sub requested for #{m[5].to_s}. Please stand by."
-                  :request_sub
-                else
-                  say "Cannot find the User #{m[5].to_s}. Try the person\'s authname or KAG account name instead."
-                end
-              end
+          if self.players.include?(player_to_sub)
+            self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
+            if already_sub_requested?(player_to_sub,player_requesting)
+              say "You can only vote to request a sub for that person once, #{player_requesting}."
+            #elsif !can_sub_request?(player_to_sub,player_requesting)
+            #  say "You cannot request a sub for the other team, #{player_requesting}."
             else
-              say "Sub request for #{player_to_sub} made. #{votes_needed.to_s} more votes needed."
-              :request_sub
+              self.sub_requests[player_to_sub] << player_requesting
+              votes_needed = (self.players.length / 4).to_i
+              if self.sub_requests[player_to_sub].length > votes_needed
+                match_in_progress = self.match
+                if match_in_progress
+                  substitution = match_in_progress.request_sub(player_to_sub)
+                  if substitution
+                    self.listener.kick(player_to_sub) unless self.test
+                    if substitution.old_player and substitution.old_player.user and !substitution.old_player.user.kag_user.nil? and !substitution.old_player.user.kag_user.empty?
+                      self.listener.kick(substitution.old_player.user.kag_user.to_s) unless self.test
+                    end
+                    say "Sub requested for #{player_to_sub}. Please stand by."
+                    :request_sub
+                  else
+                    say "Cannot find the User #{player_to_sub}. Try the person\'s authname or KAG account name instead."
+                  end
+                end
+              else
+                say "Sub request for #{player_to_sub} made. #{votes_needed.to_s} more votes needed."
+                :request_sub
+              end
             end
+          else
+            say "You cannot request a sub for a player not in the match, #{player_requesting}."
           end
         end
       end

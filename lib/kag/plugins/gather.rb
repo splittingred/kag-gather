@@ -57,10 +57,10 @@ module KAG
         summary: 'Request a sub for a match',
         description: 'If a player leaves a match early, you can use this command to request a sub for the match'
       def rsub(m,nick)
-        match = ::Match.player_in(m.user)
-        if match
-          user = ::User.fetch(nick)
-          if user
+        user = ::User.fetch(nick)
+        if user
+          match = ::Match.player_in(user)
+          if match
             match.request_sub(user)
           end
         end

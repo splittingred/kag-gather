@@ -71,7 +71,7 @@ class Match < KAG::Model
   end
 
   def has_player?(user)
-    self.users(true).where(:authname => user.authname)
+    self.users(true).where(:kag_user => user.kag_user)
   end
 
   def setup_teams(queue_players,shuffle = true)

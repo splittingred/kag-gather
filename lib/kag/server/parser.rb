@@ -60,7 +60,6 @@ module KAG
       event :evt_teams, '!teams'
       event :evt_team, '!team'
       event :evt_players, '!players'
-      event :evt_claimed, '!claimed'
       event :evt_say, %w(!say @)
 
       event :evt_round_win, /^(.+) (wins the game!)$/, :live
@@ -77,8 +76,6 @@ module KAG
       event :evt_who_not_ready, %w(!who_not_ready !wnr), :warmup
       event :evt_veto, '!veto', :warmup
       event :evt_hello, '!hello', :warmup
-      event :evt_claim, '!claim', :warmup
-      event :evt_unclaim, '!unclaim', :warmup
 
       def parse(msg)
         return false if msg.to_s.empty? or msg.to_s.length < 11
@@ -413,53 +410,6 @@ module KAG
             t = m[5].to_s.strip
             say "Nerfing... #{t} was too OP anyway."
           end
-        end
-      end
-
-      def evt_claim(msg)
-        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!claim (.*))$/)
-        if m
-          username = m[3].to_s.strip
-          player_class = m[5].to_s.strip.downcase.capitalize
-          unless username.empty? or player_class.empty?
-            if ['Archer','Knight','Builder'].include?(player_class)
-              team = get_team(username)
-
-              self.data[:claims] = {} unless self.data[:claims]
-              self.data[:claims][username] = player_class
-              say "#{username} has claimed #{player_class} for: #{team}."
-              :claim
-            else
-              say "#{username}, #{player_class} is not a valid class."
-            end
-          end
-        end
-      end
-
-      def evt_unclaim(msg)
-        m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!unclaim)$/)
-        if m
-          username = m[3].to_s.strip
-          unless username.empty?
-            self.data[:claims] = {} unless self.data[:claims]
-            if self.data[:claims].key?(username)
-              self.data[:claims].delete(username)
-              say "#{username} class claim removed."
-              :unclaim
-            end
-          end
-        end
-      end
-
-      def evt_claimed(msg)
-        if self.data
-          self.data[:claims] = [] unless self.data.key?(:claims)
-          list = []
-          self.data[:claims].each do |username,player_class|
-            list << "#{username}: #{player_class}"
-          end
-          say 'Claimed: '+list.join(', ')
-          :claimed
         end
       end
 

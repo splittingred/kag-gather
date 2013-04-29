@@ -58,6 +58,23 @@ module KAG
         end
       end
 
+      command :mlink,{nick: string,kag_user:string},
+        summary: 'Manually link a nick to a KAG account. Only do this if an emergency, as this could allow ppl to spoof others.',
+        admin: true
+      def mlink(m,nick,kag_user)
+        u = User(nick)
+        if u
+          user = ::User.new
+          user.authname = u.authname if u.authed?
+          user.kag_user = kag_user
+          user.host = user.host
+          user.created_at = Time.now
+          user.save
+        else
+          m.user.reply "Could not find user #{nick}"
+        end
+      end
+
       command :link,{},
         summary: 'Link your IRC user to your KAG account for stats tracking and other cool features..',
         description: 'Link your IRC Auth to your KAG account. This is only required to do once.'

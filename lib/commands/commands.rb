@@ -53,7 +53,8 @@ module Cinch
         new_command = Command.new(name,arguments,options)
 
         m = options.key?(:method) ? options[:method] : name
-        match(new_command.regexp, method: m)
+        r = new_command.custom_regexp.nil? ? new_command.regexp : new_command.custom_regexp
+        match(r, method: m)
 
         commands << new_command
         new_command

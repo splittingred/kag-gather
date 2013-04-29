@@ -11,59 +11,64 @@ module KAG
       hook :pre,method: :auth
       hook :post, method: :close_db_connection
 
-      command :report,{nick: :string,reason: :string},
-        summary: "Report a user the bot"
-      def report(m,nick,reason = '')
+      command :report,{kag_user: :string,reason: :string},
+        regexp: /report ((?:\w+\S){2})(.*)/i,
+        summary: 'Report a user the bot'
+      def report(m,kag_user,reason = '')
         if is_admin(m.user)
-          u = User(nick)
-          if u and !u.unknown
-            if ::IgnoreReport.create(u,m.user,reason)
-              reply m,"#{nick} has now been reported for \"#{reason}\"."
-            end
+          user = ::User.fetch(kag_user)
+          unless user
+            user = ::User.new
+            user.kag_user = kag_user
+            user.created_at = Time.now
+            user.save
+          end
+          if ::IgnoreReport.create(user,m.user,reason)
+            reply m,"#{kag_user} has now been reported for \"#{reason}\"."
           else
-            reply m,"User #{nick} not found!"
+            reply m,"Failed to create ban for #{kag_user}"
           end
         end
       end
 
-      command :unreport,{nick: :string},
-        summary: "Clear your report for a user"
-      def unreport(m,nick)
+      command :unreport,{kag_user: :string},
+        summary: 'Clear your reports for a user'
+      def unreport(m,kag_user)
         if is_admin(m.user)
-          u = User(nick)
-          if u and !u.unknown
-            if ::IgnoreReport.unreport(u,m.user)
-              reply m,"Your reports have been cleared for #{nick}."
+          user = ::User.fetch(kag_user)
+          if user
+            if ::IgnoreReport.unreport(user,m.user)
+              reply m,"Your reports have been cleared for #{kag_user}."
             end
           else
-            reply m,"User #{nick} not found!"
+            reply m,"User #{kag_user} not found!"
           end
         end
       end
 
-      command :reports,{nick: :string},
-        summary: "Show the number of reports for a given user"
-      def reports(m,nick)
-        user = User(nick)
-        if user and !user.unknown
+      command :reports,{kag_user: :string},
+        summary: 'Show the number of reports for a given user'
+      def reports(m,kag_user)
+        user = ::User.fetch(kag_user)
+        if user
           count = ::IgnoreReport.total_for(user)
           if count
-            reply m,"User has been reported #{count.to_s} times."
+            reply m,"User #{kag_user} has been reported #{count.to_s} times."
           else
-            reply m,"User has not been reported."
+            reply m,"User #{kag_user} has not been reported."
           end
         else
-          reply m,"Could not find user #{nick}"
+          reply m,"Could not find user #{kag_user}"
         end
       end
 
-      command :clear_reports,{nick: :string},
-        summary: "Clear all reports for a given user",
+      command :clear_reports,{kag_user: :string},
+        summary: 'Clear all reports for a given user',
         admin: true
-      def clear_reports(m,nick)
+      def clear_reports(m,kag_user)
         if is_admin(m.user)
-          user = User(nick)
-          if user and !user.unknown
+          user = ::User.fetch(kag_user)
+          if user
             if ::IgnoreReport.clear(user)
               reply m,"#{nick} has now been unreported."
             end
@@ -74,42 +79,42 @@ module KAG
       end
 
       command :ban_list,{},
-        summary: "Shows a list of ignored users",
+        summary: 'Shows a list of ignored users',
         admin: true
       def ban_list(m)
         if is_admin(m.user)
-          reply m,"Banned: "+::Ignore.list
+          reply m,'Banned: '+::Ignore.list
         end
       end
 
-      command :ban,{nick: :string,hours: :integer,reason: :string},
-        summary: "Ignore (Ban) a user",
+      command :ban,{kag_user: :string,hours: :integer,reason: :string},
+        summary: 'Ignore (Ban) a user',
         admin: true
-      def ban(m,nick,hours,reason = '')
+      def ban(m,kag_user,hours,reason = '')
         if is_admin(m.user)
-          user = User(nick)
-          if user and !user.unknown
+          user = ::User.fetch(kag_user)
+          if user
             if ::Ignore.them(user,hours,reason,m.user)
-              reply m,"#{nick} has now been banned for #{hours} hours."
+              reply m,"#{kag_user} has now been banned for #{hours.to_s} hours."
             end
           else
-            reply m,"Could not find user #{nick}"
+            reply m,"Could not find user #{kag_user}"
           end
         end
       end
 
-      command :unban,{nick: :string},
-        summary: "Unignore (Unban) a user",
+      command :unban,{kag_user: :string},
+        summary: 'Unignore (Unban) a user',
         admin: true
-      def unban(m,nick)
+      def unban(m,kag_user)
         if is_admin(m.user)
-          user = User(nick)
-          if user and !user.unknown
+          user = ::User.fetch(kag_user)
+          if user
             if ::Ignore.unignore(user)
-              reply m,"#{nick} has now been unbanned."
+              reply m,"#{kag_user} has now been unbanned."
             end
           else
-            reply m,"Could not find user #{nick}"
+            reply m,"Could not find user #{kag_user}"
           end
         end
       end

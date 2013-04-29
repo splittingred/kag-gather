@@ -8,8 +8,8 @@ class IgnoreReport < KAG::Model
   after_save :check_for_ignore_limit
 
   class << self
-    def create(u,c,reason = '')
-      user = User.fetch(u)
+    def create(user,c,reason = '')
+      user = User.fetch(user) unless user.class == User
       creator = User.fetch(c)
       if user and creator
         if false#IgnoreReport.exists(user,creator)
@@ -26,8 +26,8 @@ class IgnoreReport < KAG::Model
           end
         end
       else
-        c.send "Could not find your User!" unless creator
-        c.send "Could not find User to ban!" unless user
+        c.send 'Could not find your User!' unless creator
+        c.send 'Could not find User to ban!' unless user
         false
       end
     end
@@ -50,7 +50,7 @@ class IgnoreReport < KAG::Model
     # @return [Integer]
     #
     def total_for(user)
-      user = User.fetch(user)
+      user = User.fetch(user) unless user.class == User
       if user
         IgnoreReport.where(:user_id => user.id).count
       else
@@ -65,7 +65,7 @@ class IgnoreReport < KAG::Model
     # @param [Boolean] do_stats If true, adjust stats of creator/user
     #
     def clear(user,do_stats = true)
-      user = User.fetch(user)
+      user = User.fetch(user) unless user.class == User
       if user
         IgnoreReport.where(:user_id => user.id).each do |r|
           if do_stats
@@ -78,7 +78,7 @@ class IgnoreReport < KAG::Model
     end
 
     def unreport(user,reporter,do_stats = true)
-      user = User.fetch(user)
+      user = User.fetch(user) unless user.class == User
       reporter = User.fetch(reporter)
       if user and reporter
         IgnoreReport.where(:user_id => user.id,:created_by => reporter.id).each do |r|

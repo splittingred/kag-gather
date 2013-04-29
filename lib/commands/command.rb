@@ -28,6 +28,9 @@ module Cinch
       # if admin-only
       attr_reader :admin
 
+      # custom regexp
+      attr_reader :custom_regexp
+
       #
       # Creates a new command.
       #
@@ -57,6 +60,7 @@ module Cinch
         @summary     = options[:summary]
         @description = options[:description]
         @admin       = options[:admin]
+        @custom_regexp = options[:regexp]
       end
 
       #

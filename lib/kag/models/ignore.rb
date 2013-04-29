@@ -30,25 +30,21 @@ class Ignore < KAG::Model
     # @return [Boolean]
     #
     def them(user,hours,reason = '',creator = nil)
-      unless user.class == String
-        return false unless user.authed?
-        user = user.authname
-      end
-      u = User.fetch(user)
+      user = User.fetch(user) unless user.class == User
 
       ig = Ignore.new
       unless creator.nil?
         creator = User.fetch(creator)
         ig.created_by = creator.id
       end
-      ig.user_id = u.id
+      ig.user_id = user.id
       ig.reason = reason.to_s
       ig.hours = hours.to_i
       ig.created_at = Time.now
       ig.ends_at = Time.now + (hours.to_i * 3600)
       saved = ig.save
       if saved
-        u.inc_stat(:ignored)
+        user.inc_stat(:ignored)
         creator.inc_stat(:ignored_others) if creator
         Ignore._fetch_cache
       else
@@ -61,11 +57,8 @@ class Ignore < KAG::Model
     #
     # @param [String|Cinch::User] user The user or authname to unban
     def unignore(user)
-      unless user.class == String
-        return false unless user.authed?
-        user = user.authname
-      end
-      ig = Ignore.joins(:user).where(:users => {:authname => user})
+      user = User.fetch(user) unless user.class == User
+      ig = Ignore.joins(:user).where(:users => {:kag_user => user.kag_user})
       if ig
         ig.each do |ignore|
           ignore.destroy
@@ -88,7 +81,7 @@ class Ignore < KAG::Model
     # Cache the ignore list into an array for easier lookup
     #
     def _fetch_cache
-      Ignore._cache = Ignore.joins(:user).pluck(:authname)
+      Ignore._cache = Ignore.joins(:user).pluck(:kag_user)
       Ignore.cached = true
     end
 

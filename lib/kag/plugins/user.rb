@@ -62,6 +62,8 @@ module KAG
         summary: 'Manually link a nick to a KAG account. Only do this if an emergency, as this could allow ppl to spoof others.',
         admin: true
       def mlink(m,nick,kag_user)
+        nick = nick.to_s.strip
+        kag_user = kag_user.to_s.strip
         u = User(nick)
         if u
           user = ::User.new
@@ -70,6 +72,7 @@ module KAG
           user.host = user.host
           user.created_at = Time.now
           user.save
+          m.user.reply "#{nick} linked to KAG account #{kag_user}"
         else
           m.user.reply "Could not find user #{nick}"
         end

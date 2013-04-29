@@ -46,7 +46,8 @@ class User < KAG::Model
         if user.authed?
           authname = user.authname
         else
-          u = User.find_login_by_host(user.host)
+          host = (user.respond_to?(:host_unsynced) ? user.host_unsynced : user.host)
+          u = User.find_login_by_host(host)
           return false unless u
           authname = u.authname
         end

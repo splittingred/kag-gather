@@ -16,6 +16,7 @@ module KAG
         summary: 'Report a user the bot'
       def report(m,kag_user,reason = '')
         if is_admin(m.user)
+          reason = reason.to_s.strip
           user = ::User.fetch(kag_user)
           unless user
             user = ::User.new
@@ -92,6 +93,7 @@ module KAG
         admin: true
       def ban(m,kag_user,hours,reason = '')
         if is_admin(m.user)
+          reason = reason.to_s.strip
           user = ::User.fetch(kag_user)
           if user
             if ::Ignore.them(user,hours,reason,m.user)

@@ -57,16 +57,6 @@ class User < KAG::Model
       if !u and user.class == String
         u = User.find_by_kag_user(authname)
       end
-      unless u
-        u = User.new({
-          :authname => user.class == String ? user : user.authname,
-          :nick => user.class == String ? user : user.nick,
-          :kag_user => "",
-          :host => user.class == String ? '' : user.host,
-          :created_at => Time.now,
-        })
-        u.save
-      end
       u
     end
 

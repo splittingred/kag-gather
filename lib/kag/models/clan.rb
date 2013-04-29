@@ -19,10 +19,12 @@ class Clan < KAG::Model
   end
 
   def add_member(user)
+    success = false
     user = User.fetch(user) unless user.class == User
-    unless user.clan_id == self.id
+    if user and user.clan_id != self.id
       user.clan_id = self.id
-      user.save
+      success = user.save
     end
+    success
   end
 end

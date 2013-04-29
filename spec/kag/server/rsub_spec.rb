@@ -30,7 +30,7 @@ describe 'Parser !rsub' do
 
   it 'test rsub on non-existent player' do
     subject.parse('[00:00:00] <Cpa3y> !rsub MM').should_not eq(:request_sub)
-    subject.parse('[00:00:00] <MOLE killatron> !rsub killatron').should_not eq(:request_sub)
+    subject.parse('[00:00:00] <xCUBE Ezreli> !rsub killatron').should_not eq(:request_sub)
   end
 
   it 'test rsub succeeding' do
@@ -38,7 +38,7 @@ describe 'Parser !rsub' do
     subject.parse('[00:00:00] <[Newb] Geti> !rsub Vidar').should eq(:request_sub)
     subject.sub_requests.key?('Vidar').should eq(true)
     subject.sub_requests['Vidar'].length.should eq(1)
-    subject.parse('[00:00:00] <[Newb] Ardivaba> !rsub Vidar').should eq(:request_sub)
+    subject.parse('[00:00:00] <[Newb] Ardi_vaba> !rsub Vidar').should eq(:request_sub)
     subject.parse('[00:00:00] <[Newb] Kalikst> !rsub Vidar').should eq(:request_sub)
     subject.sub_requests['Vidar'].length.should eq(3)
   end

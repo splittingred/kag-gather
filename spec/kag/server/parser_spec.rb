@@ -47,13 +47,13 @@ describe KAG::Server::Parser do
     subject.live = false
     subject.parse('[00:00:00] <[Newb] Geti> !ready Archer').should eq(:ready)
     subject.live = false
-    subject.parse('[00:00:00] <[Pk#] master4523> !ready Knight').should eq(:ready)
+    subject.parse('[00:00:00] <[Pk#] Ezreli> !ready Knight').should eq(:ready)
     subject.live = false
     subject.parse('[00:00:00] <[Pk#] Ardi_vaba> !ready Knight').should eq(:ready)
     subject.live = false
     subject.parse('[00:00:00] <[Pk#] killa.tron> !ready Builder').should eq(:ready)
     subject.live = false
-    subject.parse('[00:00:00] <[Pk#] boo> !r Builder').should eq(:ready)
+    subject.parse('[00:00:00] <[Pk#] Cpa3y> !r Builder').should eq(:ready)
   end
 
   it 'prevent multiple ready calls' do
@@ -65,9 +65,9 @@ describe KAG::Server::Parser do
   it 'test player veto' do
     subject.live = false
     subject.parse('[00:00:00] <[Newb] Geti> !veto').should eq(:veto)
-    subject.parse('[00:00:00] <[Pk#] master4523> !veto').should eq(:veto)
-    subject.parse('[00:00:00] <[Pk#] name_with_underscore> !veto').should eq(:veto)
-    subject.parse('[00:00:00] <[Pk#] dot.me.up> !veto').should eq(:veto)
+    subject.parse('[00:00:00] <[Pk#] killa.tron> !veto').should eq(:veto)
+    subject.parse('[00:00:00] <[Pk#] Ardi_vaba> !veto').should eq(:veto)
+    subject.parse('[00:00:00] <[Pk#] Ezreli> !veto').should eq(:veto)
   end
 
   it 'test player left' do
@@ -177,7 +177,7 @@ describe KAG::Server::Parser do
     subject.live = true
     subject.parse('[00:00:00] Vidar slew Geti with his sword').should eq(:slew)
     subject.parse('[00:00:00] Vidar slew splittingred with his sword').should eq(:slew)
-    subject.parse('[00:00:00] Vidar slew Ardivaba with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Ardi_vaba with his sword').should eq(:slew)
     subject.parse('[00:00:00] Vidar slew Kalikst with his sword').should eq(:slew)
     subject.parse('[00:00:00] Vidar slew Ej with his sword').should eq(:slew)
     subject.parse('[00:00:00] Vidar slew WarrFork with his sword').should eq(:slew)

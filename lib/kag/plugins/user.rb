@@ -18,6 +18,12 @@ module KAG
         ::User.clear_expired_logins
       end
 
+
+      listen_to :nick, method: :on_nick
+      def on_nick(m)
+        m.user.refresh
+      end
+
       command :login,{},
         summary: 'Login to Gather through the KAG SSO'
       def login(m)

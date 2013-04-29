@@ -29,12 +29,11 @@ module Cinch
   end
 
   class IRC
-
     def on_401(msg, events)
       # ERR_NOSUCHNICK
       user = User(msg.params[1])
       user.sync(:unknown?, true, true)
-      msg.user.online = false if m.user
+      msg.user.online = false if msg.user
       if @whois_updates.key?(user)
         user.end_of_whois(nil, true)
         @whois_updates.delete user

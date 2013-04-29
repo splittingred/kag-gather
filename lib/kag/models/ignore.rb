@@ -10,14 +10,14 @@ class Ignore < KAG::Model
     ##
     # See if the user is banned
     #
-    # @param [String] authname
+    # @param [User] authname
     # @return [Boolean] True if banned
     #
-    def is_ignored?(authname)
+    def is_ignored?(user)
       unless Ignore.cached
         Ignore._fetch_cache
       end
-      Ignore._cache.include?(authname)
+      Ignore._cache.include?(user.kag_user)
     end
 
     ##

@@ -58,7 +58,7 @@ module KAG
         end
       end
 
-      command :mlink,{nick: string,kag_user:string},
+      command :mlink,{nick: :string, kag_user: :string},
         summary: 'Manually link a nick to a KAG account. Only do this if an emergency, as this could allow ppl to spoof others.',
         admin: true
       def mlink(m,nick,kag_user)

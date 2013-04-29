@@ -66,13 +66,17 @@ module KAG
         kag_user = kag_user.to_s.strip
         u = User(nick)
         if u
-          user = ::User.new
-          user.authname = u.authname if u.authed?
+          user = ::User.fetch(u)
+          unless user
+            user = ::User.new
+            user.created_at = Time.now
+            user.authname = u.authname if u.authed?
+            user.host = user.host
+          end
           user.kag_user = kag_user
-          user.host = user.host
-          user.created_at = Time.now
-          user.save
-          m.reply "#{nick} linked to KAG account #{kag_user}"
+          if user.save
+            m.reply "#{nick} linked to KAG account #{kag_user}"
+          end
         else
           m.reply "Could not find user #{nick}"
         end

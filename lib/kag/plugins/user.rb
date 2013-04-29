@@ -72,9 +72,9 @@ module KAG
           user.host = user.host
           user.created_at = Time.now
           user.save
-          m.user.reply "#{nick} linked to KAG account #{kag_user}"
+          m.reply "#{nick} linked to KAG account #{kag_user}"
         else
-          m.user.reply "Could not find user #{nick}"
+          m.reply "Could not find user #{nick}"
         end
       end
 

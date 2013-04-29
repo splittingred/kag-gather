@@ -8,7 +8,7 @@ class User < KAG::Model
   has_many :players
   has_many :matches, :through => :players
   has_many :gather_queue_players
-  has_many :queues, :through => :gather_queue_players
+  has_many :gather_queues, :through => :gather_queue_players
   has_many :user_stats
   belongs_to :clan
 
@@ -275,7 +275,7 @@ class User < KAG::Model
   end
 
   def logout
-    self.queues.each do |q|
+    self.gather_queues.each do |q|
       q.remove(self)
     end
 

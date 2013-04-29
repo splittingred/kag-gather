@@ -95,6 +95,16 @@ module KAG
                       user.inc_stat(cls+'.'+k.to_s)
                       user.inc_stat(cls+'.matches')
                     end
+
+                    clan = user.clan
+                    if clan
+                      clan.inc_stat(k)
+                      if cls
+                        clan.inc_stat(cls+'.'+k.to_s)
+                        clan.inc_stat(cls+'.matches')
+                      end
+                    end
+
                     self.log.info '-- Done!'
                   else
                     self.log.error "Cannot find User for player ID #{player.id}"
@@ -140,6 +150,27 @@ module KAG
                 if cls
                   user.inc_stat(cls+'.kills',p.kills)
                   user.inc_stat(cls+'.deaths',p.deaths)
+                end
+
+                clan = user.clan
+                if clan
+                  clan.inc_stat(:kills,p.kills)
+                  clan.inc_stat(:deaths,p.deaths)
+                  if data[:death_types]
+                    data[:death_types].each do |type,v|
+                      clan.inc_stat('deaths.'+type.to_s,v)
+                    end
+                  end
+                  if data[:kill_types]
+                    data[:kill_types].each do |type,v|
+                      clan.inc_stat('kills.'+type.to_s,v)
+                    end
+                  end
+
+                  if cls
+                    clan.inc_stat(cls+'.kills',p.kills)
+                    clan.inc_stat(cls+'.deaths',p.deaths)
+                  end
                 end
 
                 self.log.info "Scoring #{user.name} to : #{user.score.to_s}"

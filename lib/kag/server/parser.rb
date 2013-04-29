@@ -542,61 +542,63 @@ module KAG
       def evt_kill(msg)
         # slew
         if (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) slew (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) with (?:his|her) sword$/))
-          _add_kill(match[4],match[2],:slew)
+          _add_kill(match[3],match[4],match[1],match[2],:slew)
           :slew
 
         # gibbed
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) gibbed (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})? into pieces$/))
           victim = (!match[4].nil? and !match[4].to_s.empty? ? match[4] : nil)
-          _add_kill(victim,match[2],:gibbed)
+          victim_clan = (!match[3].nil? and !match[3].to_s.empty? ? match[3] : nil)
+          _add_kill(victim_clan,victim,match[1],match[2],:gibbed)
           :gibbed
 
         # shot
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) shot (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) with (?:his|her) arrow$/))
-          _add_kill(match[4],match[2],:shot)
+          _add_kill(match[3],match[4],match[1],match[2],:shot)
           :shot
 
         # hammered
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) hammered (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) to death$/))
-          _add_kill(match[4],match[2],:hammered)
+          _add_kill(match[3],match[4],match[1],match[2],:hammered)
           :hammered
 
         # pushed
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) pushed (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) (?:on a spike trap|to his death)$/))
-          _add_kill(match[4],match[2],:pushed)
+          _add_kill(match[3],match[4],match[1],match[2],:pushed)
           :pushed
 
         # assisted
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) assisted in(?: squashing)? (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20})(?: dying)? under (?:a collapse|falling rocks)$/))
           victim = (match[4].strip == 'dying' ? match[3] : match[4])
-          _add_kill(victim,match[2],:assisted)
+          victim_clan = (match[4].strip == 'dying' ? match[2] : match[3])
+          _add_kill(victim_clan,victim,match[1],match[2],:assisted)
           :assisted
 
         # squashed
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) was squashed under a collapse$/))
-          _add_kill(match[2],nil,:squashed)
+          _add_kill(match[1],match[2],nil,:squashed)
           :squashed
 
         # fell
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) fell (?:(?:to (?:his|her) death)|(?:on a spike trap))$/))
-          _add_kill(match[2],nil,:fell)
+          _add_kill(match[1],match[2],nil,:fell)
           :fell
 
         # cyanide
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) took some cyanide$/))
-          _add_kill(match[2],nil,:cyanide)
+          _add_kill(match[1],match[2],nil,:cyanide)
           :cyanide
 
         # died
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) died under falling rocks$/))
-          _add_kill(match[2],nil,:died)
+          _add_kill(match[1],match[2],nil,:died)
           :died
         else
           :unknown
         end
       end
 
-      def _add_kill(victim = nil,killer = nil,type = :unknown)
+      def _add_kill(victim_clan = nil,victim = nil,killer_clan = nil,killer = nil,type = :unknown)
         killstreak_threshold = KAG::Config.instance[:killstreak].to_i
         unless victim.nil?
           victim = victim.to_s.strip
@@ -606,14 +608,14 @@ module KAG
                 say "#{victim}'s killstreak was ended at #{self.killstreaks[victim].to_s}"
               else # killed by someone else
                 say "#{killer.to_s.strip} ended #{victim}'s killstreak of #{self.killstreaks[victim].to_s}"
-                self._add_stat(:ended_others_killstreak,killer)
+                self._add_stat(:ended_others_killstreak,killer_clan,killer)
               end
             end
             self.killstreaks[victim] = 0
           end
 
-          _add_stat(:death,victim)
-          _add_death_type(type.to_sym,victim)
+          _add_stat(:death,victim_clan,victim)
+          _add_death_type(type.to_sym,victim_clan,victim)
         end
 
         unless killer.nil?
@@ -626,11 +628,11 @@ module KAG
 
           if self.killstreaks[killer] == killstreak_threshold
             say "#{killer} is on a kill streak!"
-            self._add_stat(:killstreaks,killer)
+            self._add_stat(:killstreaks,killer_clan,killer)
           end
 
-          _add_stat(:kill,killer)
-          _add_kill_type(type.to_sym,killer)
+          _add_stat(:kill,killer_clan,killer)
+          _add_kill_type(type.to_sym,killer_clan,killer)
         end
       end
 
@@ -649,10 +651,12 @@ module KAG
         end
       end
 
-      def _add_stat(stat,player,increment = 1)
+      def _add_stat(stat,clan,player,increment = 1)
         return false if (player.nil? or stat.nil?)
         stat = stat.to_sym
         player = player.to_s
+        clan = clan.to_s
+        self.data[:clans] = {} unless self.data.clans
         self.data[:players] = {} unless self.data.players
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
@@ -660,12 +664,20 @@ module KAG
           self.data.players[player][stat] = self.data.players[player][stat] + increment.to_i
           self.data.players[player][stat]
         end
+        if self.data.clans
+          self.data.clans[clan] = {} unless self.data.clans[clan]
+          self.data.clans[clan][stat] = 0 unless self.data.clans[clan][stat]
+          self.data.clans[clan][stat] = self.data.clans[clan][stat] + increment.to_i
+          self.data.clans[clan][stat]
+        end
       end
 
-      def _add_kill_type(type,player,increment = 1)
+      def _add_kill_type(type,clan,player,increment = 1)
         return false if (player.nil? or type.nil?)
         type = type.to_sym
         player = player.to_s
+        clan = clan.to_s
+        self.data[:clans] = {} unless self.data.clans
         self.data[:players] = {} unless self.data.players
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
@@ -673,18 +685,32 @@ module KAG
           self.data.players[player][:kill_types][type] = 0 unless self.data.players[player][:kill_types][type]
           self.data.players[player][:kill_types][type] = self.data.players[player][:kill_types][type] + increment.to_i
         end
+        if self.data.clans
+          self.data.clans[clan] = {} unless self.data.clans[clan]
+          self.data.clans[clan][:kill_types] = {} unless self.data.clans[clan][:kill_types]
+          self.data.clans[clan][:kill_types][type] = 0 unless self.data.clans[clan][:kill_types][type]
+          self.data.clans[clan][:kill_types][type] = self.data.clans[clan][:kill_types][type] + increment.to_i
+        end
       end
 
-      def _add_death_type(type,player,increment = 1)
+      def _add_death_type(type,clan,player,increment = 1)
         return false if (player.nil? or type.nil?)
         type = type.to_sym
         player = player.to_s
+        clan = clan.to_s
+        self.data[:clans] = {} unless self.data.clans
         self.data[:players] = {} unless self.data.players
         if self.data.players
           self.data.players[player] = {} unless self.data.players[player]
           self.data.players[player][:death_types] = {} unless self.data.players[player][:death_types]
           self.data.players[player][:death_types][type] = 0 unless self.data.players[player][:death_types][type]
           self.data.players[player][:death_types][type] = self.data.players[player][:death_types][type] + increment.to_i
+        end
+        if self.data.clans
+          self.data.clans[clan] = {} unless self.data.clans[clan]
+          self.data.clans[clan][:death_types] = {} unless self.data.clans[clan][:death_types]
+          self.data.clans[clan][:death_types][type] = 0 unless self.data.clans[clan][:death_types][type]
+          self.data.clans[clan][:death_types][type] = self.data.clans[clan][:death_types][type] + increment.to_i
         end
       end
 

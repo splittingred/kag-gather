@@ -53,12 +53,23 @@ class SSO {
 			}
             $end = strftime('%Y-%m-%d %H:%M:%S',(time() + 3600));
 			if (!$found) {
-				$mysqli->query('INSERT INTO `users` (`authname`,`nick`,`kag_user`,`host`,`temp`,`temp_end_at`) VALUES ("'.$kagUser.'","'.$kagUser.'","'.$kagUser.'","'.$hostname.'",1,"'.$end.'")');
-				$loggedIn = true;
+				$result = $mysqli->query('INSERT INTO `users` (`authname`,`nick`,`kag_user`,`host`,`temp`,`temp_end_at`) VALUES ("'.$kagUser.'","'.$kagUser.'","'.$kagUser.'","'.$hostname.'",1,"'.$end.'")');
+				if ($result) {
+   				    $loggedIn = true;
+   				} else {
+   					$error = $mysqli->error;
+   					$mysqli->close();
+   					$this->over($error);
+   				}
 			} else {
-				if ($mysqli->query('UPDATE `users` SET `authname` = "'.$kagUser.'", `nick` = "'.$kagUser.'", `host` = "'.$hostname.'", `temp` = 1, `temp_end_at` = "'.$end.'" WHERE `kag_user` = "'.$kagUser.'"') == true) {
+				$result = $mysqli->query('UPDATE `users` SET `authname` = "'.$kagUser.'", `nick` = "'.$kagUser.'", `host` = "'.$hostname.'", `temp` = 1, `temp_end_at` = "'.$end.'" WHERE `kag_user` = "'.$kagUser.'"');
+				if ($result) {
 			    	$loggedIn = true;
-				}
+				} else {
+   					$error = $mysqli->error;
+   					$mysqli->close();
+   					$this->over($error);
+   				}
 			}
         	$mysqli->close();
 		} catch (Exception $e) {

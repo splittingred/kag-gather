@@ -41,7 +41,7 @@ module KAG
         end
 
         def list
-          c = ::Clan.where(@params).order('score DESC')
+          c = ::Clan.where(@params).order('score DESC').limit(20)
           if c
             us = []
             c.each do |u|

@@ -32,6 +32,7 @@ module KAG
 
         self.log.info '- Scoring all'
         ::User.rescore_all
+        ::Clan.rescore_all
 
         self.log.info 'Finished archiving'
         true

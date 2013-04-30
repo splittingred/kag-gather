@@ -2,7 +2,7 @@ require 'api/controllers/base'
 module KAG
   module API
     module Controller
-      class Stat < Base
+      class Clan_stat < Base
         @@class_key = 'ClanStat'
         @@primary_key = :name
 

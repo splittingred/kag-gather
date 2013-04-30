@@ -17,9 +17,20 @@ module KAG
             clans = ::ClanStat.select('*,clans.name').joins(:clan).where(:clan_stats => {:name => name}).limit(limit).order('value DESC')
             list = []
             clans.each do |c|
+              times = ::UserStat.where(:name => name).sum('value')
+              users = ::UserStat.select('*,users.kag_user').joins(:user).where(:user_stats => {:name => name},:users => {:clan_id => c.id}).limit(5).order('value DESC')
+
+              user_list = []
+              users.each do |u|
+                user_list << {
+                    :user => u.kag_user,
+                    :times => u.value
+                }
+              end
               list << {
                   :clan => c.name,
-                  :times => c.value
+                  :times => c.value,
+                  :users => user_list
               }
             end
             self.collection(list,clans_count,{

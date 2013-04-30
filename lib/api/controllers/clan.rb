@@ -32,6 +32,14 @@ module KAG
                   :rank => s.rank
               }
             end
+            d[:users] = {}
+            clan.users.all(:order => 'score DESC').each do |u|
+              d[:users][u.name] = {
+                  :name => u.name,
+                  :score => u.score,
+                  :rank => u.rank
+              }
+            end
             #d[:stats][:matches] = clan.matches.count
             d[:rank] = clan.rank
             self.success('',d)

@@ -2,54 +2,50 @@ require 'api/controllers/base'
 module KAG
   module API
     module Controller
-      class User < Base
-        @@class_key = 'User'
+      class Clan < Base
+        @@class_key = 'Clan'
 
 
         def get
           if @params[:id]
             self.read(@params[:id])
-          elsif @params[:username]
-            @@primary_key = :username
-            self.read(@params[:username])
+          elsif @params[:name]
+            @@primary_key = :name
+            self.read(@params[:name])
           else
             self.list
           end
         end
 
         def read(id)
-          if @@primary_key == :username
-            user = ::User.where("authname = ? OR kag_user = ?",@params[:username],@params[:username]).first
+          if @@primary_key == :name
+            clan = ::Clan.where('name = ?',@params[:name]).first
           else
-            user = ::User.where(:id => id).first
+            clan = ::Clan.where(:id => id).first
           end
-          if user
-            d = SymbolTable.new(user.attributes)
+          if clan
+            d = SymbolTable.new(clan.attributes)
             d[:stats] = {}
-            user.stats.each do |s|
+            clan.stats.each do |s|
               d[:stats][s.name] = {
                   :times => s.value,
                   :rank => s.rank
               }
             end
-            d[:stats][:matches] = user.matches.count
-            d.delete(:host)
-            d.delete(:authname)
-            d.delete(:nick)
-            d[:rank] = user.rank
+            #d[:stats][:matches] = clan.matches.count
+            d[:rank] = clan.rank
             self.success('',d)
           else
-            self.failure('err_nf',user)
+            self.failure('err_nf',clan)
           end
         end
 
         def list
-          c = ::User.where(@params).order('score DESC')
+          c = ::Clan.where(@params).order('score DESC')
           if c
             us = []
             c.each do |u|
               ud = SymbolTable.new(u.attributes)
-              ud.delete(:host)
               us << ud
             end
             self.success('',us)

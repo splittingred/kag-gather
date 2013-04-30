@@ -1,4 +1,5 @@
 require 'kag/models/model'
+require 'kag/models/score/clan_scorer'
 
 class Clan < KAG::Model
   has_many :users
@@ -16,6 +17,10 @@ class Clan < KAG::Model
         end
       end
       clan
+    end
+
+    def rescore_all
+      Clan.order('score DESC').each {|c| c.do_score}
     end
   end
 
@@ -39,6 +44,13 @@ class Clan < KAG::Model
     ClanStat.select('*,(SELECT (COUNT(*)+1) FROM `clan_stats` AS `us2` WHERE `us2`.`name` = `clan_stats`.`name` AND `us2`.`clan_id` != '+self.id.to_s+' AND `us2`.`value` > `clan_stats`.`value` ) AS `rank`').where('clan_id = ?',self.id)
   end
 
+  def stats_as_hash
+    h = SymbolTable.new
+    self.stats(true).each do |s|
+      h[s.name.to_sym] = s.value.to_i
+    end
+    h
+  end
 
   ##
   # Get a stat value for a user
@@ -131,5 +143,13 @@ class Clan < KAG::Model
     end
     s.value = s.value.to_i-decrement.to_i
     s.save
+  end
+
+  def do_score
+    KAG::ClanScorer.score(self)
+  end
+
+  def rank
+    Clan.select('DISTINCT `score`').where('score > ?',self.score).order('score DESC').count + 1
   end
 end

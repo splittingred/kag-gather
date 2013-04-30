@@ -9,7 +9,7 @@ module KAG
     # Prevent non-authed or banned users from using bot
     #
     def auth(m)
-      if m.params.length > 0 and ['Quit','Part','Kick','Kill','EOF from client','Read error: EOF from client','Ping timeout','Signed off'].include?(m.params[0])
+      if m.params.length > 0 and ['Quit','Part','Kick','Kill','EOF from client','Read error: EOF from client','Ping timeout','Read error: Connection reset by peer','Signed off'].include?(m.params[0])
         true
       else
         if m.user

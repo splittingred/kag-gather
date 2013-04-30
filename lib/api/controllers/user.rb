@@ -33,6 +33,7 @@ module KAG
               }
             end
             d[:stats][:matches] = user.matches.count
+            d[:clan_name] = user.clan.name if user.clan
             d.delete(:host)
             d.delete(:authname)
             d.delete(:nick)

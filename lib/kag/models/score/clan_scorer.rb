@@ -23,6 +23,7 @@ module KAG
         :inactive_penalty_multiplier => 10,
         :match_percentage_multiplier => 400,
         :minimum_matches => 3,
+        :member_bonus => 50
       })
     end
 
@@ -80,6 +81,17 @@ module KAG
         #    score -= (days_since_last_match * @ratios[:inactive_penalty_multiplier])
         #  end
         #end
+
+        average_members = ActiveRecord::Base.connection.execute('SELECT AVG(`clanCount`) AS `cc` FROM (SELECT COUNT(`clan_id`) AS `clanCount` FROM `users` WHERE `clan_id` != 0 AND `score` > 0 GROUP BY `clan_id`) `c`')
+        if average_members
+          average_members = average_members.first.first.to_f
+          if average_members > 0
+            clan_members = @clan.users.count.to_f
+            team_bonus = @ratios[:member_bonus] * (clan_members / average_members)
+            puts "Clan/Avg Members: (#{clan_members.to_s} / #{average_members.to_s}) * #{@ratios[:member_bonus]} == #{team_bonus.to_s}"
+            score += team_bonus
+          end
+        end
 
         b_wins = stats['builder.wins'].to_i
         b_losses = stats['builder.losses'].to_i

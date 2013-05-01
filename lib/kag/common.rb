@@ -9,29 +9,28 @@ module KAG
     # Prevent non-authed or banned users from using bot
     #
     def auth(m)
+      proceed = false
       if m.params.length > 0 and ['Quit','Part','Kick','Kill','EOF from client','Read error: EOF from client','Ping timeout','Read error: Connection reset by peer','Signed off'].include?(m.params[0])
-        true
+        proceed = true
       else
         if m.user
           if is_banned?(m.user)
-            false
+            puts "#{m.user.nick} is banned and cannot use the bot."
           elsif m.user.authed?
-            true
+            proceed = true
           elsif self.class.name.to_s != "KAG::Help::Plugin" and self.class.name.to_s != "KAG::IRC::Plugin"
             u = ::User.fetch(m.user)
             if u
-              true
+              proceed = true
             else
               send_not_authed_msg(m)
-              false
             end
           else
-            true
+            proceed = true
           end
-        else
-          false
         end
       end
+      proceed
     end
 
     def close_db_connection(m)

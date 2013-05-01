@@ -130,6 +130,7 @@ module KAG
           self.data[:end] = Time.now
           self.data[:winner] = get_winning_team
           say "Match ended! #{self.data[:winner]} has won!"
+          broadcast "Match #{self.match.id} finished! #{self.data[:winner]} has won!"
 
           #self.archive
           #self.listener.kick_all unless self.test
@@ -173,9 +174,9 @@ module KAG
           self.data[:wins].each do |team,score|
             txt << "#{team.to_s}: #{score.to_s}"
           end
-          txt.join(", ")
+          txt.join(', ')
         else
-          "Red Team: 0, Blue Team: 0"
+          'Red Team: 0, Blue Team: 0'
         end
       end
 
@@ -455,8 +456,13 @@ module KAG
           self.data[:wins][winner] += 1
 
           say "Round has now ended. #{winner} wins!"
+          say 'Score is now: '+_get_score
           if _team_has_won
             end_match unless self.test
+          else
+            begin
+              broadcast "#{winner} has won a round on match #{self.match.id}. Score: #{_get_score}"
+            end
           end
         end
         self.ready = []

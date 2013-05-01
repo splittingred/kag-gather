@@ -10,7 +10,7 @@ module KAG
     #
     def auth(m)
       proceed = false
-      if m.params.length > 0 and ['Quit','Part','Kick','Kill','EOF from client','Read error: EOF from client','Ping timeout','Read error: Connection reset by peer','Signed off'].include?(m.params[0])
+      if m.params.length > 0 and ['Quit','Part','Kick','Kill','EOF from client','Read error: EOF from client','Ping timeout','Read error: Connection reset by peer','Signed off','Read error: Operation timed out'].include?(m.params[0])
         proceed = true
       else
         if m.user

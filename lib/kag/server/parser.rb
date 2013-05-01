@@ -61,6 +61,8 @@ module KAG
       event :evt_team, '!team'
       event :evt_players, '!players'
       event :evt_say, %w(!say @)
+      event :evt_hello, '!hello'
+      event :evt_nerf, '!nerf'
 
       event :evt_round_win, /^(.+) (wins the game!)$/, :live
       event :evt_kill, /^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/, :live
@@ -75,7 +77,7 @@ module KAG
       event :evt_who_ready, %w(!who_ready !wr), :warmup
       event :evt_who_not_ready, %w(!who_not_ready !wnr), :warmup
       event :evt_veto, '!veto', :warmup
-      event :evt_hello, '!hello', :warmup
+      event :evt_force_start, '!force_start', :warmup
 
       def parse(msg)
         return false if msg.to_s.empty? or msg.to_s.length < 11
@@ -87,6 +89,11 @@ module KAG
         puts (self.live ? '[LIVE] ' : '[WARMUP] ')+msg.to_s if self.test
 
         self.process_event(msg)
+      end
+
+      def is_admin?(username)
+        o = (KAG::Config.instance[:owners] or [])
+        o.include?(username)
       end
 
       def check_for_clan(msg)
@@ -228,6 +235,16 @@ module KAG
                 say "#{username}, #{player_class} is not a valid class."
               end
             end
+          end
+        end
+      end
+
+      def evt_force_start(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!force_start)$/)
+        if match
+          username = match[3].to_s.strip
+          if is_admin?(username)
+            start
           end
         end
       end
@@ -408,7 +425,8 @@ module KAG
       def evt_nerf(msg)
         m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!nerf (.*))$/)
         if m
-          if m[3].to_s.strip == "splittingred"
+          username = m[3].to_s.strip
+          if is_admin?(username)
             t = m[5].to_s.strip
             say "Nerfing... #{t} was too OP anyway."
           end

@@ -110,6 +110,7 @@ module KAG
       def _team_has_won
         self.data[:wins].each do |team,wins|
           if wins >= 2
+            self.data[:winner] = team
             return team
           end
         end

@@ -153,6 +153,19 @@ module KAG
         end
       end
 
+      command :end_force,{},
+        summary: 'Force end the current match',
+        description: 'Forces the end of the current match.',
+        admin: true
+      def end_force(m)
+        if is_admin(m)
+          match = ::Match.active.first
+          if match
+            match.cease
+          end
+        end
+      end
+
       def get_unused_server
         KAG::Server.find_unused
       end

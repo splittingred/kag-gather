@@ -30,6 +30,7 @@ module KAG
           end
         end
       end
+      puts "Proceed: #{proceed.to_s}"
       proceed
     end
 
@@ -70,6 +71,7 @@ module KAG
     end
 
     def send_not_authed_msg(m)
+      puts "sending not authed to #{m.user.nick}"
       m.user.send _h('command_not_authed')
     end
 

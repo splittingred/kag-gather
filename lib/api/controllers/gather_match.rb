@@ -2,7 +2,7 @@ require 'api/controllers/base'
 module KAG
   module API
     module Controller
-      class Match < Base
+      class Gather_match < Base
         @@class_key = 'Match'
 
         def read(id)

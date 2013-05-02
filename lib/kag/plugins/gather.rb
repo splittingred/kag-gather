@@ -158,7 +158,7 @@ module KAG
         description: 'Forces the end of the current match.',
         admin: true
       def end_force(m)
-        if is_admin(m)
+        if is_admin(m.user)
           match = ::Match.active.first
           if match
             match.cease

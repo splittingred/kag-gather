@@ -30,18 +30,37 @@ module KAG
         def list
           limit = @params[:limit] || 10
           offset = @params[:offset] || 0
-          c = ::Match.select('`matches`.*,`servers`.`name` AS `server_name`').joins(:server).where('matches.end_votes = 0 AND matches.ended_at IS NOT NULL').limit(limit).offset(offset).order('matches.created_at DESC')
-          if c
-            us = []
-            c.each do |u|
-              ud = SymbolTable.new(u.attributes)
-              ud.delete(:stats)
-              us << ud
+          matches = ::Match.select('`matches`.*,`servers`.`name` AS `server_name`').joins(:server).where('matches.end_votes = 0 AND matches.ended_at IS NOT NULL').limit(limit).offset(offset).order('matches.created_at DESC')
+          if matches
+            list = []
+            matches.each do |match|
+              data = SymbolTable.new(match.attributes)
+              if match.stats
+                stats = SymbolTable.new(JSON.parse(match.stats))
+                if stats
+                  if stats.key?(:wins)
+                    data[:wins] = stats[:wins]
+                    data[:winner] = _winner(stats[:wins])
+                  end
+                  data[:players] = stats.players.keys if stats.key?(:players)
+                end
+              end
+              data.delete(:stats)
+              list << data
             end
-            self.success('',us)
+            self.success('',list)
           else
-            self.failure('err_nf',c)
+            self.failure('err_nf',matches)
           end
+        end
+
+        def _winner(wins)
+          wins.each do |team,w|
+            if w >= 2
+              return team
+            end
+          end
+          false
         end
 
       end

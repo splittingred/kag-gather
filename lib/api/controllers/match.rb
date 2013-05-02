@@ -12,13 +12,36 @@ module KAG
             if match.stats
               data[:stats] = JSON.parse(match.stats)
               data[:stats].delete(:units_depleted)
+
+              data[:teams] = {}
+              match.teams.each do |team|
+                players = []
+                team.users.each do |user|
+                  if data[:stats].key?('claims')
+                    cls = data[:stats]['claims'].key?(user.kag_user) ? data[:stats]['claims'][user.kag_user] : ''
+                  else
+                    cls = ''
+                  end
+
+                  kills = 0
+                  deaths = 0
+                  if data[:stats].key?('players') and data[:stats]['players'].key?(user.kag_user)
+                    kills = data[:stats]['players'][user.kag_user]['kill']
+                    deaths = data[:stats]['players'][user.kag_user]['death']
+                  end
+
+                  players << {user.name => {
+                    :class => cls,
+                    :kills => kills.to_i,
+                    :deaths => deaths.to_i,
+                  }}
+                end
+                data[:teams][team.name.to_s] = players
+              end
+
             end
             if match.server
               data[:server_name] = match.server.name
-            end
-            data[:players] = []
-            match.users.each do |u|
-              data[:players] << u.name
             end
 
             self.success('',data)

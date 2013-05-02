@@ -279,9 +279,10 @@ class User < KAG::Model
       q.remove(self)
     end
 
-    self.authname = ''
     self.nick = ''
     self.host = ''
+    self.temp = 0
+    self.temp_end_at = nil
     self.save
   end
 

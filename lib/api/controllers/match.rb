@@ -51,6 +51,8 @@ module KAG
         end
 
         def list
+          return self.read(@params[:id]) if @params.key?(:id)
+
           limit = @params[:limit] || 10
           offset = @params[:offset] || 0
           total = ::Match.select('`matches`.*,`servers`.`name` AS `server_name`').joins(:server).where('matches.end_votes = 0 AND matches.ended_at IS NOT NULL').count

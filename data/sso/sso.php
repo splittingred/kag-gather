@@ -62,7 +62,7 @@ class SSO {
    					$this->over($error);
    				}
 			} else {
-				$result = $mysqli->query('UPDATE `users` SET `authname` = "'.$kagUser.'", `nick` = "'.$kagUser.'", `host` = "'.$hostname.'", `temp` = 1, `temp_end_at` = "'.$end.'" WHERE `kag_user` = "'.$kagUser.'"');
+				$result = $mysqli->query('UPDATE `users` SET `nick` = "'.$kagUser.'", `host` = "'.$hostname.'", `temp` = 1, `temp_end_at` = "'.$end.'" WHERE `kag_user` = "'.$kagUser.'"');
 				if ($result) {
 			    	$loggedIn = true;
 				} else {

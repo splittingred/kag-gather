@@ -90,6 +90,18 @@ class GatherQueue < KAG::Model
     "Queue (#{::Match.type_as_string}) [#{self.players.length}] #{self.list}"
   end
 
+  def idle_list
+    return false unless KAG.gather and KAG.gather.bot
+    list = []
+    self.users(true).each do |user|
+      irc_user = KAG.gather.bot.user_list.find_ensured(user.nick)
+      if irc_user and !irc_user.unknown
+        list << "#{user.nick}: #{irc_user.idle.to_i / 60}m"
+      end
+    end
+    list.join(', ')
+  end
+
   def length
     self.players(true).length
   end

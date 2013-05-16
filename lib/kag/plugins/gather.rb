@@ -169,6 +169,12 @@ module KAG
         end
       end
 
+      command :idle_list,{},
+        summary: 'Get the idle times for all the people in the queue'
+      def idle_list(m)
+        reply m,'Idle Times: '+ @queue.idle_list
+      end
+
       def get_unused_server
         KAG::Server.find_unused
       end

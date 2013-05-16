@@ -170,7 +170,8 @@ module KAG
       end
 
       command :idle_list,{},
-        summary: 'Get the idle times for all the people in the queue'
+        summary: 'Get the idle times for all the people in the queue',
+        admin: true
       def idle_list(m)
         reply m,'Idle Times: '+ @queue.idle_list
       end

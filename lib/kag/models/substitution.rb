@@ -58,7 +58,7 @@ class Substitution < KAG::Model
     player.is_sub = true
     if player.save
       self.new_player_id = player.id
-      self.status = "taken"
+      self.status = 'taken'
       saved = self.save
       if saved
         user.inc_stat(:substitutions)

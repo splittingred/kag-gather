@@ -10,6 +10,7 @@ class User < KAG::Model
   has_many :gather_queue_players
   has_many :gather_queues, :through => :gather_queue_players
   has_many :user_stats
+  has_many :user_achievements
   belongs_to :clan
 
   class << self
@@ -138,6 +139,18 @@ class User < KAG::Model
       h[s.name.to_sym] = s.value.to_i
     end
     h
+  end
+
+  def achievements
+    Achievement.joins(:user_achievements).where(:user_achievements => {:user_id => self.id})
+  end
+
+  def achievements_as_list
+    l = []
+    self.achievements.each do |a|
+      l << a.code
+    end
+    l
   end
 
   ##

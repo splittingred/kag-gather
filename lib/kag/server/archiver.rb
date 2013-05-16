@@ -31,8 +31,14 @@ module KAG
         KAG::Stats::Main.add_stat(:matches_completed)
 
         self.log.info '- Scoring all'
-        ::User.rescore_all
-        ::Clan.rescore_all
+        begin
+          ::User.rescore_all
+          ::Clan.rescore_all
+          ::Achievement.recalculate(match.users)
+        rescue Exception => e
+          self.log.error e.message
+          self.log.error e.backtrace.join("\n")
+        end
 
         self.log.info 'Finished archiving'
         true

@@ -96,6 +96,7 @@ class GatherQueue < KAG::Model
     self.users(true).each do |user|
       irc_user = KAG.gather.bot.user_list.find_ensured(user.nick)
       if irc_user and !irc_user.unknown
+        irc_user.refresh
         list << "#{user.nick}: #{irc_user.idle.to_i / 60}m"
       end
     end

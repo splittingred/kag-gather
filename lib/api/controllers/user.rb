@@ -38,6 +38,14 @@ module KAG
             d.delete(:authname)
             d.delete(:nick)
             d[:rank] = user.rank
+
+            d[:achievements] = {}
+            user.achievements.each do |ach|
+              d[:achievements][ach.code] = {
+                  :name => ach.name,
+                  :description => ach.description,
+              }
+            end
             self.success('',d)
           else
             self.failure('err_nf',user)

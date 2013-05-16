@@ -207,20 +207,19 @@ module KAG
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!r (.*))$/i) if match.nil?
         if match
           username = match[3].to_s.strip
-          if self.ready.include?(username)
-            say "You are already ready, #{username}!"
-            nil
-          else
-            player_class = match[5].to_s.strip.downcase.capitalize
-            unless username.empty? or player_class.empty?
-              if %w(Archer Knight Builder).include?(player_class)
-                team = get_team(username)
+          player_class = match[5].to_s.strip.downcase.capitalize
+          unless username.empty? or player_class.empty?
+            if %w(Archer Knight Builder).include?(player_class)
+              team = get_team(username)
 
-                self.data[:claims] = {} unless self.data[:claims]
-                self.data[:claims][username] = player_class
+              self.data[:claims] = {} unless self.data[:claims]
+              self.data[:claims][username] = player_class
+
+              if self.ready.include?(username)
+                say "#{username} has switched to #{player_class} for: #{team}."
+              else
                 self.ready << username
                 say "#{username} is ready and has claimed #{player_class} for: #{team}."
-
                 ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
 
                 # if match is ready to go live, start it
@@ -230,10 +229,10 @@ module KAG
                 else
                   say "Ready count now at #{self.ready.length.to_s} of #{ready_threshold.to_s} needed."
                 end
-                :ready
-              else
-                say "#{username}, #{player_class} is not a valid class."
               end
+              :ready
+            else
+              say "#{username}, #{player_class} is not a valid class."
             end
           end
         end

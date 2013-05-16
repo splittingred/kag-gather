@@ -142,13 +142,16 @@ module KAG
         summary: 'End the current match',
         description: 'End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end.'
       def end(m)
-        match = ::Match.player_in(m.user)
-        if match
-          match.add_end_vote
-          if match.voted_to_end?
-            match.cease
-          else
-            reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server.key}"
+        u = ::User.fetch(m.user)
+        if u
+          match = ::Match.player_in(u)
+          if match
+            match.add_end_vote
+            if match.voted_to_end?
+              match.cease
+            else
+              reply m,"End vote started, #{match.get_needed_end_votes_left} more votes to end match at #{match.server.key}"
+            end
           end
         end
       end

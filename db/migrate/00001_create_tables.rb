@@ -2,8 +2,18 @@ class CreateTables < ActiveRecord::Migration
   def self.up
     return true if ActiveRecord::Base.connection.table_exists? 'gather_queues'
 
+    create_table :achievements do |t|
+      t.string  :name, :limit => 255, :null => false, :default => ''
+      t.string  :code, :limit => 255, :null => false, :default => ''
+      t.text    :description
+      t.string  :stat, :limit => 255, :null => false, :default => ''
+      t.string  :operator, :limit => 100, :null => false, :default => ''
+      t.integer :value, :null => false, :default => 0
+      t.timestamps
+    end
+
     create_table :clans do |t|
-      t.string :name
+      t.string :name, :limit => 255, :null => false, :default => ''
       t.timestamps
     end
 
@@ -108,6 +118,14 @@ class CreateTables < ActiveRecord::Migration
       t.timestamps
     end
     add_index :teams, :match_id
+
+    create_table :user_achievements do |t|
+      t.integer :achievement_id, :null => false, :default => 0
+      t.integer :user_id, :null => false, :default => 0
+      t.timestamps
+    end
+    add_index :user_achievements, :achievement_id
+    add_index :user_achievements, :user_id
 
     create_table :user_stats do |t|
       t.integer    :user_id, :null => false, :default => 0

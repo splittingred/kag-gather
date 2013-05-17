@@ -93,9 +93,18 @@ module KAG
       end
 
       command :achievements,{},
-        summary: ''
+        summary: 'Get a list of your collected achievements'
       def achievements(m)
-
+        unless is_banned?(m.user)
+          u = ::User.fetch(name)
+          if u
+            l = []
+            u.achievements.each do |ach|
+              l << ach.name
+            end
+            m.user.send "Achievements: #{l.join(', ')}"
+          end
+        end
       end
     end
   end

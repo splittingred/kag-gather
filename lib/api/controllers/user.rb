@@ -44,6 +44,7 @@ module KAG
               d[:achievements][ach.code] = {
                   :name => ach.name,
                   :description => ach.description,
+                  :code => ach.code
               }
             end
             self.success('',d)

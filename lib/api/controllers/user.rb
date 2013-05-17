@@ -19,7 +19,7 @@ module KAG
 
         def read(id)
           if @@primary_key == :username
-            user = ::User.where("authname = ? OR kag_user = ?",@params[:username],@params[:username]).first
+            user = ::User.where('authname = ? OR kag_user = ?',@params[:username],@params[:username]).first
           else
             user = ::User.where(:id => id).first
           end
@@ -32,7 +32,6 @@ module KAG
                   :rank => s.rank
               }
             end
-            d[:stats][:matches] = user.matches.count
             d[:clan_name] = user.clan.name if user.clan
             d.delete(:host)
             d.delete(:authname)

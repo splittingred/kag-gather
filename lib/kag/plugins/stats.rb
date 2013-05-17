@@ -96,7 +96,7 @@ module KAG
         summary: 'Get a list of your collected achievements'
       def achievements(m)
         unless is_banned?(m.user)
-          u = ::User.fetch(name)
+          u = ::User.fetch(m.user)
           if u
             l = []
             u.achievements.each do |ach|

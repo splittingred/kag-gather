@@ -30,7 +30,8 @@ module KAG
               d[:users][u.name] = {
                   :name => u.name,
                   :score => u.score,
-                  :rank => u.rank
+                  :rank => u.rank,
+                  :value => u.value
               }
             end
             self.success('',d)

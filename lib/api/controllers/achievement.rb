@@ -34,6 +34,17 @@ module KAG
                   :value => u.value
               }
             end
+
+            tag = ach.code.split('.').first
+            d[:related] = []
+            ::Achievement.where('code LIKE "%'+tag+'%" AND id != ?',ach.id).each do |a|
+              d[:related] << {
+                :code => a.code,
+                :name => a.name,
+                :description => a.description
+              }
+            end
+
             self.success('',d)
           else
             self.failure('err_nf',clan)

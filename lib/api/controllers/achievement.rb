@@ -44,7 +44,7 @@ module KAG
           start = @params[:start] || 0
 
           total = ::Achievement.count
-          achievements = ::Achievement.order('code ASC').offset(start).limit(limit)
+          achievements = ::Achievement.order('name ASC').offset(start).limit(limit)
           if achievements
             list = []
             achievements.each do |achievement|

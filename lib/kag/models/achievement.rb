@@ -37,13 +37,13 @@ class Achievement < KAG::Model
   end
 
   def users
-    User.joins(:user_achievements).where(:user_achievements => {:achievement_id => self.id})
+    User.joins(:user_achievements).select('users.*,user_stats.value').joins('INNER JOIN user_stats ON users.id = user_stats.user_id AND user_stats.name = "'+self.stat+'"').where(:user_achievements => {:achievement_id => self.id}).order('value DESC')
   end
 
   def users_as_list
-    l = []
-    self.users.each do |u|
-      l << u.name
+    l = {}
+    self.users.select('users.*,user_stats.value').joins('INNER JOIN user_stats ON users.id = user_stats.user_id AND user_stats.name = "'+self.stat+'"').order('value DESC').each do |u|
+      l[u.name] = u.value
     end
     l
   end

@@ -40,7 +40,11 @@ module KAG
         end
 
         def list
-          achievements = ::Achievement.where(@params).order('code ASC')
+          limit = @params[:limit] || 25
+          start = @params[:start] || 0
+
+          total = ::Achievement.count
+          achievements = ::Achievement.order('code ASC').offset(start).limit(limit)
           if achievements
             list = []
             achievements.each do |achievement|
@@ -48,7 +52,7 @@ module KAG
               data[:users] = achievement.users_as_list
               list << data
             end
-            self.success('',list)
+            self.collection(list,total)
           else
             self.failure('err_nf',c)
           end

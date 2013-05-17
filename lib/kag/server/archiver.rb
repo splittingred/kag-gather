@@ -98,10 +98,14 @@ module KAG
                     self.log.info "- Logging won/matches for #{user.name.to_s}"
                     k = player.won ? :wins : :losses
                     user.inc_stat(k)
+                    user.set_stat('matches',user.stat('wins').to_i+user.stat('losses').to_i)
+
                     if cls
                       user.inc_stat(cls+'.'+k.to_s)
-                      user.inc_stat(cls+'.matches')
+                      #user.inc_stat(cls+'.matches')
+                      user.set_stat(cls+'.matches',user.stat(cls+'.wins').to_i+user.stat(cls+'.losses').to_i)
                     end
+
 
                     clan = user.clan
                     if clan

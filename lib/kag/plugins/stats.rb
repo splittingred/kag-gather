@@ -91,6 +91,12 @@ module KAG
           m.user.send ::User.rank_top(10)
         end
       end
+
+      command :achievements,{},
+        summary: ''
+      def achievements(m)
+
+      end
     end
   end
 end

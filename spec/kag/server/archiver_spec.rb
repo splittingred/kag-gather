@@ -10,7 +10,7 @@ describe KAG::Server::Archiver do
     ms.start_match(false)
   end
 
-  it "test archive" do
+  it 'test archive' do
     subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
     subject.live = true
     subject.parse('[00:00:00] [=] Vidar gibbed [CODE] Geti into pieces')
@@ -42,4 +42,37 @@ describe KAG::Server::Archiver do
     c.stat(:wins).should eq(1)
   end
 
+  it 'test killstreak' do
+    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
+    subject.live = true
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [CODE] Geti slew [=] Vidar with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+
+    subject.live = true
+    subject.parse('[00:00:00] Red Team wins the game!').should eq(:match_win)
+    subject.archive
+
+    u = ::User.fetch('Vidar')
+    u.stat(:killstreaks).should eq(2)
+    u.stat(:killstreak_10).should eq(1)
+
+    u = ::User.fetch('Geti')
+    u.stat(:ended_others_killstreak).should eq(1)
+  end
 end

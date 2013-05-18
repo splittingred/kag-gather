@@ -302,6 +302,14 @@ module KAG
         t
       end
 
+      def get_class(username)
+        cls = ''
+        if self.data.key?(:claims) and self.data[:claims].key?(username)
+          cls = self.data[:claims][username]
+        end
+        cls
+      end
+
       def evt_veto(msg)
         m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!veto)$/)
         if m
@@ -638,8 +646,8 @@ module KAG
             self.killstreaks[victim] = 0
           end
 
-          _add_stat(:death,victim_clan,victim)
-          _add_death_type(type.to_sym,victim_clan,victim)
+          _add_stat(:deaths,victim_clan,victim)
+          _add_stat('deaths.'+type.to_s,victim_clan,victim)
         end
 
         unless killer.nil?
@@ -653,10 +661,31 @@ module KAG
           if self.killstreaks[killer] == killstreak_threshold
             say "#{killer} is on a kill streak!"
             self._add_stat(:killstreaks,killer_clan,killer)
+          elsif self.killstreaks[killer] == 10
+            say "#{killer} is on a 10 kill streak! Wow!"
+            self._add_stat(:killstreak_10,killer_clan,killer)
+            cls = get_class(killer).downcase.capitalize
+            if cls == 'Builder'
+              self._add_stat(:bloody_hammer,killer_clan,killer)
+            end
+          elsif self.killstreaks[killer] == 20
+            say "#{killer} is on a 20 kill streak! Hot!"
+            self._add_stat(:killstreak_20,killer_clan,killer)
+            cls = get_class(killer).downcase.capitalize
+            if cls == 'Archer'
+              self._add_stat(:dead_eye,killer_clan,killer)
+            end
+          elsif self.killstreaks[killer] == 30
+            say "#{killer} is on a 30 kill streak! OMG run away!"
+            self._add_stat(:killstreak_30,killer_clan,killer)
+            cls = get_class(killer).downcase.capitalize
+            if cls == 'Knight'
+              self._add_stat(:excalibur,killer_clan,killer)
+            end
           end
 
-          _add_stat(:kill,killer_clan,killer)
-          _add_kill_type(type.to_sym,killer_clan,killer)
+          _add_stat(:kills,killer_clan,killer)
+          _add_stat('kills.'+type.to_s,killer_clan,killer)
         end
       end
 
@@ -693,48 +722,6 @@ module KAG
           self.data.clans[clan][stat] = 0 unless self.data.clans[clan][stat]
           self.data.clans[clan][stat] = self.data.clans[clan][stat] + increment.to_i
           self.data.clans[clan][stat]
-        end
-      end
-
-      def _add_kill_type(type,clan,player,increment = 1)
-        return false if (player.nil? or type.nil?)
-        type = type.to_sym
-        player = player.to_s
-        clan = clan.to_s
-        self.data[:clans] = {} unless self.data.clans
-        self.data[:players] = {} unless self.data.players
-        if self.data.players
-          self.data.players[player] = {} unless self.data.players[player]
-          self.data.players[player][:kill_types] = {} unless self.data.players[player][:kill_types]
-          self.data.players[player][:kill_types][type] = 0 unless self.data.players[player][:kill_types][type]
-          self.data.players[player][:kill_types][type] = self.data.players[player][:kill_types][type] + increment.to_i
-        end
-        if self.data.clans
-          self.data.clans[clan] = {} unless self.data.clans[clan]
-          self.data.clans[clan][:kill_types] = {} unless self.data.clans[clan][:kill_types]
-          self.data.clans[clan][:kill_types][type] = 0 unless self.data.clans[clan][:kill_types][type]
-          self.data.clans[clan][:kill_types][type] = self.data.clans[clan][:kill_types][type] + increment.to_i
-        end
-      end
-
-      def _add_death_type(type,clan,player,increment = 1)
-        return false if (player.nil? or type.nil?)
-        type = type.to_sym
-        player = player.to_s
-        clan = clan.to_s
-        self.data[:clans] = {} unless self.data.clans
-        self.data[:players] = {} unless self.data.players
-        if self.data.players
-          self.data.players[player] = {} unless self.data.players[player]
-          self.data.players[player][:death_types] = {} unless self.data.players[player][:death_types]
-          self.data.players[player][:death_types][type] = 0 unless self.data.players[player][:death_types][type]
-          self.data.players[player][:death_types][type] = self.data.players[player][:death_types][type] + increment.to_i
-        end
-        if self.data.clans
-          self.data.clans[clan] = {} unless self.data.clans[clan]
-          self.data.clans[clan][:death_types] = {} unless self.data.clans[clan][:death_types]
-          self.data.clans[clan][:death_types][type] = 0 unless self.data.clans[clan][:death_types][type]
-          self.data.clans[clan][:death_types][type] = self.data.clans[clan][:death_types][type] + increment.to_i
         end
       end
 

@@ -138,50 +138,28 @@ module KAG
           p = ::Player.fetch_by_kag_user(player.to_s)
           if p
             self.log.info "- Found Player record with ID #{p.id}"
-            p.kills = data[:kill].to_i
-            p.deaths = data[:death].to_i
+            p.kills = data[:kills].to_i
+            p.deaths = data[:deaths].to_i
             if p.save
               user = p.user
               if user
-                self.log.info "- Logging K/D for User #{user.kag_user}"
-                user.inc_stat(:kills,p.kills)
-                user.inc_stat(:deaths,p.deaths)
-                if data[:death_types]
-                  data[:death_types].each do |type,v|
-                    user.inc_stat('deaths.'+type.to_s,v)
-                  end
-                end
-                if data[:kill_types]
-                  data[:kill_types].each do |type,v|
-                    user.inc_stat('kills.'+type.to_s,v)
+                clan = user.clan
+                cls = get_class(player.to_s)
+
+                data.each do |stat,value|
+                  user.inc_stat(stat,value)
+                  if clan
+                    clan.inc_stat(stat,value)
                   end
                 end
 
-                cls = get_class(player.to_s)
                 if cls
                   user.inc_stat(cls+'.kills',p.kills)
                   user.inc_stat(cls+'.deaths',p.deaths)
                 end
-
-                clan = user.clan
-                if clan
-                  clan.inc_stat(:kills,p.kills)
-                  clan.inc_stat(:deaths,p.deaths)
-                  if data[:death_types]
-                    data[:death_types].each do |type,v|
-                      clan.inc_stat('deaths.'+type.to_s,v)
-                    end
-                  end
-                  if data[:kill_types]
-                    data[:kill_types].each do |type,v|
-                      clan.inc_stat('kills.'+type.to_s,v)
-                    end
-                  end
-
-                  if cls
-                    clan.inc_stat(cls+'.kills',p.kills)
-                    clan.inc_stat(cls+'.deaths',p.deaths)
-                  end
+                if cls
+                  clan.inc_stat(cls+'.kills',p.kills)
+                  clan.inc_stat(cls+'.deaths',p.deaths)
                 end
 
                 self.log.info "Scoring #{user.name} to : #{user.score.to_s}"

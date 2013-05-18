@@ -142,7 +142,7 @@ class User < KAG::Model
   end
 
   def achievements
-    Achievement.joins(:user_achievements).where(:user_achievements => {:user_id => self.id})
+    Achievement.joins(:user_achievements).where(:user_achievements => {:user_id => self.id}).order('stat ASC, value ASC')
   end
 
   def achievements_as_list

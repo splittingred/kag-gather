@@ -42,7 +42,7 @@ describe KAG::Server::Archiver do
     c.stat(:wins).should eq(1)
   end
 
-  it 'test killstreak' do
+  it 'test killstreak/deathstreak' do
     subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
     subject.live = true
     subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
@@ -63,6 +63,7 @@ describe KAG::Server::Archiver do
     subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
     subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
     subject.parse('[00:00:00] [=] Vidar slew [CODE] Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] [CODE] Geti slew [=] Vidar with his sword').should eq(:slew)
 
     subject.live = true
     subject.parse('[00:00:00] Red Team wins the game!').should eq(:match_win)
@@ -71,8 +72,10 @@ describe KAG::Server::Archiver do
     u = ::User.fetch('Vidar')
     u.stat(:killstreaks).should eq(2)
     u.stat(:killstreak_10).should eq(1)
+    u.stat(:ended_others_deathstreak).should eq(1)
 
     u = ::User.fetch('Geti')
-    u.stat(:ended_others_killstreak).should eq(1)
+    u.stat(:deathstreaks).should eq(1)
+    u.stat(:ended_others_killstreak).should eq(2)
   end
 end

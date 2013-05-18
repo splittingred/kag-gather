@@ -16,7 +16,7 @@ module KAG
       attr_accessor :server,:log,:data,:live,:ready,:veto,:listener,:restart_queue
       attr_accessor :units_depleted,:players_there,:sub_requests,:test
       attr_accessor :players,:teams,:match
-      attr_accessor :killstreaks,:clans
+      attr_accessor :killstreaks,:deathstreaks,:clans
 
       def initialize(listener,data)
         self.server = listener.server
@@ -29,6 +29,7 @@ module KAG
         self.teams = self.server.match_in_progress.teams
         self.test = false
         self.killstreaks = {}
+        self.deathstreaks = {}
         self.clans = {}
         ps = []
         self.server.match_in_progress.users.each do |u|
@@ -632,9 +633,10 @@ module KAG
 
       def _add_kill(victim_clan = nil,victim = nil,killer_clan = nil,killer = nil,type = :unknown)
         killstreak_threshold = KAG::Config.instance[:killstreak].to_i
+        deathstreak_threshold = KAG::Config.instance[:deathstreak].to_i
         unless victim.nil?
           victim = victim.to_s.strip
-          if self.killstreaks[victim]
+          if self.killstreaks[victim].to_i > 0
             if self.killstreaks[victim] >= killstreak_threshold # if they're on a killstreak
               if killer.nil? # died without killer
                 say "#{victim}'s killstreak was ended at #{self.killstreaks[victim].to_s}"
@@ -644,6 +646,18 @@ module KAG
               end
             end
             self.killstreaks[victim] = 0
+          end
+
+          victim = victim.to_s.strip
+          if self.deathstreaks.key?(victim)
+            self.deathstreaks[victim] += 1
+          else
+            self.deathstreaks[victim] = 1
+          end
+
+          if self.deathstreaks[victim] == deathstreak_threshold
+            say "#{victim} is on a death streak!"
+            self._add_stat(:deathstreaks,victim_clan,victim)
           end
 
           _add_stat(:deaths,victim_clan,victim)
@@ -682,6 +696,18 @@ module KAG
             if cls == 'Knight'
               self._add_stat(:excalibur,killer_clan,killer)
             end
+          end
+
+          if self.deathstreaks[killer].to_i > 0
+            if self.deathstreaks[killer] >= deathstreak_threshold # if they're on a deathstreak
+              if victim.nil? # killed without victim
+                say "#{killer}'s deathstreak was ended at #{self.deathstreaks[killer].to_s}"
+              else # killed someone else
+                say "#{victim} ended #{killer}'s deathstreak of #{self.deathstreaks[killer].to_s}"
+                self._add_stat(:ended_others_deathstreak,victim_clan,victim)
+              end
+            end
+            self.deathstreaks[killer] = 0
           end
 
           _add_stat(:kills,killer_clan,killer)

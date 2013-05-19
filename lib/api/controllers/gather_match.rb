@@ -27,8 +27,8 @@ module KAG
                   kills = 0
                   deaths = 0
                   if data[:stats].key?('players') and data[:stats]['players'].key?(user.kag_user)
-                    kills = data[:stats]['players'][user.kag_user]['kills']
-                    deaths = data[:stats]['players'][user.kag_user]['deaths']
+                    kills = data[:stats]['players'][user.kag_user].key?('kills') ? data[:stats]['players'][user.kag_user]['kills'] : data[:stats]['players'][user.kag_user]['kill']
+                    deaths = data[:stats]['players'][user.kag_user].key?('deaths') ? data[:stats]['players'][user.kag_user]['deaths'] : data[:stats]['players'][user.kag_user]['death']
                   end
 
                   players[user.name] = {

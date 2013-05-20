@@ -11,8 +11,8 @@ module KAG
 
         :knight_kill => 12,
         :knight_death => 6,
-        :archer_kill => 4,
-        :archer_death => 16,
+        :archer_kill => 3,
+        :archer_death => 18,
         :builder_kill => 24,
         :builder_death => 12,
 

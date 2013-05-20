@@ -24,6 +24,7 @@ data/matches/*.json
 
 # other ruby-specific files
 *.gem
+.rvmrc
 coverage/
 doc
 rdoc

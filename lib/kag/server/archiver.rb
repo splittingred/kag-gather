@@ -156,10 +156,11 @@ module KAG
                 if cls
                   user.inc_stat(cls+'.kills',p.kills)
                   user.inc_stat(cls+'.deaths',p.deaths)
-                end
-                if cls
-                  clan.inc_stat(cls+'.kills',p.kills)
-                  clan.inc_stat(cls+'.deaths',p.deaths)
+
+                  if clan
+                    clan.inc_stat(cls+'.kills',p.kills)
+                    clan.inc_stat(cls+'.deaths',p.deaths)
+                  end
                 end
 
                 self.log.info "Scoring #{user.name} to : #{user.score.to_s}"

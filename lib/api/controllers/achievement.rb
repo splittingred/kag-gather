@@ -35,6 +35,8 @@ module KAG
               }
             end
 
+            d[:users_close] = ach.users_close
+
             tag = ach.code.split('.').first.split('-').first
             d[:related] = []
             ::Achievement.where('code LIKE "%'+tag+'%" AND id != ?',ach.id).order('stat ASC, value ASC').each do |a|

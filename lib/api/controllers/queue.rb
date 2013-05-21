@@ -3,7 +3,7 @@ module KAG
   module API
     module Controller
       class Queue < Base
-        @@class_key = 'GatherQueue'
+        @class_key = 'GatherQueue'
 
         def read(id)
           queue = ::GatherQueue.find(id)

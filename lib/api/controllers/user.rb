@@ -3,14 +3,14 @@ module KAG
   module API
     module Controller
       class User < Base
-        @@class_key = 'User'
+        @class_key = 'User'
 
 
         def get
           if @params[:id]
             self.read(@params[:id])
           elsif @params[:username]
-            @@primary_key = :username
+            @primary_key = :username
             self.read(@params[:username])
           else
             self.list
@@ -18,7 +18,7 @@ module KAG
         end
 
         def read(id)
-          if @@primary_key == :username
+          if @primary_key == :username
             user = ::User.where('authname = ? OR kag_user = ?',@params[:username],@params[:username]).first
           else
             user = ::User.where(:id => id).first

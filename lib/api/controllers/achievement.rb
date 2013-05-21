@@ -3,14 +3,14 @@ module KAG
   module API
     module Controller
       class Achievement < Base
-        @@class_key = 'Achievement'
-        @@primary_key = :name
+        @class_key = 'Achievement'
+        @primary_key = :name
 
         def get
           if @params[:id]
             self.read(@params[:id])
           elsif @params[:code]
-            @@primary_key = :code
+            @primary_key = :code
             self.read(@params[:code])
           else
             self.list
@@ -18,7 +18,7 @@ module KAG
         end
 
         def read(id)
-          if @@primary_key == :code
+          if @primary_key == :code
             ach = ::Achievement.where('code = ?',@params[:code]).first
           else
             ach = ::Achievement.where(:id => id).first
@@ -47,7 +47,7 @@ module KAG
 
             self.success('',d)
           else
-            self.failure('err_nf',clan)
+            self.failure('err_nf')
           end
         end
 

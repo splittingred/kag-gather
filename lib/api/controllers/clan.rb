@@ -3,14 +3,14 @@ module KAG
   module API
     module Controller
       class Clan < Base
-        @@class_key = 'Clan'
+        @class_key = 'Clan'
 
 
         def get
           if @params[:id]
             self.read(@params[:id])
           elsif @params[:name]
-            @@primary_key = :name
+            @primary_key = :name
             self.read(@params[:name])
           else
             self.list
@@ -18,7 +18,7 @@ module KAG
         end
 
         def read(id)
-          if @@primary_key == :name
+          if @primary_key == :name
             clan = ::Clan.where('name = ?',@params[:name]).first
           else
             clan = ::Clan.where(:id => id).first

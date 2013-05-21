@@ -3,8 +3,8 @@ module KAG
   module API
     module Controller
       class Stat < Base
-        @@class_key = 'UserStat'
-        @@primary_key = :name
+        @class_key = 'UserStat'
+        @primary_key = :name
 
         def get
           name = @params[:name].to_s || ''

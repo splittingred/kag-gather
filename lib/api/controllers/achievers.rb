@@ -3,8 +3,8 @@ module KAG
   module API
     module Controller
       class Achievers < Base
-        @@class_key = 'User'
-        @@primary_key = :kag_user
+        @class_key = 'User'
+        @primary_key = :kag_user
 
         def get
           self.list

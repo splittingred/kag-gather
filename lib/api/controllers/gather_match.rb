@@ -3,8 +3,8 @@ module KAG
   module API
     module Controller
       class Gather_match < Base
-        @@class_key = 'Match'
-        @@primary_key = 'id'
+        @class_key = 'Match'
+        @primary_key = 'id'
 
         def read(id)
           match = ::Match.find(id)

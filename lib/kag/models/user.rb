@@ -98,6 +98,28 @@ class User < KAG::Model
     def rescore_all
       User.order('score DESC').each {|u| u.do_score}
     end
+
+    def clear_duplicates(username)
+      return false if User.where(:kag_user => username.to_s).count < 2
+
+      old = []
+      to_merge = nil
+      User.where(:kag_user => username.to_s).each do |user|
+        if user.authname.to_s.empty?
+          old << user
+        else
+          to_merge = user
+        end
+      end
+      to_merge = old.shift if to_merge.nil?
+      return false unless to_merge
+
+      old.each do |o|
+        to_merge.merge_from(o)
+      end
+
+      to_merge
+    end
   end
 
   def name
@@ -330,5 +352,33 @@ class User < KAG::Model
 
   def rank
     User.select('DISTINCT `score`').where("kag_user != '' AND score > ?",self.score).order('score DESC').count + 1
+  end
+
+  def merge_from(user)
+    # if merging this into user
+    if self.authname.to_s.empty?
+      new_user = user
+      old_user = self
+    else # otherwise merge user into this
+      new_user = self
+      old_user = user
+    end
+
+    UserStat.where(:user_id => old_user.id).each do |old_us|
+      us = UserStat.where(:user_id => new_user.id,:name => old_us.name).first
+      unless us
+        us = UserStat.new
+        us.user_id = new_user.id
+        us.name = old_us.name
+        us.value = 0
+      end
+      us.value = us.value.to_i + old_us.value.to_i
+      us.save
+      old_us.destroy
+    end
+
+    old_user.destroy
+
+    new_user.do_score
   end
 end

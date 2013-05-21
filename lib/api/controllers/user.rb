@@ -46,6 +46,7 @@ module KAG
                   :code => ach.code
               }
             end
+            d[:achievements_close] = user.achievements_close
             self.success('',d)
           else
             self.failure('err_nf',user)

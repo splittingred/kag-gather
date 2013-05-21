@@ -153,6 +153,25 @@ class User < KAG::Model
     l
   end
 
+  def achievements_close(range = 0.75)
+    list = SymbolTable.new
+    Achievement.select('achievements.*,user_stats.value AS current').joins('JOIN user_stats ON achievements.stat = user_stats.name').where(:user_stats => {:user_id => self.id}).order('achievements.stat ASC, achievements.value ASC').each do |ach|
+      op = ach.operator.to_sym
+      target = ach.value.to_i
+      proximity = target * range
+      current = ach.current.to_i
+      if current.send(op,proximity) and current < target
+        list[ach.code] = {
+            :name => ach.name,
+            :description => ach.description,
+            :target => target,
+            :current => current
+        }
+      end
+    end
+    list
+  end
+
   ##
   # Get the stats text for the user
   #

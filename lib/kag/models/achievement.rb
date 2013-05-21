@@ -26,6 +26,10 @@ class Achievement < KAG::Model
       end
       granted
     end
+
+    def recent(limit = 20)
+      Achievement.select('achievements.*,users.kag_user,user_achievements.created_at').joins('JOIN user_achievements ON achievements.id = user_achievements.achievement_id JOIN users ON users.id = user_achievements.user_id').order('user_achievements.created_at DESC, achievements.stat ASC, achievements.value ASC').limit(limit)
+    end
   end
 
   def grant(user)

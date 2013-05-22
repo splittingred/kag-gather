@@ -195,7 +195,14 @@ class User < KAG::Model
   end
 
   def recent_matches(limit = 10,offset = 0)
-    self.matches.where('end_votes = 0 AND ended_at IS NOT NULL').limit(limit).offset(offset)
+    list = []
+    self.matches.select('matches.*,teams.name AS team_name').joins('JOIN teams ON teams.match_id = players.team_id').where('end_votes = 0 AND ended_at IS NOT NULL').limit(limit).offset(offset).order('ended_at DESC').each do |m|
+      d = m.attributes
+      d[:winning_team] = m.winner
+      d[:won] = d[:winning_team].to_s == m.team_name.to_s
+      list << d
+    end
+    list
   end
 
   ##

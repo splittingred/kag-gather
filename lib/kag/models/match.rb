@@ -244,4 +244,23 @@ class Match < KAG::Model
   def kick_all
     self.server.kick_all
   end
+
+  def stats_as_hash
+    begin
+      SymbolTable.new(JSON.parse(self.stats))
+    rescue Exception => e
+      SymbolTable.new
+    end
+  end
+
+  def winner
+    winner = 'Neither Team'
+    wins = self.stats_as_hash[:wins]
+    wins.each do |team,wins|
+      if wins >= 2
+        winner = team
+      end
+    end
+    winner
+  end
 end

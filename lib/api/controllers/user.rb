@@ -47,6 +47,7 @@ module KAG
               }
             end
             d[:achievements_close] = user.achievements_close
+            d[:recent_matches] = user.recent_matches
             self.success('',d)
           else
             self.failure('err_nf',user)

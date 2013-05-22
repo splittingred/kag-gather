@@ -194,6 +194,10 @@ class User < KAG::Model
     list
   end
 
+  def recent_matches(limit = 10,offset = 0)
+    self.matches.where('end_votes = 0 AND ended_at IS NOT NULL').limit(limit).offset(offset)
+  end
+
   ##
   # Get the stats text for the user
   #

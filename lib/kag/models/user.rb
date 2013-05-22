@@ -196,10 +196,19 @@ class User < KAG::Model
 
   def recent_matches(limit = 10,offset = 0)
     list = []
-    self.matches.select('matches.*,teams.name AS team_name').joins('JOIN teams ON teams.match_id = players.team_id').where('end_votes = 0 AND ended_at IS NOT NULL').limit(limit).offset(offset).group('matches.id').order('ended_at DESC').each do |m|
+    self.matches.select('matches.*,teams.name AS team_name,players.cls,players.is_sub,players.deserted').joins('JOIN teams ON teams.match_id = players.team_id').where('end_votes = 0 AND ended_at IS NOT NULL').limit(limit).offset(offset).group('matches.id').order('ended_at DESC').each do |m|
       d = m.attributes
       d[:winning_team] = m.winner
       d[:won] = d[:winning_team].to_s == m.team_name.to_s
+      d[:cls] = m.cls.to_s.capitalize
+      stats = m.stats_as_hash
+      if stats and stats.key?(:players) and stats[:players].key?(self.kag_user)
+        ps = stats[:players][self.kag_user]
+        d[:kills] = ps.key?(:kill) ? ps[:kill] : ps[:kills]
+        d[:deaths] = ps.key?(:death) ? ps[:death] : ps[:deaths]
+        d[:killstreaks] = ps.key?(:killstreaks) ? ps[:killstreaks] : 0
+        d[:deathstreaks] = ps.key?(:deathstreaks) ? ps[:deathstreaks] : 0
+      end
       list << d
     end
     list

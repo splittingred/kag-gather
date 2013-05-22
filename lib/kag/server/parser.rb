@@ -341,7 +341,7 @@ module KAG
           if self.restart_queue.include?(match[3])
             say "You have already voted for a restart, #{match[3]}!"
           else
-            restart_threshold = (self.players.length / 2).to_i
+            restart_threshold = (self.players.length / 2).to_i + 1
             self.restart_queue << match[3]
             if self.restart_queue.length >= restart_threshold
               self.ready = []

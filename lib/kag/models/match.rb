@@ -255,10 +255,12 @@ class Match < KAG::Model
 
   def winner
     winner = 'Neither Team'
-    wins = self.stats_as_hash[:wins]
-    wins.each do |team,wins|
-      if wins >= 2
-        winner = team
+    stats = self.stats_as_hash
+    if stats.key?(:wins)
+      stats[:wins].each do |team,wins|
+        if wins >= 2
+          winner = team
+        end
       end
     end
     winner

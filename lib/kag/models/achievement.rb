@@ -85,6 +85,7 @@ class Achievement < KAG::Model
       list << prior.attributes
       current = prior
     end
+    list.reverse!
     list << self.attributes.merge({:current => true})
     current = self
     until (na = current.next_achievement).nil?

@@ -2,6 +2,7 @@ require 'kag/models/model'
 
 class Achievement < KAG::Model
   has_many :user_achievements
+  has_one :next_achievement, :foreign_key => 'prior', :class_name => 'Achievement'
 
   class << self
 
@@ -72,5 +73,24 @@ class Achievement < KAG::Model
       l[u.name] = u.value
     end
     l
+  end
+
+  def prior_achievement
+    Achievement.where(:id => self.prior).first
+  end
+
+  def trajectory(list = [])
+    current = self
+    until (prior = current.prior_achievement).nil?
+      list << prior.attributes
+      current = prior
+    end
+    list << self.attributes.merge({:current => true})
+    current = self
+    until (na = current.next_achievement).nil?
+      list << na.attributes
+      current = na
+    end
+    list
   end
 end

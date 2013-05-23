@@ -6,11 +6,15 @@ class CreateTables < ActiveRecord::Migration
       t.string  :name, :limit => 255, :null => false, :default => ''
       t.string  :code, :limit => 255, :null => false, :default => ''
       t.text    :description
+      t.integer :prior, :null => false, :default => 0
       t.string  :stat, :limit => 255, :null => false, :default => ''
       t.string  :operator, :limit => 100, :null => false, :default => ''
       t.integer :value, :null => false, :default => 0
       t.timestamps
     end
+    add_index :achievements, :code
+    add_index :achievements, :stat
+    add_index :achievements, :prior
 
     create_table :clans do |t|
       t.string :name, :limit => 255, :null => false, :default => ''

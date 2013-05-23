@@ -327,6 +327,47 @@ class User < KAG::Model
     s.save
   end
 
+  def kills(victim)
+    kills = Kill.where(:killer_id => self.id,:victim_id => victim.id).first
+    unless kills
+      kills = Kill.new
+      kills.killer_id = self.id
+      kills.victim_id = victim.id
+    end
+    kills
+  end
+
+  def add_kill(victim,times = 1)
+    unless victim.class == User
+      victim = User.find_by_kag_user(victim)
+    end
+    return false if victim.class != User
+
+    kills = self.kills(victim)
+    kills.times = kills.times.to_i + times
+    kills.streak = kills.streak.to_i + times
+    kills.save
+
+    victim_kills = victim.kills(self)
+    victim_kills.streak = 0
+    victim_kills.save
+
+    if kills.streak >= 10
+      Achievement.grant('dominate-10',self)
+      Achievement.grant('dominated-10',victim)
+    end
+    if kills.streak >= 25
+      Achievement.grant('dominate-25',self)
+      Achievement.grant('dominated-25',victim)
+    end
+    if kills.streak >= 50
+      Achievement.grant('dominate-50',self)
+      Achievement.grant('dominated-50',victim)
+    end
+
+    kills
+  end
+
   ##
   # Ignore this user
   #

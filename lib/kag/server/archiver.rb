@@ -176,6 +176,17 @@ module KAG
         end
       end
 
+      def record_kills
+        self.data.kills.each do |k,record|
+          killer = ::User.find_by_kag_user(k)
+          if killer and record.respond_to?(:each)
+            record.each do |victim,times|
+              killer.add_kill(victim,times)
+            end
+          end
+        end
+      end
+
     end
   end
 end

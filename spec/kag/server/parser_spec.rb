@@ -59,7 +59,7 @@ describe KAG::Server::Parser do
   it 'prevent multiple ready calls' do
     subject.live = false
     subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
-    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(nil)
+    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
   end
 
   it 'test player veto' do
@@ -81,74 +81,74 @@ describe KAG::Server::Parser do
   it 'test slew' do
     subject.live = true
     subject.parse('[00:00:00] Vidar slew Geti with his sword').should eq(:slew)
-    subject.data.players['Vidar'][:kill].should eq(1)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Vidar'][:kills].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
     subject.parse('[00:00:00] Vidar slew Geti with her sword').should eq(:slew)
-    subject.data.players['Vidar'][:kill].should eq(2)
-    subject.data.players['Geti'][:death].should eq(2)
+    subject.data.players['Vidar'][:kills].should eq(2)
+    subject.data.players['Geti'][:deaths].should eq(2)
   end
   it 'test gibbed' do
     subject.live = true
     subject.parse('[00:00:00] Vidar gibbed Geti into pieces').should eq(:gibbed)
-    subject.data.players['Vidar'][:kill].should eq(1)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Vidar'][:kills].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
   end
   it 'test shot' do
     subject.live = true
     subject.parse('[00:00:00] Vidar shot Geti with his arrow').should eq(:shot)
-    subject.data.players['Vidar'][:kill].should eq(1)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Vidar'][:kills].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
     subject.parse('[00:00:00] Vidar shot Geti with her arrow').should eq(:shot)
-    subject.data.players['Vidar'][:kill].should eq(2)
-    subject.data.players['Geti'][:death].should eq(2)
+    subject.data.players['Vidar'][:kills].should eq(2)
+    subject.data.players['Geti'][:deaths].should eq(2)
   end
   it 'test hammered' do
     subject.live = true
     subject.parse('[00:00:00] Vidar hammered Geti to death').should eq(:hammered)
-    subject.data.players['Vidar'][:kill].should eq(1)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Vidar'][:kills].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
   end
   it 'test pushed' do
     subject.live = true
     subject.parse('[00:00:00] Vidar pushed Geti to his death').should eq(:pushed)
-    subject.data.players['Vidar'][:kill].should eq(1)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Vidar'][:kills].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
     subject.parse('[00:00:00] Vidar pushed Geti on a spike trap').should eq(:pushed)
-    subject.data.players['Vidar'][:kill].should eq(2)
-    subject.data.players['Geti'][:death].should eq(2)
+    subject.data.players['Vidar'][:kills].should eq(2)
+    subject.data.players['Geti'][:deaths].should eq(2)
   end
   it 'test assisted' do
     subject.live = true
     subject.parse('[00:00:00] Vidar assisted in squashing Geti under falling rocks').should eq(:assisted)
-    subject.data.players['Vidar'][:kill].should eq(1)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Vidar'][:kills].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
     subject.parse('[00:00:00] Vidar assisted in Geti dying under a collapse').should eq(:assisted)
-    subject.data.players['Vidar'][:kill].should eq(2)
-    subject.data.players['Geti'][:death].should eq(2)
+    subject.data.players['Vidar'][:kills].should eq(2)
+    subject.data.players['Geti'][:deaths].should eq(2)
   end
   it 'test squashed' do
     subject.live = true
     subject.parse('[00:00:00] Geti was squashed under a collapse').should eq(:squashed)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
   end
   it 'test fell' do
     subject.live = true
     subject.parse('[00:00:00] Geti fell to his death').should eq(:fell)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
     subject.parse('[00:00:00] Geti fell on a spike trap').should eq(:fell)
-    subject.data.players['Geti'][:death].should eq(2)
+    subject.data.players['Geti'][:deaths].should eq(2)
     subject.parse('[00:00:00] Geti fell to her death').should eq(:fell)
-    subject.data.players['Geti'][:death].should eq(3)
+    subject.data.players['Geti'][:deaths].should eq(3)
   end
   it 'test cyanide' do
     subject.live = true
     subject.parse('[00:00:00] Geti took some cyanide').should eq(:cyanide)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
   end
   it 'test died' do
     subject.live = true
     subject.parse('[00:00:00] Geti died under falling rocks').should eq(:died)
-    subject.data.players['Geti'][:death].should eq(1)
+    subject.data.players['Geti'][:deaths].should eq(1)
   end
 
   it 'test ready threshold calculations' do
@@ -182,6 +182,24 @@ describe KAG::Server::Parser do
     subject.parse('[00:00:00] Vidar slew Ej with his sword').should eq(:slew)
     subject.parse('[00:00:00] Vidar slew WarrFork with his sword').should eq(:slew)
     subject.parse('[00:00:00] splittingred slew Vidar with his sword').should eq(:slew)
+  end
+
+  it 'test kills storage' do
+    subject.live = true
+    subject.parse('[00:00:00] Vidar slew Geti with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew splittingred with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Ardi_vaba with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Kalikst with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Ej with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Ej with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Ej with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew Ej with his sword').should eq(:slew)
+    subject.parse('[00:00:00] Vidar slew WarrFork with his sword').should eq(:slew)
+    subject.parse('[00:00:00] splittingred slew Vidar with his sword').should eq(:slew)
+
+    subject.data.kills['Vidar']['Geti'].should eq(1)
+    subject.data.kills['Vidar']['Ej'].should eq(4)
+    subject.data.kills['splittingred']['Vidar'].should eq(1)
   end
 
   it 'test archive' do

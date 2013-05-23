@@ -27,12 +27,21 @@ class Achievement < KAG::Model
       granted
     end
 
+    def grant(achievement,user)
+      achievement = Achievement.find_by_code(achievement,user)
+      if achievement
+        achievement.grant(user)
+      end
+    end
+
     def recent(limit = 20)
       Achievement.select('achievements.*,users.kag_user,user_achievements.created_at').joins('JOIN user_achievements ON achievements.id = user_achievements.achievement_id JOIN users ON users.id = user_achievements.user_id').order('user_achievements.created_at DESC, achievements.stat ASC, achievements.value ASC').limit(limit)
     end
   end
 
   def grant(user)
+    return false unless ::UserAchievement.where(:user_id => user.id,:achievement_id => self.id).count == 0
+
     puts "Granting #{self.code} to #{user.name}"
     ua = ::UserAchievement.new
     ua.user_id = user.id

@@ -56,6 +56,16 @@ class CreateTables < ActiveRecord::Migration
     end
     add_index :ignores, :user_id
 
+    create_table :kills do |t|
+      t.integer    :killer_id, :null => false, :default => 0
+      t.integer    :victim_id, :null => false, :default => 0
+      t.integer    :times, :null => false, :default => 0
+      t.integer    :streak, :null => false, :default => 0
+      t.timestamps
+    end
+    add_index :kills, :killer_id
+    add_index :kills, :victim_id
+
     create_table :matches do |t|
       t.integer    :server_id, :null => false, :default => 0
       t.integer    :num_players, :null => false, :default => 0

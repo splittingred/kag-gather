@@ -712,6 +712,9 @@ module KAG
 
           _add_stat(:kills,killer_clan,killer)
           _add_stat('kills.'+type.to_s,killer_clan,killer)
+          if !killer.nil? and !victim.nil?
+            _add_kill_record(killer,victim)
+          end
         end
       end
 
@@ -721,6 +724,13 @@ module KAG
       end
 
       protected
+
+      def _add_kill_record(killer,victim)
+        self.data[:kills] = {} unless self.data.key?(:kills)
+        self.data[:kills][killer.to_s] = {} unless self.data[:kills].key?(killer.to_s)
+        self.data[:kills][killer.to_s][victim.to_s] = 0 unless self.data[:kills][killer.to_s].key?(victim.to_s)
+        self.data[:kills][killer.to_s][victim.to_s] += 1
+      end
 
       def say(msg)
         if self.test

@@ -327,28 +327,33 @@ class User < KAG::Model
     s.save
   end
 
-  def kills(victim)
+  def kills(victim,return_value = true)
+    unless victim.class == User
+      victim = User.find_by_kag_user(victim)
+    end
+    return false if victim.class != User
+
     kills = Kill.where(:killer_id => self.id,:victim_id => victim.id).first
     unless kills
       kills = Kill.new
       kills.killer_id = self.id
       kills.victim_id = victim.id
     end
-    kills
+    return_value ? kills.times : kills
   end
 
-  def add_kill(victim,times = 1)
+  def add_kill(victim,num = 1)
     unless victim.class == User
       victim = User.find_by_kag_user(victim)
     end
     return false if victim.class != User
 
-    kills = self.kills(victim)
-    kills.times = kills.times.to_i + times
-    kills.streak = kills.streak.to_i + times
+    kills = self.kills(victim,false)
+    kills.times = kills.times.to_i + num
+    kills.streak = kills.streak.to_i + num
     kills.save
 
-    victim_kills = victim.kills(self)
+    victim_kills = victim.kills(self,false)
     victim_kills.streak = 0
     victim_kills.save
 

@@ -206,6 +206,7 @@ describe KAG::Server::Parser do
     subject.live = true
     subject.parse('[00:00:00] Vidar gibbed Geti into pieces')
     subject.parse('[00:00:00] Vidar slew Geti with his sword')
+    subject.data.kills['Vidar']['Geti'].should eq(2)
     subject.archive
     u = User.fetch('Geti')
     u.stat(:deaths).should eq(2)
@@ -214,5 +215,6 @@ describe KAG::Server::Parser do
     u = User.fetch('Vidar')
     u.stat(:kills).should eq(2)
     u.stat('kills.gibbed').should eq(1)
+    u.kills('Geti').should eq(2)
   end
 end

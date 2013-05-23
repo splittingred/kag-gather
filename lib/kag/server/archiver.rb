@@ -28,6 +28,9 @@ module KAG
         self.log.info '- Archiving k/d'
         self.record_kd
 
+        self.log.info '- Archiving PVP kill records'
+        self.record_kills
+
         KAG::Stats::Main.add_stat(:matches_completed)
 
         self.log.info '- Scoring all'

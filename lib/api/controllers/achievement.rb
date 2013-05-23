@@ -47,7 +47,6 @@ module KAG
               }
             end
 
-            d[:next] = ach.next_achievement.attributes
             d[:trajectory] = ach.trajectory
 
             self.success('',d)

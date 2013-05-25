@@ -84,15 +84,28 @@ class User < KAG::Model
     end
 
     def rank_top(num,return_string = true)
-      users = User.select('GROUP_CONCAT(`kag_user`) AS `kag_user`, `score`').where('score > 0').group('score').order('score DESC').limit(num)
+      users = User.select('GROUP_CONCAT(IFNULL(`clans`.`name`,""),"::",`kag_user`) AS `kag_user`, `users`.`score`').joins('LEFT JOIN `clans` ON `clans`.`id` = `users`.`clan_id`').where('`users`.`score` > 0').group('`users`.`score`').order('`users`.`score` DESC').limit(num)
       list = []
       idx = 1
       users.each do |u|
-        name = u.kag_user.split(',').join(', ')
+        ties = u.kag_user.split(',')
+        l = []
+        ties.each do |t|
+          t = t.split('::')
+          z = {}
+          if t.count > 1
+            z[:name] = t[1]
+            z[:clan] = t[0]
+          else
+            z[:name] = t[0]
+          end
+          l << z
+        end
         if return_string
+          name = l.join(', ')
           list << "##{idx}: #{name} - #{u.score.to_s}"
         else
-          list << {:name => name,:score => u.score}
+          list << {:users => l,:score => u.score}
         end
         idx += 1
       end

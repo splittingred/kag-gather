@@ -11,6 +11,10 @@ class User < KAG::Model
   has_many :gather_queues, :through => :gather_queue_players
   has_many :user_stats
   has_many :user_achievements
+  has_many :victim_kills, :class_name => 'Kill', :foreign_key => 'killer_id'
+  has_many :victims, :through => :victim_kills
+  has_many :killer_kills, :class_name => 'Kill', :foreign_key => 'victim_id'
+  has_many :killers, :through => :killer_kills
   belongs_to :clan
 
   class << self

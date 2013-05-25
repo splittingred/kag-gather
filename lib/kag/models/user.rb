@@ -455,4 +455,18 @@ class User < KAG::Model
 
     new_user.do_score
   end
+
+  def oppressors(threshold = 5)
+    list = SymbolTable.new
+    us = self.killers.select('users.*,kills.streak').where('kills.streak >= ?',threshold.to_i)
+    us.each {|u| list[u.kag_user] = u.streak }
+    list
+  end
+
+  def oppressing(threshold = 5)
+    list = SymbolTable.new
+    us = self.victims.select('users.*,kills.streak').where('kills.streak >= ?',threshold.to_i)
+    us.each {|u| list[u.kag_user] = u.streak }
+    list
+  end
 end

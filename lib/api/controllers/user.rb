@@ -48,8 +48,8 @@ module KAG
             end
             d[:achievements_close] = user.achievements_close
             d[:recent_matches] = user.recent_matches
-            d[:killers] = user.killers.select('users.*,kills.streak').where('kills.streak >= 5').map {|u| {u.name => u.streak.to_i}}
-            d[:victims] = user.victims.select('users.*,kills.streak').where('kills.streak >= 5').map {|u| {u.name => u.streak.to_i}}
+            d[:oppressors] = user.oppressors
+            d[:oppressing] = user.oppressing
             self.success('',d)
           else
             self.failure('err_nf',user)

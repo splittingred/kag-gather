@@ -29,6 +29,8 @@ module KAG
               data[:players] << u.name
             end
 
+            data[:matches] = Match.active
+
             self.success('',data)
           else
             self.failure('err_nf',c)

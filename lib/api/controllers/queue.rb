@@ -29,7 +29,12 @@ module KAG
               data[:players] << u.name
             end
 
-            data[:matches] = Match.active
+            actives = Match.active
+            l = []
+            actives.each do |a|
+              l << a.attributes
+            end
+            data[:matches] = l
 
             self.success('',data)
           else

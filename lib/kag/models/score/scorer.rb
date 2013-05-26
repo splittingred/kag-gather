@@ -20,7 +20,7 @@ module KAG
         :builder_loss => 4,
 
         :loss => 2.0,
-        :inactive_penalty_multiplier => 10,
+        :inactive_penalty_multiplier => 20,
         :match_percentage_multiplier => 400,
         :minimum_matches => 8,
       })

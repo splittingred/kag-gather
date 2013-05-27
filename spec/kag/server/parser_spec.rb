@@ -157,6 +157,14 @@ describe KAG::Server::Parser do
     subject._get_ready_threshold(6).should eq(6)
   end
 
+  it 'test !ready shortcuts' do
+    subject.live = false
+    subject.parse('[00:00:00] <Geti> !r a').should eq(:ready)
+    subject.ready.length.should eq(1)
+    subject.parse('[00:00:00] <Vidar> !ready K').should eq(:ready)
+    subject.ready.length.should eq(2)
+  end
+
   it 'test !ready and !unready' do
     subject.live = false
     subject.parse('[00:00:00] <Geti> !ready Archer').should eq(:ready)

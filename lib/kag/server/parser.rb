@@ -204,12 +204,28 @@ module KAG
         end
       end
 
+      def _class_interpret(cls)
+        cls = cls.to_s.strip.downcase.capitalize
+        case cls
+          when 'A'
+            cls = 'Archer'
+          when 'B'
+            cls = 'Builder'
+          when 'K'
+            cls = 'Knight'
+          else
+        end
+        cls
+      end
+
       def evt_ready_specified(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!r (.*))$/i) if match.nil?
         if match
           username = match[3].to_s.strip
           player_class = match[5].to_s.strip.downcase.capitalize
+          player_class = _class_interpret(player_class)
+
           unless username.empty? or player_class.empty?
             if %w(Archer Knight Builder).include?(player_class)
               team = get_team(username)

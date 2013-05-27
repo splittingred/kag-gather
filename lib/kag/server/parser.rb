@@ -385,8 +385,8 @@ module KAG
             self.sub_requests[player_to_sub] = [] unless self.sub_requests[player_to_sub]
             if already_sub_requested?(player_to_sub,player_requesting)
               say "You can only vote to request a sub for that person once, #{player_requesting}."
-            #elsif !can_sub_request?(player_to_sub,player_requesting)
-            #  say "You cannot request a sub for the other team, #{player_requesting}."
+            elsif !can_sub_request?(player_to_sub,player_requesting)
+              say "This user has already been subbed, #{player_requesting}."
             else
               self.sub_requests[player_to_sub] << player_requesting
               votes_needed = (self.players.length / 4).to_i
@@ -402,7 +402,7 @@ module KAG
                     say "Sub requested for #{player_to_sub}. Please stand by."
                     :request_sub
                   else
-                    say "Cannot find the User #{player_to_sub}. Try the person\'s authname or KAG account name instead."
+                    say "Cannot sub the User #{player_to_sub}. User is likely already subbed."
                   end
                 end
               else
@@ -423,11 +423,8 @@ module KAG
       def can_sub_request?(subbee,requestor)
         subbee_player = ::Player.fetch_by_kag_user(subbee)
         requestor_player = ::Player.fetch_by_kag_user(requestor)
-        if requestor_player and subbee_player
-          subbee_player.team_id == requestor_player.team_id
-        else
-          false
-        end
+
+        !::Substitution.exists(self.match,subbee_player)
       end
 
       def evt_nerf(msg)

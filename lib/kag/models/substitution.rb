@@ -18,11 +18,13 @@ class Substitution < KAG::Model
       team = match.get_team_for(player.user)
       return false unless team
 
+      return false if Substitution.exists(match,player)
+
       sub = Substitution.new
       sub.old_player_id = player.id
       sub.match_id = match.id
       sub.team_id = team.id
-      sub.status = "open"
+      sub.status = 'open'
       saved = sub.save
       if saved
         player.user.inc_stat(:desertions)
@@ -35,7 +37,36 @@ class Substitution < KAG::Model
     end
 
     def find_for(match)
-      Substitution.where(:match_id => match.id,:status => "open").first
+      Substitution.where(:match_id => match.id,:status => 'open').first
+    end
+
+    def exists(match,player)
+      Substitution.where(:match_id => match.id,:status => 'open',:old_player_id => player.id).first
+    end
+
+    def list_open
+      Substitution
+        .select('substitutions.*')
+        .select('matches.num_players')
+        .select('users.kag_user')
+        .select('servers.name')
+        .select('teams.name')
+        .select('players.cls')
+        .joins(:match)
+        .joins('INNER JOIN servers ON servers.id = matches.server_id')
+        .joins('INNER JOIN players ON players.id = substitutions.old_player_id')
+        .joins('INNER JOIN users ON users.id = players.user_id')
+        .joins('INNER JOIN teams ON teams.id = players.team_id')
+        .where('substitutions.status = ? AND matches.ended_at IS NULL','open')
+    end
+
+    def list_open_text
+      subs = ::Substitution.list_open
+      l = []
+      subs.each do |s|
+        l << "Match #{s.match_id}, #{s.name}, for user #{s.kag_user}. Type !sub #{s.id} to join."
+      end
+      l.join(" - ")
     end
   end
 
@@ -59,11 +90,12 @@ class Substitution < KAG::Model
     if player.save
       self.new_player_id = player.id
       self.status = 'taken'
-      saved = self.save
-      if saved
+      old_user = (self.old_player and self.old_player.user) ? self.old_player.user : nil
+      done = self.save
+      if done
         user.inc_stat(:substitutions)
-        if self.old_player and self.old_player.user
-          self.old_player.user.inc_stat(:substituted)
+        if old_user
+          old_user.inc_stat(:substituted)
         end
         true
       else

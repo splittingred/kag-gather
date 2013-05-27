@@ -167,7 +167,7 @@ class Match < KAG::Model
   end
 
   def get_player_for(user)
-    Player.where(:user_id => user.id,:match_id => self.id).first
+    Player.where(:user_id => user.id,:match_id => self.id,:deserted => false).first
   end
 
   def remove_player(user)

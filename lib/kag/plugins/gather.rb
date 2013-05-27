@@ -76,6 +76,13 @@ module KAG
         end
       end
 
+      command :open_subs,{},
+        summary: 'List any open substitution positions.',
+        description: 'List any open substitution spots that you can sub into.'
+      def open_subs(m)
+        reply m, ::Substitution.list_open_text
+      end
+
       command :add,{},
         summary: 'Add yourself to the active queue for the next match'
       def add(m)

@@ -13,7 +13,7 @@ class Player < KAG::Model
     def is_playing?(user)
       kag_user = user.class == String ? user : user.kag_user
 
-      !Player.select('*').joins(:match).joins(:user).where(:matches => {:ended_at => nil},:users => {:kag_user => kag_user}).first.nil?
+      !Player.select('*').joins(:match).joins(:user).where(:deserted => false,:matches => {:ended_at => nil},:users => {:kag_user => kag_user}).first.nil?
     end
   end
 end

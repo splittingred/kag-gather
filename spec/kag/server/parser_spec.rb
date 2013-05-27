@@ -202,6 +202,16 @@ describe KAG::Server::Parser do
     subject.data.kills['splittingred']['Vidar'].should eq(1)
   end
 
+  it 'test give_win' do
+    subject.live = true
+    subject.parse('[00:00:00] <[=] splittingred> !give_win Red Team').should eq(:gave_win)
+    subject.data[:wins]['Red Team'].should eq(1)
+    subject.live = true
+    subject.parse('[00:00:00] <[=] splittingred> !give_win Blue Team').should eq(:gave_win)
+    subject.parse('[00:00:00] <xCube Ej> !give_win Blue Team').should_not eq(:gave_win)
+    subject.data[:wins]['Blue Team'].should eq(1)
+  end
+
   it 'test archive' do
     subject.live = true
     subject.parse('[00:00:00] Vidar gibbed Geti into pieces')

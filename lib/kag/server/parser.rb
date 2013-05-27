@@ -64,6 +64,7 @@ module KAG
       event :evt_say, %w(!say @)
       event :evt_hello, '!hello'
       event :evt_nerf, '!nerf'
+      event :evt_give_win, /^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!give_win (.*))$/i
 
       event :evt_round_win, /^(.+) (wins the game!)$/, :live
       event :evt_kill, /^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/, :live
@@ -245,6 +246,27 @@ module KAG
           username = match[3].to_s.strip
           if is_admin?(username)
             start
+          end
+        end
+      end
+
+      def evt_give_win(msg)
+        match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!give_win (.*))$/i)
+        if match and match[5]
+          username = match[3].to_s.strip
+          if is_admin?(username)
+            winner = match[5].to_s.strip
+            self.data[:wins][winner] = 0 unless self.data[:wins].key?(winner)
+            self.data[:wins][winner] += 1
+            say 'Score is now: '+_get_score
+            if _team_has_won
+              end_match unless self.test
+            else
+              begin
+                broadcast "#{winner} has won a round on match #{self.match.id}. Score: #{_get_score}"
+              end
+            end
+            :gave_win
           end
         end
       end

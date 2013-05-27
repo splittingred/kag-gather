@@ -51,6 +51,6 @@ class Team < KAG::Model
     self.users(true).where(:players => {:deserted => 0}).each do |user|
       ps << user.name
     end
-    ps.join(", ")
+    ps.join(', ')
   end
 end

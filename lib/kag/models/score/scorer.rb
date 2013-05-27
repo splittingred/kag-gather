@@ -21,6 +21,7 @@ module KAG
 
         :loss => 2.0,
         :inactive_penalty_multiplier => 20,
+        :inactive_penalty_days => 5.00,
         :match_percentage_multiplier => 400,
         :minimum_matches => 8,
       })
@@ -76,7 +77,7 @@ module KAG
         last_match = @user.matches.where('end_votes = 0 AND ended_at IS NOT NULL').last
         if last_match
           days_since_last_match = (Time.now - last_match.ended_at) / 86400
-          if days_since_last_match > 4.00
+          if days_since_last_match > @ratios[:inactive_penalty_days]
             score -= (days_since_last_match * @ratios[:inactive_penalty_multiplier])
           end
         end

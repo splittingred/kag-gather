@@ -39,13 +39,11 @@ class Team < KAG::Model
   end
 
   def has_player?(name)
-    has = false
-    self.users(true).each do |user|
-      if user.name == name
-        has = true
-      end
-    end
-    has
+    ct = ::Player
+      .select('players.*,users.kag_user')
+      .joins('JOIN users ON users.id = players.user_id')
+      .where('players.deserted = ? AND players.match_id = ? AND players.team_id = ? AND users.kag_user = ?',0,self.match.id,self.id,name).count
+    ct > 0
   end
 
   def player_list

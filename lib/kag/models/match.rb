@@ -33,6 +33,17 @@ class Match < KAG::Model
       ts = (ms / 2).ceil
       "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
+
+    def list_open
+      Match.select('*,servers.name AS server_name').joins(:server).where('matches.ended_at IS NULL')
+    end
+    def list_open_text
+      l = []
+      Match.list_open.each do |m|
+        l << m.server_name
+      end
+      l.length > 0 ? l.length.to_s+' matches in progress: '+l.join(', ') : 'No open matches currently.'
+    end
   end
 
   def start

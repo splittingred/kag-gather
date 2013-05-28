@@ -64,7 +64,7 @@ class Substitution < KAG::Model
       subs = ::Substitution.list_open
       l = []
       subs.each do |s|
-        l << "Match #{s.match_id}, #{s.name}, for user #{s.kag_user}. Type !sub #{s.id} to join."
+        l << "Match #{s.match_id}, #{s.name}, for user #{s.kag_user}. Type !sub #{s.match_id} to join."
       end
       l.length > 0 ? l.join(' - ') : 'No open sub spots available at this time.'
     end

@@ -97,6 +97,12 @@ class Substitution < KAG::Model
         if old_user
           old_user.inc_stat(:substituted)
         end
+
+        q = ::GatherQueue.first
+        if q and q.has_player?(user)
+          q.remove(user)
+        end
+
         true
       else
         false

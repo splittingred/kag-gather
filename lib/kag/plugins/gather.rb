@@ -144,6 +144,17 @@ module KAG
         reply m,::Match.list_open_text
       end
 
+      command :match,{match_id: :integer},
+        summary: 'Show information about the specified match.',
+        method: :match_info
+      def match_info(m,id)
+        mt = ::Match.find(id)
+        if mt
+          m.user.send mt.info_text
+        end
+      end
+
+
       command :end,{},
         summary: 'End the current match',
         description: 'End the current match. This will only work if you are in the match. After !end is called by 3 different players, the match will end.'

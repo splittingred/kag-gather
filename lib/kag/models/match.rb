@@ -30,14 +30,13 @@ class Match < KAG::Model
       ts = (ms / 2).ceil
       "#{ts.to_s}v#{ts.to_s} #{KAG::Config.instance[:match_type]}"
     end
-
     def list_open
-      Match.select('*,servers.name AS server_name').joins(:server).where('matches.ended_at IS NULL')
+      Match.select('matches.*,servers.name AS server_name').joins(:server).where('matches.ended_at IS NULL')
     end
     def list_open_text
       l = []
       Match.list_open.each do |m|
-        l << m.server_name
+        l << "##{m.id}: #{m.server_name}"
       end
       l.length > 0 ? l.length.to_s+' matches in progress: '+l.join(', ') : 'No open matches currently.'
     end
@@ -273,4 +272,40 @@ class Match < KAG::Model
     end
     winner
   end
+
+  def info
+    players = Player
+      .joins('INNER JOIN users ON users.id = players.user_id')
+      .joins('INNER JOIN teams ON teams.id = players.team_id')
+      .select('players.*')
+      .select('teams.name AS team_name, teams.color AS team_color')
+      .select('users.kag_user AS kag_user')
+      .where('players.match_id = ? AND players.deserted = ?',self.id,0)
+      .order('teams.name ASC, users.kag_user ASC')
+
+    list = []
+    players.each do |p|
+      list << SymbolTable.new(p.attributes)
+    end
+    list
+  end
+  def info_text
+    txt = []
+    players = self.info
+    ct = players.first.team_name.to_s
+    cc = players.first.team_color
+    team_players = []
+    players.each do |p|
+      unless ct == p.team_name.to_s
+        txt << cc+' '+ct+': '+team_players.join(', ')
+        team_players = []
+        ct = p.team_name.to_s
+        cc = p.team_color
+      end
+      team_players << p.kag_user
+    end
+    txt << cc+ct+': '+team_players.join(', ')
+    self.server.name+': '+txt.join(" \x0303VS ")
+  end
+
 end

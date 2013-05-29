@@ -126,6 +126,8 @@ module KAG
           elsif @queue.has_player?(user)
             @queue.remove(user)
             #m.user.unmonitor
+          else
+            puts "User #{user.name} is not in queue or match!"
           end
         end
       end

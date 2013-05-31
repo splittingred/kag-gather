@@ -501,12 +501,6 @@ module KAG
       end
       def evt_round_started(msg)
         #broadcast "Match has started on #{self.server[:key]}"
-        unless self.live
-          self.live = true
-          self.restart_queue = []
-          self.units_depleted = false
-          say 'Round is now LIVE!'
-        end
         :round_start
       end
       def evt_round_ended(msg)

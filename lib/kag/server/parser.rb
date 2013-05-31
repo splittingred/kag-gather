@@ -488,6 +488,7 @@ module KAG
       # stats events
 
       def evt_units_depleted(msg)
+        self.units_depleted = true
         :units_depleted
       end
       def evt_map_restart(msg)
@@ -674,9 +675,9 @@ module KAG
           if self.killstreaks[victim].to_i > 0
             if self.killstreaks[victim] >= killstreak_threshold # if they're on a killstreak
               if killer.nil? # died without killer
-                say "#{victim}'s killstreak was ended at #{self.killstreaks[victim].to_s}"
+                say "#{victim}'s killstreak was ended at #{self.killstreaks[victim].to_s}" unless self.units_depleted
               else # killed by someone else
-                say "#{killer.to_s.strip} ended #{victim}'s killstreak of #{self.killstreaks[victim].to_s}"
+                say "#{killer.to_s.strip} ended #{victim}'s killstreak of #{self.killstreaks[victim].to_s}" unless self.units_depleted
                 self._add_stat(:ended_others_killstreak,killer_clan,killer)
               end
             end
@@ -691,7 +692,7 @@ module KAG
           end
 
           if self.deathstreaks[victim] == deathstreak_threshold
-            say "#{victim} is on a death streak!"
+            say "#{victim} is on a death streak!" unless self.units_depleted
             self._add_stat(:deathstreaks,victim_clan,victim)
           end
 
@@ -708,24 +709,24 @@ module KAG
           end
 
           if self.killstreaks[killer] == killstreak_threshold
-            say "#{killer} is on a kill streak!"
+            say "#{killer} is on a kill streak!" unless self.units_depleted
             self._add_stat(:killstreaks,killer_clan,killer)
           elsif self.killstreaks[killer] == 10
-            say "#{killer} is on a 10 kill streak! Wow!"
+            say "#{killer} is on a 10 kill streak! Wow!" unless self.units_depleted
             self._add_stat(:killstreak_10,killer_clan,killer)
             cls = get_class(killer).downcase.capitalize
             if cls == 'Builder'
               self._add_stat(:bloody_hammer,killer_clan,killer)
             end
           elsif self.killstreaks[killer] == 20
-            say "#{killer} is on a 20 kill streak! Hot!"
+            say "#{killer} is on a 20 kill streak! Hot!" unless self.units_depleted
             self._add_stat(:killstreak_20,killer_clan,killer)
             cls = get_class(killer).downcase.capitalize
             if cls == 'Archer'
               self._add_stat(:dead_eye,killer_clan,killer)
             end
           elsif self.killstreaks[killer] == 30
-            say "#{killer} is on a 30 kill streak! OMG run away!"
+            say "#{killer} is on a 30 kill streak! OMG run away!" unless self.units_depleted
             self._add_stat(:killstreak_30,killer_clan,killer)
             cls = get_class(killer).downcase.capitalize
             if cls == 'Knight'
@@ -736,9 +737,9 @@ module KAG
           if self.deathstreaks[killer].to_i > 0
             if self.deathstreaks[killer] >= deathstreak_threshold # if they're on a deathstreak
               if victim.nil? # killed without victim
-                say "#{killer}'s deathstreak was ended at #{self.deathstreaks[killer].to_s}"
+                say "#{killer}'s deathstreak was ended at #{self.deathstreaks[killer].to_s}" unless self.units_depleted
               else # killed someone else
-                say "#{victim} ended #{killer}'s deathstreak of #{self.deathstreaks[killer].to_s}"
+                say "#{victim} ended #{killer}'s deathstreak of #{self.deathstreaks[killer].to_s}" unless self.units_depleted
                 self._add_stat(:ended_others_deathstreak,victim_clan,victim)
               end
             end

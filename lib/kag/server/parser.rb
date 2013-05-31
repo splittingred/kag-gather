@@ -65,11 +65,11 @@ module KAG
       event :evt_hello, '!hello'
       event :evt_nerf, '!nerf'
       event :evt_give_win, /^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!give_win (.*))$/i
+      event :evt_round_started, '*Match Started*'
 
       event :evt_round_win, /^(.+) (wins the game!)$/, :live
       event :evt_kill, /^(.+) (slew|gibbed|shot|hammered|pushed|assisted|squashed|fell|took|died) (.+)$/, :live
       event :evt_units_depleted, "Can't spawn units depleted", :live
-      event :evt_round_started, '*Match Started*', :live
       event :evt_round_ended, '*Match Ended*', :live
       event :evt_restart, '!restart', :live
 
@@ -501,6 +501,12 @@ module KAG
       end
       def evt_round_started(msg)
         #broadcast "Match has started on #{self.server[:key]}"
+        unless self.live
+          self.live = true
+          self.restart_queue = []
+          self.units_depleted = false
+          say 'Round is now LIVE!'
+        end
         :round_start
       end
       def evt_round_ended(msg)
@@ -644,22 +650,22 @@ module KAG
 
         # squashed
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) was squashed under a collapse$/))
-          _add_kill(match[1],match[2],nil,:squashed)
+          _add_kill(match[1],match[2],nil,nil,:squashed)
           :squashed
 
         # fell
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) fell (?:(?:to (?:his|her) death)|(?:on a spike trap))$/))
-          _add_kill(match[1],match[2],nil,:fell)
+          _add_kill(match[1],match[2],nil,nil,:fell)
           :fell
 
         # cyanide
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) took some cyanide$/))
-          _add_kill(match[1],match[2],nil,:cyanide)
+          _add_kill(match[1],match[2],nil,nil,:cyanide)
           :cyanide
 
         # died
         elsif (match = msg.match(/^(.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) died under falling rocks$/))
-          _add_kill(match[1],match[2],nil,:died)
+          _add_kill(match[1],match[2],nil,nil,:died)
           :died
         else
           :unknown

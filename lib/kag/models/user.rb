@@ -214,7 +214,7 @@ class User < KAG::Model
   def recent_matches(limit = 10,offset = 0)
     list = []
     Match.select('matches.*,teams.name AS team_name,players.cls,players.is_sub,players.deserted')
-             .joins('INNER JOIN players ON players.user_id = '+self.id.to_s+' AND matches.id = players.match_id')
+             .joins('INNER JOIN players ON players.user_id = '+self.id.to_s+' AND matches.id = players.match_id AND players.deserted = 0')
              .joins('INNER JOIN teams ON players.team_id = teams.id')
              .where('end_votes = 0 AND ended_at IS NOT NULL')
              .limit(limit).offset(offset).order('ended_at DESC').each do |m|

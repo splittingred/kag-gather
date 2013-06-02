@@ -25,6 +25,13 @@ module KAG
         end
       end
 
+      match /speak (.*)/, method: :speak
+      def speak(m,msg)
+        if is_admin(m.user)
+          send_channels_msg msg
+        end
+      end
+
       command :refresh,{},
         summary: "Refresh your AUTH status",
         method: :refresh,

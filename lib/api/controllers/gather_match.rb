@@ -17,7 +17,7 @@ module KAG
               data[:teams] = {}
               match.teams.each do |team|
                 players = {}
-                team.users.each do |user|
+                team.users.where('players.deserted = 0').each do |user|
                   if data[:stats].key?('claims')
                     cls = data[:stats]['claims'].key?(user.kag_user) ? data[:stats]['claims'][user.kag_user] : ''
                   else

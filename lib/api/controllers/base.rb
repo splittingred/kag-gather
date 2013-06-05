@@ -90,6 +90,7 @@ module KAG
             else
               puts "Class #{class_name} does not exist!"
             end
+            ActiveRecord::Base.connection.close
             result
           end
 

@@ -24,6 +24,7 @@ module KAG
             user = ::User.where(:id => id).first
           end
           if user
+
             d = SymbolTable.new(user.attributes)
             d[:stats] = {}
             user.stats.each do |s|
@@ -38,18 +39,30 @@ module KAG
             d.delete(:nick)
             d[:rank] = user.rank
 
+            limit = @params[:achievements_limit] || 20
+            offset = @params[:achievements_offset] || 0
             d[:achievements] = {}
-            user.achievements.each do |ach|
+            user.achievements.limit(limit).offset(offset).each do |ach|
               d[:achievements][ach.code] = {
                   :name => ach.name,
                   :description => ach.description,
                   :code => ach.code
               }
             end
-            d[:achievements_close] = user.achievements_close
-            d[:recent_matches] = user.recent_matches
-            d[:oppressors] = user.oppressors
-            d[:oppressing] = user.oppressing
+            limit = @params[:achievements_close_limit] || 20
+            offset = @params[:achievements_close_offset] || 0
+            d[:achievements_close] = user.achievements_close(limit,offset)
+
+            limit = @params[:recent_matches_limit] || 10
+            offset = @params[:recent_matches_offset] || 0
+            d[:recent_matches] = user.recent_matches(limit,offset)
+
+            limit = @params[:oppressors_limit] || 10
+            offset = @params[:oppressors_offset] || 0
+            d[:oppressors] = user.oppressors(limit,offset)
+            limit = @params[:oppressing_limit] || 10
+            offset = @params[:oppressing_offset] || 0
+            d[:oppressing] = user.oppressing(limit,offset)
             self.success('',d)
           else
             self.failure('err_nf',user)
@@ -57,7 +70,12 @@ module KAG
         end
 
         def list
-          c = ::User.where(@params).order('score DESC')
+          limit = @params[:limit] || 20
+          offset = @params[:offset] || 0
+          w = @params.dup
+          w.delete(:offset)
+          w.delete(:limit)
+          c = ::User.where(w).order('score DESC').limit(limit).offset(offset)
           if c
             us = []
             c.each do |u|

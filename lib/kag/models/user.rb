@@ -192,9 +192,9 @@ class User < KAG::Model
     l
   end
 
-  def achievements_close(range = 0.75)
+  def achievements_close(limit = 10,offset = 0,range = 0.75)
     list = SymbolTable.new
-    Achievement.select('achievements.*,user_stats.value AS current').joins('JOIN user_stats ON achievements.stat = user_stats.name').where(:user_stats => {:user_id => self.id}).order('achievements.stat ASC, achievements.value ASC').each do |ach|
+    Achievement.select('achievements.*,user_stats.value AS current').joins('JOIN user_stats ON achievements.stat = user_stats.name').where(:user_stats => {:user_id => self.id}).order('achievements.stat ASC, achievements.value ASC').limit(limit).offset(offset).each do |ach|
       op = ach.operator.to_sym
       target = ach.value.to_i
       proximity = target * range
@@ -469,16 +469,16 @@ class User < KAG::Model
     new_user.do_score
   end
 
-  def oppressors(threshold = 5)
+  def oppressors(limit = 10,offset = 0,threshold = 5)
     list = SymbolTable.new
-    us = self.killers.select('users.*,kills.streak').where('kills.streak >= ?',threshold.to_i).order('kills.streak DESC,users.kag_user ASC')
+    us = self.killers.select('users.*,kills.streak').where('kills.streak >= ?',threshold.to_i).order('kills.streak DESC,users.kag_user ASC').limit(limit).offset(offset)
     us.each {|u| list[u.kag_user] = u.streak }
     list
   end
 
-  def oppressing(threshold = 5)
+  def oppressing(limit = 10,offset = 0,threshold = 5)
     list = SymbolTable.new
-    us = self.victims.select('users.*,kills.streak').where('kills.streak >= ?',threshold.to_i).order('kills.streak DESC,users.kag_user ASC')
+    us = self.victims.select('users.*,kills.streak').where('kills.streak >= ?',threshold.to_i).order('kills.streak DESC,users.kag_user ASC').limit(limit).offset(offset)
     us.each {|u| list[u.kag_user] = u.streak }
     list
   end

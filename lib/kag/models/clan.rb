@@ -152,4 +152,16 @@ class Clan < KAG::Model
   def rank
     Clan.select('DISTINCT `score`').where('score > ?',self.score).order('score DESC').count + 1
   end
+
+  def users_as_hash
+    list = {}
+    self.users.all(:order => 'score DESC').each do |u|
+      list[u.name] = {
+          :name => u.name,
+          :score => u.score,
+          :rank => u.rank
+      }
+    end
+    list
+  end
 end

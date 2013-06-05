@@ -11,10 +11,11 @@ module KAG
           if name.empty?
             self.failure('err_ns')
           else
-            limit = @params[:limit] || 20
+            limit = @params[:limit] || 10
+            offset = @params[:offset] || 10
             times = ::ClanStat.where(:name => name).sum('value')
             clans_count = ::ClanStat.select('*,clans.name').joins(:clan).where(:clan_stats => {:name => name}).count
-            clans = ::ClanStat.select('*,clans.name').joins(:clan).where(:clan_stats => {:name => name}).limit(limit).order('value DESC')
+            clans = ::ClanStat.select('*,clans.name').joins(:clan).where(:clan_stats => {:name => name}).limit(limit).offset(offset).order('value DESC')
             list = []
             clans.each do |c|
               times = ::UserStat.where(:name => name).sum('value')

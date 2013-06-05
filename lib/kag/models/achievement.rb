@@ -54,12 +54,12 @@ class Achievement < KAG::Model
     User.joins(:user_achievements).select('users.*,user_stats.value').joins('INNER JOIN user_stats ON users.id = user_stats.user_id AND user_stats.name = "'+self.stat+'"').where(:user_achievements => {:achievement_id => self.id}).order('value DESC')
   end
 
-  def users_close(range = 0.75)
+  def users_close(limit = 20,offset = 0,range = 0.75)
     list = SymbolTable.new
     op = self.operator.to_sym
     value = self.value.to_i
     proximity = value * range
-    UserStat.select('user_stats.*,users.kag_user').joins(:user).where(:name => self.stat).order('user_stats.value DESC').each do |stat|
+    UserStat.select('user_stats.*,users.kag_user').joins(:user).where(:name => self.stat).order('user_stats.value DESC').limit(limit).offset(offset).each do |stat|
       if stat.value.to_i.send(op,proximity) and stat.value < value
         list[stat.kag_user] = stat.value
       end
@@ -67,12 +67,32 @@ class Achievement < KAG::Model
     list
   end
 
-  def users_as_list
+  def users_as_list(limit = 20,offset = 0)
     l = {}
-    self.users.select('users.*,user_stats.value').joins('INNER JOIN user_stats ON users.id = user_stats.user_id AND user_stats.name = "'+self.stat+'"').order('value DESC').each do |u|
-      l[u.name] = u.value
+    l[:total] = self.users.joins('INNER JOIN user_stats ON users.id = user_stats.user_id AND user_stats.name = "'+self.stat+'"').count
+    l[:results] = {}
+    l[:offset] = offset
+
+    self.users.select('users.*,user_stats.value')
+      .joins('INNER JOIN user_stats ON users.id = user_stats.user_id AND user_stats.name = "'+self.stat+'"')
+      .limit(limit).offset(offset)
+      .order('user_stats.value DESC').each do |u|
+      l[:results][u.kag_user] = u.value
     end
     l
+  end
+
+  def related(limit = 10,offset = 0)
+    tag = self.code.split('.').first.split('-').first
+    list = []
+    Achievement.where('code LIKE "%'+tag+'%" AND id != ?',self.id).order('stat ASC, value ASC').limit(limit).offset(offset).each do |a|
+      list << {
+        :code => a.code,
+        :name => a.name,
+        :description => a.description
+      }
+    end
+    list
   end
 
   def prior_achievement

@@ -24,28 +24,15 @@ module KAG
             ach = ::Achievement.where(:id => id).first
           end
           if ach
+
+            limit = (@params[:limit] || 20).to_i
+            offset = (@params[:offset] || 0).to_i
+
             d = SymbolTable.new(ach.attributes)
-            d[:users] = {}
-            ach.users.each do |u|
-              d[:users][u.name] = {
-                  :name => u.name,
-                  :score => u.score,
-                  :rank => u.rank,
-                  :value => u.value
-              }
-            end
+            d[:users] = ach.users_as_list(limit,offset)
+            d[:users_close] = ach.users_close(limit,offset)
 
-            d[:users_close] = ach.users_close
-
-            tag = ach.code.split('.').first.split('-').first
-            d[:related] = []
-            ::Achievement.where('code LIKE "%'+tag+'%" AND id != ?',ach.id).order('stat ASC, value ASC').each do |a|
-              d[:related] << {
-                :code => a.code,
-                :name => a.name,
-                :description => a.description
-              }
-            end
+            d[:related] = ach.related
 
             d[:trajectory] = ach.trajectory
 
@@ -60,12 +47,11 @@ module KAG
           start = @params[:start] || 0
 
           total = ::Achievement.count
-          achievements = ::Achievement.order('stat ASC, value ASC').offset(start).limit(limit)
+          achievements = ::Achievement.select('`achievements`.*, (SELECT COUNT(*) FROM `user_achievements` WHERE `achievement_id` = `achievements`.`id`) AS `users`').order('stat ASC, value ASC').offset(start).limit(limit)
           if achievements
             list = []
             achievements.each do |achievement|
               data = SymbolTable.new(achievement.attributes)
-              data[:users] = achievement.users_as_list
               list << data
             end
             self.collection(list,total)

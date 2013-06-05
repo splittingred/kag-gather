@@ -8,6 +8,7 @@ nbproject
 # config files
 config/config.json
 config/data.json
+config/thin.yml
 
 # log stuff
 log/*.log

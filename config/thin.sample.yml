@@ -1,0 +1,15 @@
+---
+     environment: development
+     chdir: "/paas/home/splittingred/rgather"
+     address: 127.0.0.1
+     user: www-data
+     group: www-data
+     port: 50313
+     pid: "/paas/home/splittingred/rgather/tmp/stats.pid"
+     rackup: "/paas/home/splittingred/rgather/config.ru"
+     log: "/paas/home/splittingred/rgather/log/rest.log"
+     max_conns: 1024
+     timeout: 30
+     servers: 1
+     max_persistent_conns: 512
+     daemonize: false

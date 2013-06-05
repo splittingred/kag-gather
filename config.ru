@@ -4,11 +4,7 @@
 require 'rubygems'
 require 'sinatra'
 
-# we need to manually specify where our views live
-Sinatra::Application.default_options.merge!(
-  :run => false,
-  :env => :production 
-) 
+set :run, false
 
 # then load and run the application
 load 'lib/server.rb'

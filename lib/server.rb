@@ -16,7 +16,6 @@ if env == :production
 end
 set :server, %w[thin mongrel webrick]
 set :port, 50313
-set :run, true
 
 get "/*" do
   KAG::API::Controller::Base.route('get',params)

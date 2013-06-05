@@ -81,16 +81,20 @@ class Achievement < KAG::Model
 
   def trajectory(list = [])
     current = self
-    until (prior = current.prior_achievement).nil?
+    limit = 0
+    until (prior = current.prior_achievement).nil? or limit > 10
       list << prior.attributes
       current = prior
+      limit += 1
     end
     list.reverse!
     list << self.attributes.merge({:current => true})
     current = self
-    until (na = current.next_achievement).nil?
+    limit = 0
+    until (na = current.next_achievement).nil? or limit > 10
       list << na.attributes
       current = na
+      limit += 1
     end
     list
   end

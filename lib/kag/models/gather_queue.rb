@@ -24,7 +24,7 @@ class GatherQueue < KAG::Model
     !self.player(user).nil?
   end
 
-  def add(user,silent = false)
+  def add(user,silent = false,preference = false)
     if self.has_player?(user)
       "#{user.name} is already in the queue!"
     else
@@ -40,9 +40,18 @@ class GatherQueue < KAG::Model
             :user_id => user.id,
             :created_at => Time.now
           })
+
+          if preference
+            preference = preference.to_s.upcase
+            unless %w(EU US AUS).include?(preference)
+              preference = nil
+            end
+          end
+          gp.server_preference = preference if preference
           added = gp.save
           if added
-            KAG.gather.send_channels_msg "Added #{user.name} to queue (#{::Match.type_as_string}) [#{self.length}]" unless silent
+            preference_vote = preference ? " with vote for #{preference}" : ''
+            KAG.gather.send_channels_msg "Added #{user.name} to queue#{preference_vote} (#{::Match.type_as_string}) [#{self.length}]" unless silent
             user.inc_stat(:adds)
             KAG::Stats::Main.add_stat(:adds)
             check_for_new_match
@@ -111,7 +120,7 @@ class GatherQueue < KAG::Model
   # Start the match from the queue and reset it
   #
   def start_match
-    server = ::Server.find_unused
+    server = ::Server.find_unused(self)
     unless server
       return false
     end

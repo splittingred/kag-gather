@@ -37,6 +37,7 @@ class CreateTables < ActiveRecord::Migration
     create_table :gather_queue_players do |t|
       t.integer :gather_queue_id, :null => false, :default => 0
       t.integer :user_id, :null => false, :default => 0
+      t.string  :server_preference, :limit => 100, :null => true
       t.timestamps
     end
     add_index :gather_queue_players, :gather_queue_id
@@ -107,6 +108,7 @@ class CreateTables < ActiveRecord::Migration
       t.string     :rcon_password, :limit => 100
       t.integer    :in_use, :limit => 11
       t.string     :status, :limit => 100, :default => 'inactive'
+      t.string     :region, :limit => 100, :default => ''
       t.timestamps
     end
 

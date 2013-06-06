@@ -9,8 +9,32 @@ class Server < KAG::Model
   attr_accessor :match_in_progress
   attr_accessor :listener,:match_data
 
-  def self.find_unused
-    Server.where(:in_use => false,:status => "active").order("RAND()").first
+  def self.find_unused(queue = nil)
+    if queue
+      votes = {}
+      queue.gather_queue_players.each do |p|
+        if p.server_preference
+          votes[p.server_preference] = 0 unless votes[p.server_preference]
+          votes[p.server_preference] += 1 if p.server_preference
+        end
+      end
+
+      s = nil
+      if votes.count > 0
+        h = votes.max_by{|k,v| v}
+        if h[0]
+          region = h[0].to_s
+          s = Server.where(:in_use => false,:status => 'active',:region => region).order('RAND()').first
+        end
+      end
+
+      unless s
+        s = Server.where(:in_use => false,:status => 'active').order('RAND()').first
+      end
+      s
+    else
+      Server.where(:in_use => false,:status => 'active').order('RAND()').first
+    end
   end
 
 
@@ -38,16 +62,16 @@ class Server < KAG::Model
   end
 
   def stop
-    puts "Attempting to stop"
+    puts 'Attempting to stop'
     unless self.listener
-      puts "attempting celluloid registry lookup"
+      puts 'attempting celluloid registry lookup'
       self.listener = KAG::Listener[self.name.to_sym]
     end
     if self.listener
-      puts "Found listener, now stopping..."
+      puts 'Found listener, now stopping...'
       begin
         self.listener.async.stop_listening
-        puts "Stopped, terminating thread"
+        puts 'Stopped, terminating thread'
       rescue Exception => e
         puts e.message
         puts e.backtrace.join("\n")
@@ -55,7 +79,7 @@ class Server < KAG::Model
     end
 
     self.listener = nil
-    puts "Thread terminated"
+    puts 'Thread terminated'
     self.match_in_progress = nil
 
     self.in_use = 0

@@ -102,6 +102,26 @@ module KAG
         end
       end
 
+      command :add,{preference: :string},
+        summary: 'Add yourself to the active queue for the next match, preferring a specific server type',
+        method: :add_with_preference
+      def add_with_preference(m,preference)
+        u = ::User.fetch(m.user)
+        if u
+          u.synchronize(m.user)
+          if u.linked?
+            r = @queue.add(u,false,preference)
+            if r === true
+              #m.user.monitor
+            else
+              reply m,r
+            end
+          else
+            m.user.notice "Hi #{m.user.nick}, you need to link your KAG account to your IRC AUTH name first before playing in a match. This is needed for in-game management and stats collection. Type !link to get started."
+          end
+        end
+      end
+
       match /say ((?:\w+\S){2})(.*)/, method: :say
       def say(m,server,msg)
         if is_admin(m.user)
@@ -244,17 +264,21 @@ module KAG
         end
       end
 
-      command :add,{names: :string},
+      command :add,{preference: :string,names: :string},
         summary: 'Add a specific user to the queue',
         method: :add_admin,
         admin: true
-      def add_admin(m, names)
+      def add_admin(m, preference, names = nil)
+        if names.to_s.empty?
+          names = preference
+          preference = nil
+        end
         if is_admin(m.user)
           names = names.split(',')
           names.each do |name|
             user = ::User.fetch(name)
             if user
-              r = @queue.add(user)
+              r = @queue.add(user,false,preference)
               unless r === true
                 reply m,r
               end

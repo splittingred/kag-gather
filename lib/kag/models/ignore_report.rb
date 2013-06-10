@@ -97,10 +97,7 @@ class IgnoreReport < KAG::Model
   #
   def check_for_ignore_limit
     ban_points = IgnoreReport.where(:user_id => self.user_id).count
-    #matches_count = self.user.matches.count
-
-    matches_count = 4
-
+    matches_count = self.user.matches.count
     match_leniency = 2.5
     num_days = 1
     ban_time = ((24*num_days) * (ban_points - (matches_count / match_leniency)) * (1.2 ** ban_points)).floor

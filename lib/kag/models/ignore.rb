@@ -10,14 +10,18 @@ class Ignore < KAG::Model
     ##
     # See if the user is banned
     #
-    # @param [User] authname
+    # @param [User] user
     # @return [Boolean] True if banned
     #
     def is_ignored?(user)
       unless Ignore.cached
         Ignore._fetch_cache
       end
-      Ignore._cache.include?(user.kag_user)
+      if user.respond_to?(:kag_user)
+        Ignore._cache.include?(user.kag_user)
+      else
+        false
+      end
     end
 
     ##
@@ -86,7 +90,12 @@ class Ignore < KAG::Model
     end
 
     def list
-      Ignore.joins(:user).pluck(:kag_user).join(', ')
+      bans = Ignore.select('ignores.*,users.kag_user').joins(:user).where('ignores.ends_at IS NULL OR ignores.ends_at > ?',Time.now.to_s(:db))
+      l = []
+      bans.each do |b|
+        l << "#{b.kag_user}: for '#{b.reason}' ending at: #{b.ends_at.to_s(:long)}"
+      end
+      l.join('; ')
     end
   end
 

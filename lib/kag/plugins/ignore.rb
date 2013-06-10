@@ -89,6 +89,7 @@ module KAG
       end
 
       command :ban,{kag_user: :string,hours: :integer,reason: :string},
+        regexp: /ban ([\w\._\-]{1,50}) ?([0-9]{1,})?(.*)/i,
         summary: 'Ignore (Ban) a user',
         admin: true
       def ban(m,kag_user,hours,reason = '')

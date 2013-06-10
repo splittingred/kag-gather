@@ -57,14 +57,10 @@ module KAG
     end
 
     def is_banned?(user)
-      if user.authed?
-        u = ::User.fetch(user)
-        if u and ::Ignore.is_ignored?(u)
-          puts "#{u.kag_user} is banned"
-          true
-        else
-          false
-        end
+      u = ::User.fetch(user)
+      if u and ::Ignore.is_ignored?(u)
+        puts "#{u.kag_user} is banned"
+        true
       else
         false
       end

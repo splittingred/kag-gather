@@ -166,7 +166,8 @@ module KAG
 
       command :match,{match_id: :integer},
         summary: 'Show information about the specified match.',
-        method: :match_info
+        method: :match_info,
+        aliases: [:status]
       def match_info(m,id)
         mt = ::Match.find(id)
         if mt

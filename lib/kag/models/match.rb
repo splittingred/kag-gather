@@ -289,23 +289,30 @@ class Match < KAG::Model
     end
     list
   end
+
   def info_text
+    inf = self.ended_at.nil? ? 'IN PROGRESS' : 'Ended at '+self.ended_at.to_s(:long)
     txt = []
     players = self.info
-    ct = players.first.team_name.to_s
-    cc = players.first.team_color
     team_players = []
-    players.each do |p|
-      unless ct == p.team_name.to_s
-        txt << cc+' '+ct+': '+team_players.join(', ')
-        team_players = []
-        ct = p.team_name.to_s
-        cc = p.team_color
+    if players.first
+      ct = players.first.team_name.to_s
+      cc = players.first.team_color
+      players.each do |p|
+        unless ct == p.team_name.to_s
+          txt << cc+' '+ct+': '+team_players.join(', ')
+          team_players = []
+          ct = p.team_name.to_s
+          cc = p.team_color
+        end
+        team_players << p.kag_user
       end
-      team_players << p.kag_user
+    else
+      cc = ''
+      ct = ''
     end
     txt << cc+ct+': '+team_players.join(', ')
-    self.server.name+': '+txt.join(" \x0303VS ")
+    self.id.to_s+': '+inf+' - '+self.server.name+': '+txt.join(" \x0303VS ")
   end
 
 end

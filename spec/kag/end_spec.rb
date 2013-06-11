@@ -10,13 +10,13 @@ describe "IRC !end" do
     ms.start_match(false)
   end
 
-  it "!end" do
+  it '!end' do
     user = ::User.new
-    user.authname = "test"
-    user.kag_user = "test"
+    user.authname = 'test234'
+    user.kag_user = 'test234'
 
     match = ::Match.player_in(user)
-    match.should eq(false)
+    match.should eq(nil)
   end
 
 end

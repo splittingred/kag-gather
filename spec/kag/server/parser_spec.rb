@@ -27,12 +27,14 @@ describe KAG::Server::Parser do
   end
   it 'test match win' do
     subject.parse('[00:00:00] *Match Started*').should eq(:round_start)
+    subject.live = true
     subject.parse('[00:00:00] Vidar shot Ezreli with his arrow').should eq(:shot)
     subject.parse('[00:00:00] Vidar shot Geti with his arrow').should eq(:shot)
     subject.parse('[00:00:00] Red Team wins the game!').should eq(:match_win)
     subject.data[:wins]['Red Team'].should eq (1)
 
     subject.parse('[00:00:00] *Match Started*').should eq(:round_start)
+    subject.live = true
     subject.parse('[00:00:00] Ezreli shot Vidar with his arrow').should eq(:shot)
     subject.parse('[00:00:00] Geti shot Vidar with his arrow').should eq(:shot)
     subject.parse('[00:00:00] Blue Team wins the game!').should eq(:match_win)

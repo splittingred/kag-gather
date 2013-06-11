@@ -19,7 +19,6 @@ class Match < KAG::Model
     end
 
     def player_in(user)
-      m = false
       Match.joins('INNER JOIN players ON players.match_id = matches.id')
         .joins("INNER JOIN users ON users.id = players.user_id AND users.kag_user = '#{user.kag_user}'")
         .where('matches.ended_at IS NULL').first

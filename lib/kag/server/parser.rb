@@ -128,7 +128,8 @@ module KAG
 
       def get_winning_team
         if self.data[:wins]
-          self.data[:wins].max[0]
+          wins = self.data[:wins].values.max
+          self.data[:wins].select {|k,v| v == wins }.keys[0].to_s
         else
           'Neither Team'
         end

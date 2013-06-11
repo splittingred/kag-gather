@@ -71,7 +71,7 @@ class Match < KAG::Model
           puts e.backtrace.join("\n")
         end
       end
-      KAG.gather.send_channels_msg("Match #{self.id} at #{self.server.name} now completed. You may now re-add to the queue.")
+      KAG.gather.send_channels_msg("Match #{self.id.to_s} at #{self.server.name} now completed. You may now re-add to the queue. Stats: http://gather.splittingred.com/match/#{self.id.to_s}")
     end
     data
   end

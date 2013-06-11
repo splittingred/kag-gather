@@ -80,7 +80,7 @@ module KAG
         summary: 'List any open substitution positions.',
         description: 'List any open substitution spots that you can sub into.',
         aliases: [:subs,:open_subs]
-      def open_subs(m)
+      def subs?(m)
         reply m, ::Substitution.list_open_text
       end
 

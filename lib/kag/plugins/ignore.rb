@@ -127,6 +127,7 @@ module KAG
         summary: 'Refresh ban list',
         admin: true
       def refresh_ban_cache(m)
+        return false unless is_admin(m.user)
         ::Ignore.refresh
       end
     end

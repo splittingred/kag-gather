@@ -16,9 +16,9 @@ module KAG
         m.bot.set_mode("x")
       end
 
-      command :is_an_admin,{nick: :string},
-        summary: "See if the specified user is an Admin"
-      def is_an_admin(m,nick)
+      command :admin?,{nick: :string},
+        summary: 'See if the specified user is an Admin'
+      def admin?(m,nick)
         u = User(nick)
         if is_admin(u)
           reply m,"Yes, #{nick} is an admin!"
@@ -28,22 +28,21 @@ module KAG
       end
 
       command :reload_config,{},
-        summary: "Reload the configuration file",
+        summary: 'Reload the configuration file',
         admin: true
       def reload_config(m)
-        if is_admin(m.user)
-          KAG::Config.instance.reload
-          m.reply "Configuration reloaded."
-        end
+        return false unless is_admin(m.user)
+        KAG::Config.instance.reload
+        m.reply 'Configuration reloaded.'
       end
 
       command :version,{},
-        summary: "Show the version of the bot",
+        summary: 'Show the version of the bot',
         admin: true
       def version(m)
         if is_admin(m.user)
           require 'kag/version'
-          m.reply "KAG Gather - version "+KAG::VERSION.to_s+" by splittingred - https://github.com/splittingred/kag-gather"
+          m.reply 'KAG Gather - version '+KAG::VERSION.to_s+" by splittingred - https://github.com/splittingred/kag-gather"
         end
       end
 

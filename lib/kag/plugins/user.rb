@@ -62,6 +62,8 @@ module KAG
         summary: 'Manually link a nick to a KAG account. Only do this if an emergency, as this could allow ppl to spoof others.',
         admin: true
       def mlink(m,nick,kag_user)
+        return false unless is_admin(m.user)
+
         nick = nick.to_s.strip
         kag_user = kag_user.to_s.strip
         u = User(nick)

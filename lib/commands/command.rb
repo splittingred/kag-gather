@@ -44,7 +44,7 @@ module Cinch
       #   Additional options.
       #
       # @option options [Array] :aliases
-      #   Additiona aliases for the command.
+      #   Additional aliases for the command.
       #
       # @option options [String] :summary
       #   Short summary of the command.

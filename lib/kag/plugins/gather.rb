@@ -198,11 +198,10 @@ module KAG
         description: 'Forces the end of the current match.',
         admin: true
       def end_force(m)
-        if is_admin(m.user)
-          match = ::Match.active.first
-          if match
-            match.cease
-          end
+        return false unless is_admin(m.user)
+        match = ::Match.active.first
+        if match
+          match.cease
         end
       end
 
@@ -210,6 +209,8 @@ module KAG
         summary: 'Get the idle times for all the people in the queue',
         admin: true
       def idle_list(m)
+        return false unless is_admin(m.user)
+
         reply m,'Idle Times: '+ @queue.idle_list
       end
 
@@ -223,10 +224,9 @@ module KAG
         summary: 'Clear (empty) the ongoing queue',
         admin: true
       def clear(m)
-        if is_admin(m.user)
-          reply m,'Match queue cleared.'
-          @queue.reset
-        end
+        return false unless is_admin(m.user)
+        reply m,'Match queue cleared.'
+        @queue.reset
       end
 
       command :rem,{names: :string},
@@ -251,15 +251,14 @@ module KAG
         summary: 'Remove a specific user from the queue without pinging the user in the channel',
         admin: true
       def rem_silent(m, names)
-        if is_admin(m.user)
-          names = names.split(',')
-          names.each do |name|
-            u = ::User.fetch(name)
-            if u
-              @queue.remove(u,true)
-            else
-              reply m,"Could not find user #{name}"
-            end
+        return false unless is_admin(m.user)
+        names = names.split(',')
+        names.each do |name|
+          u = ::User.fetch(name)
+          if u
+            @queue.remove(u,true)
+          else
+            reply m,"Could not find user #{name}"
           end
         end
       end
@@ -269,22 +268,22 @@ module KAG
         method: :add_admin,
         admin: true
       def add_admin(m, preference, names = nil)
+        return false unless is_admin(m.user)
+
         if names.to_s.empty?
           names = preference
           preference = nil
         end
-        if is_admin(m.user)
-          names = names.split(',')
-          names.each do |name|
-            user = ::User.fetch(name)
-            if user
-              r = @queue.add(user,false,preference)
-              unless r === true
-                reply m,r
-              end
-            else
-              reply m,"Could not find user #{name}"
+        names = names.split(',')
+        names.each do |name|
+          user = ::User.fetch(name)
+          if user
+            r = @queue.add(user,false,preference)
+            unless r === true
+              reply m,r
             end
+          else
+            reply m,"Could not find user #{name}"
           end
         end
       end
@@ -293,90 +292,14 @@ module KAG
         summary: 'Add a specific user to the queue without pinging the user in the channel',
         admin: true
       def add_silent(m, names)
-        if is_admin(m.user)
-          names = names.split(',')
-          names.each do |name|
-            user = ::User.fetch(name)
-            if user
-              @queue.add(user,true)
-            else
-              reply m,"Could not find user #{name}"
-            end
-          end
-        end
-      end
-
-      command :restart_map,{},
-        summary: 'Restart the map of the match you are in',
-        admin: true
-      def restart_map(m)
-        if is_admin(m.user)
-          match = ::Match.player_in(m.user)
-          if match and match.server(true)
-            match.server.restart_map
-          end
-        end
-      end
-
-      command :restart_map,{server: :string},
-        summary: 'Restart the map of a given server',
-        method: :restart_map_specify,
-        admin: true
-      def restart_map_specify(m,server)
-        if is_admin(m.user)
-          s = ::Server.find_by_name(server)
-          if s
-            s.restart_map
-          else
-            m.reply "No server found with key #{server.to_s}"
-          end
-        end
-      end
-
-      command :next_map,{},
-        summary: 'Next map the match of the server you are in',
-        admin: true
-      def next_map(m)
-        if is_admin(m.user)
-          match = ::Match.player_in(m.user)
-          if match and match.server(true)
-            match.server.next_map
-          end
-        end
-      end
-
-      command :next_map,{server: :string},
-        summary: 'Next map a given server',
-        method: :next_map_specify,
-        admin: true
-      def next_map_specify(m,server)
-        if is_admin(m.user)
-          s = ::Server.find_by_name(server)
-          if s
-            s.next_map
-          else
-            m.reply "No server found with key #{server}"
-          end
-        end
-      end
-
-      command :kick_from_match,{nick: :string},
-        summary: 'Actually kick a user from a match',
-        admin: true
-      def kick_from_match(m,nick)
-        if is_admin(m.user)
-          user = User(nick.to_s)
-          user.refresh
+        return false unless is_admin(m.user)
+        names = names.split(',')
+        names.each do |name|
+          user = ::User.fetch(name)
           if user
-            match = ::Match.player_in(user)
-            if match
-              match.remove_player(user)
-              m.reply "#{user.nick} has been kicked from the match"
-            else
-              m.reply "#{user.nick} is not in a match!"
-            end
+            @queue.add(user,true)
           else
-            reply m,"User #{nick} not found"
+            reply m,"Could not find user #{name}"
           end
         end
       end
@@ -385,35 +308,33 @@ module KAG
         summary: 'Quit the bot',
         admin: true
       def quit(m)
-        if is_admin(m.user)
-          ::Server.all.each do |s|
-            if s.listener
-              s.listener.async.disconnect
-            end
+        return false unless is_admin(m.user)
+        ::Server.all.each do |s|
+          if s.listener
+            s.listener.async.disconnect
           end
-          m.bot.quit('Shutting down...')
         end
+        m.bot.quit('Shutting down...')
       end
 
       command :restart,{},
         summary: 'Restart the bot',
         admin: true
       def restart(m)
-        if is_admin(m.user)
-          ::Server.all.each do |s|
-            s.disconnect
-          end
-
-          cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
-          debug cmd
-          pid = spawn cmd
-          debug "Restarting bot, new process ID is #{pid.to_s} ..."
-          if m.bot
-            m.bot.quit 'Restarting! Back in a second!'
-          end
-          sleep(0.5)
-          exit
+        return false unless is_admin(m.user)
+        ::Server.all.each do |s|
+          s.disconnect
         end
+
+        cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
+        debug cmd
+        pid = spawn cmd
+        debug "Restarting bot, new process ID is #{pid.to_s} ..."
+        if m.bot
+          m.bot.quit 'Restarting! Back in a second!'
+        end
+        sleep(0.5)
+        exit
       end
     end
   end

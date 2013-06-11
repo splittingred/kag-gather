@@ -24,7 +24,8 @@ module KAG
             user.created_at = Time.now
             user.save
           end
-          if ::IgnoreReport.create(user,m.user,reason)
+          creator = ::User.fetch(m.user)
+          if ::IgnoreReport.create(user,creator,reason)
             reply m,"#{kag_user} has now been reported for \"#{reason}\"."
           else
             reply m,"Failed to create ban for #{kag_user}"

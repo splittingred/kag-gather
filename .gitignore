@@ -33,6 +33,8 @@ pkg/
 projectFilesBackup/
 .yardoc
 .bundle
+.rubyversion
+.ruby-version
 Gemfile.lock
 .autotest
 rspec_results.html

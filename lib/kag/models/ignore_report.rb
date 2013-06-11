@@ -12,7 +12,8 @@ class IgnoreReport < KAG::Model
       user = User.fetch(user) unless user.class == User
       creator = User.fetch(c)
       if user and creator
-        if false#IgnoreReport.exists(user,creator)
+        if IgnoreReport.exists(user,creator)
+          c.send "You have already reported #{user.name}, #{creator.name}!"
           false
         else
           report = IgnoreReport.new
@@ -105,6 +106,9 @@ class IgnoreReport < KAG::Model
     if ban_time > 0
       Ignore.them(self.user,ban_time,"Temporary ban for exceeding ban points. Matches: #{matches_count}, Ban Points: #{ban_points}")
       KAG.gather.send_channels_msg "#{self.user.name} has been temporarily banned for #{ban_time} hours for exceeding ban points."
+      IgnoreReport.where(:user_id => self.user_id).each do |ir|
+        ir.destroy
+      end
     end
   end
 end

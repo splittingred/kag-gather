@@ -24,7 +24,7 @@ module KAG
           end
           if user
             list = []
-            limit = @params[:limit] || 40
+            limit = @params[:limit] || 100
             offset = @params[:offset] || 0
             total = user.achievements.count
             user.achievements.limit(limit).offset(offset).each do |ach|

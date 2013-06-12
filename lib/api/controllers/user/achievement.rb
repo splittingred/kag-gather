@@ -34,7 +34,9 @@ module KAG
                   :code => ach.code
               }
             end
-            self.collection(list,total)
+            self.collection(list,total,{
+                :all_total => ::Achievement.count
+            })
           else
             self.failure('err_nf',c)
           end

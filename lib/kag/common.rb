@@ -82,6 +82,9 @@ module KAG
       o = (KAG::Config.instance[:owners] or [])
       o.include?(user.authname)
     end
+    def is_admin?(user)
+      is_admin(user)
+    end
 
     def _h(key,params = {})
       if KAG::Help::Book.instance.key?(key.to_sym)

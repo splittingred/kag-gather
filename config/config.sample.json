@@ -4,7 +4,8 @@
   ,"nick": "KAGatherer"
   ,"realname": "KAG Gatherer"
   ,"ssl": false
-
+  ,"messages_per_second": 0.1
+  ,"server_queue_size": 10
   ,"owners": ["splittingred","tmewett","Kalikst","Downburst","SirSalami","Furai","Geti"]
   ,"match_size": 10
   ,"match_type": "CTF"

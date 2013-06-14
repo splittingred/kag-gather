@@ -31,6 +31,9 @@ module KAG
         self.log.info '- Archiving PVP kill records'
         self.record_kills
 
+        self.log.info '- Archiving in-game stat/records'
+        self.record_stats
+
         KAG::Stats::Main.add_stat(:matches_completed)
 
         self.log.info '- Scoring all'
@@ -186,6 +189,19 @@ module KAG
             if killer and record.respond_to?(:each)
               record.each do |victim,times|
                 killer.add_kill(victim,times)
+              end
+            end
+          end
+        end
+      end
+
+      def record_stats
+        if self.data and self.data.in_game_stats
+          self.data.in_game_stats.each do |username,stats|
+            u = ::User.find_by_kag_user(username)
+            if u and stats.respond_to?(:each)
+              stats.each do |stat,num|
+                u.inc_stat(stat,num)
               end
             end
           end

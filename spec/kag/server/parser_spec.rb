@@ -161,9 +161,9 @@ describe KAG::Server::Parser do
   end
 
   it 'test ready threshold calculations' do
-    subject._get_ready_threshold(10).should eq(10)
-    subject._get_ready_threshold(2).should eq(1)
-    subject._get_ready_threshold(6).should eq(6)
+    subject.send(:_get_ready_threshold,10).should eq(10)
+    subject.send(:_get_ready_threshold,2).should eq(1)
+    subject.send(:_get_ready_threshold,6).should eq(6)
   end
 
   it 'test !ready shortcuts' do

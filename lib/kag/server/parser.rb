@@ -44,6 +44,7 @@ module KAG
           :match_start => Time.now,
           :match_end => nil,
           :players => {},
+          :in_game_stats => {},
           :started => false,
         })
         self.players.each do |p|
@@ -116,16 +117,6 @@ module KAG
         end
       end
 
-      def _team_has_won
-        self.data[:wins].each do |team,wins|
-          if wins >= 2
-            self.data[:winner] = team
-            return team
-          end
-        end
-        false
-      end
-
       def get_winning_team
         if self.data[:wins]
           wins = self.data[:wins].values.max
@@ -176,21 +167,6 @@ module KAG
         :score
       end
 
-      def _get_score
-        if self.data[:wins] and self.data[:wins].length > 0
-          txt = []
-          if self.data[:wins].length == 1
-            self.data[:wins].keys.first == "Blue Team" ? self.data[:wins]["Red Team"] = 0 : self.data[:wins]["Blue Team"] = 0
-          end
-          self.data[:wins].each do |team,score|
-            txt << "#{team.to_s}: #{score.to_s}"
-          end
-          txt.join(', ')
-        else
-          'Red Team: 0, Blue Team: 0'
-        end
-      end
-
       def evt_ready(msg)
         match = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready)$/)
         if match
@@ -203,20 +179,6 @@ module KAG
             :ready
           end
         end
-      end
-
-      def _class_interpret(cls)
-        cls = cls.to_s.strip.downcase.capitalize
-        case cls
-          when 'A'
-            cls = 'Archer'
-          when 'B'
-            cls = 'Builder'
-          when 'K'
-            cls = 'Knight'
-          else
-        end
-        cls
       end
 
       def evt_ready_specified(msg)
@@ -237,12 +199,14 @@ module KAG
               if self.ready.include?(username)
                 say "#{username} has switched to #{player_class} for: #{team}."
               else
+                self._add_in_game_stat(username,:first_to_ready) if self.ready.count == 0
                 self.ready << username
                 say "#{username} is ready and has claimed #{player_class} for: #{team}."
                 ready_threshold = _get_ready_threshold((self.players ? self.players.length : KAG::Config.instance[:match_size]))
 
                 # if match is ready to go live, start it
                 if self.ready.length == ready_threshold
+                  self._add_in_game_stat(username,:last_to_ready)
                   start
                 # otherwise notify how many left are needed
                 else
@@ -313,12 +277,6 @@ module KAG
         :who_not_ready
       end
 
-      def _get_ready_threshold(num_of_players)
-        #half = (num_of_players / 2)
-        #half + (half / 2).ceil
-        num_of_players.to_i == 2 ? 1 : num_of_players
-      end
-
       def evt_teams(msg)
         say self.match.teams_text
         :teams
@@ -330,24 +288,6 @@ module KAG
           username = match[3].to_s.strip
           say "#{username} is on: #{get_team(username)}"
         end
-      end
-
-      def get_team(username)
-        t = 'Spectator'
-        self.teams.each do |team|
-          if team.has_player?(username)
-            t = team.name
-          end
-        end
-        t
-      end
-
-      def get_class(username)
-        cls = ''
-        if self.data.key?(:claims) and self.data[:claims].key?(username)
-          cls = self.data[:claims][username]
-        end
-        cls
       end
 
       def evt_veto(msg)
@@ -455,17 +395,6 @@ module KAG
         end
       end
 
-      def already_sub_requested?(player_to_sub,player_requesting)
-        self.sub_requests[player_to_sub].include?(player_requesting)
-      end
-
-      def can_sub_request?(subbee,requestor)
-        subbee_player = ::Player.fetch_by_kag_user(subbee)
-        requestor_player = ::Player.fetch_by_kag_user(requestor)
-
-        !::Substitution.exists(self.match,subbee_player)
-      end
-
       def evt_nerf(msg)
         m = msg.match(/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!nerf (.*))$/)
         if m
@@ -570,9 +499,6 @@ module KAG
               self.log.info "Checking for match end threshold: #{self.players_there.to_s} < #{((self.players.length / 2)+1).to_s}"
               if self.players_there.to_i < ((self.players.length / 2)+1)
                 end_match
-              else
-                # call for sub
-                request_sub(player)
               end
             # otherwise, delete player from ready queue
             else
@@ -588,25 +514,6 @@ module KAG
 
       def evt_players(msg)
         say 'Players: '+self.players.join(', ')
-      end
-
-      def sub_in(old_user,new_user,team)
-        msg = "#{new_user.name} has subbed for #{old_user.name} for the #{team.name}!"
-        say msg.to_s
-        self.players.delete(old_user.name)
-        self.players << new_user.name
-      end
-
-      def request_sub(player_left)
-
-      end
-
-      def swap_team(player)
-        self.teams.each do |team|
-          if team.players.include?(player.to_sym)
-            self.listener.switch_team(player) unless self.test
-          end
-        end
       end
 
       def evt_kill(msg)
@@ -760,6 +667,13 @@ module KAG
         a.run
       end
 
+      def sub_in(old_user,new_user,team)
+        msg = "#{new_user.name} has subbed for #{old_user.name} for the #{team.name}!"
+        say msg.to_s
+        self.players.delete(old_user.name)
+        self.players << new_user.name
+      end
+
       protected
 
       def _add_kill_record(killer,victim)
@@ -798,6 +712,95 @@ module KAG
         end
       end
 
+      def _add_in_game_stat(player,stat)
+        self.data.in_game_stats = {} unless self.data.in_game_stats
+        self.data.in_game_stats[player] = {} unless self.data.in_game_stats[player]
+        self.data.in_game_stats[player][stat] = 0 unless self.data.in_game_stats[player][stat]
+        self.data.in_game_stats[player][stat] += 1
+      end
+
+
+      def _get_score
+        if self.data[:wins] and self.data[:wins].length > 0
+          txt = []
+          if self.data[:wins].length == 1
+            self.data[:wins].keys.first == "Blue Team" ? self.data[:wins]["Red Team"] = 0 : self.data[:wins]["Blue Team"] = 0
+          end
+          self.data[:wins].each do |team,score|
+            txt << "#{team.to_s}: #{score.to_s}"
+          end
+          txt.join(', ')
+        else
+          'Red Team: 0, Blue Team: 0'
+        end
+      end
+
+      def get_team(username)
+        t = 'Spectator'
+        self.teams.each do |team|
+          if team.has_player?(username)
+            t = team.name
+          end
+        end
+        t
+      end
+
+      def get_class(username)
+        cls = ''
+        if self.data.key?(:claims) and self.data[:claims].key?(username)
+          cls = self.data[:claims][username]
+        end
+        cls
+      end
+
+      def _get_ready_threshold(num_of_players)
+        #half = (num_of_players / 2)
+        #half + (half / 2).ceil
+        num_of_players.to_i == 2 ? 1 : num_of_players
+      end
+
+      def _class_interpret(cls)
+        cls = cls.to_s.strip.downcase.capitalize
+        case cls
+          when 'A'
+            cls = 'Archer'
+          when 'B'
+            cls = 'Builder'
+          when 'K'
+            cls = 'Knight'
+          else
+        end
+        cls
+      end
+
+      def _team_has_won
+        self.data[:wins].each do |team,wins|
+          if wins >= 2
+            self.data[:winner] = team
+            return team
+          end
+        end
+        false
+      end
+
+      def already_sub_requested?(player_to_sub,player_requesting)
+        self.sub_requests[player_to_sub].include?(player_requesting)
+      end
+
+      def can_sub_request?(subbee,requestor)
+        subbee_player = ::Player.fetch_by_kag_user(subbee)
+        requestor_player = ::Player.fetch_by_kag_user(requestor)
+
+        !::Substitution.exists(self.match,subbee_player)
+      end
+
+      def swap_team(player)
+        self.teams.each do |team|
+          if team.players.include?(player.to_sym)
+            self.listener.switch_team(player) unless self.test
+          end
+        end
+      end
     end
   end
 end

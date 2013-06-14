@@ -78,4 +78,14 @@ describe KAG::Server::Archiver do
     u.stat(:deathstreaks).should eq(1)
     u.stat(:ended_others_killstreak).should eq(2)
   end
+
+  it 'test in-game stat, first_to_ready' do
+    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
+    subject.parse('[00:00:00] <[=] Vidar> !ready Knight').should eq(:ready)
+    subject.archive
+    u = ::User.fetch('Vidar')
+    u.stat(:first_to_ready).should eq(1)
+  end
+
+
 end

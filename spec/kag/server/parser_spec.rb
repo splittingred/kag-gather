@@ -219,6 +219,13 @@ describe KAG::Server::Parser do
     subject.data.kills['splittingred']['Vidar'].should eq(1)
   end
 
+  it 'test collapse stats' do
+    subject.live = true
+    subject.parse('[00:00:00] COLLAPSE by [BoW] WarrFork (size 16 blocks)').should eq(:collapse)
+    subject.parse('[00:00:00] COLLAPSE by POWER Varion (size 92 blocks)').should eq(:collapse)
+    subject.parse('[00:00:00] COLLAPSE by [NMS] Lumeos (size 11 blocks)').should eq(:collapse)
+  end
+
   it 'test give_win' do
     subject.live = true
     subject.parse('[00:00:00] <[=] splittingred> !give_win Red Team').should eq(:gave_win)

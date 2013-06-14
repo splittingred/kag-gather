@@ -73,6 +73,7 @@ module KAG
       event :evt_units_depleted, "Can't spawn units depleted", :live
       event :evt_round_ended, '*Match Ended*', :live
       event :evt_restart, '!restart', :live
+      event :evt_collapse, /COLLAPSE by (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) \(size (.+) blocks\)/, :live
 
       event :evt_ready_specified, [/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!ready (.*))$/i,/^(<)?(.{0,7}[ \.,\["\{\}><\|\/\(\)\\\+=])?([\w\._\-]{1,20})?(>) (?:!r (.*))$/i], :warmup
       event :evt_ready, %w(!ready !r), :warmup
@@ -514,6 +515,30 @@ module KAG
 
       def evt_players(msg)
         say 'Players: '+self.players.join(', ')
+      end
+
+      def evt_collapse(msg)
+        match = msg.match(/COLLAPSE by (.{0,6}[ \.,\["\{\}><\|\/\(\)\\+=])?([\S]{1,20}) \(size (.+) blocks\)/i)
+        if match
+          self._add_stat(:collapse,match[1],match[2])
+          size = match[3].to_i
+          if size > 10
+            self._add_stat(:collapse_10,match[1],match[2])
+          elsif size > 25
+            self._add_stat(:collapse_25,match[1],match[2])
+          elsif size > 50
+            self._add_stat(:collapse_50,match[1],match[2])
+          elsif size > 100
+            self._add_stat(:collapse_100,match[1],match[2])
+          elsif size > 250
+            self._add_stat(:collapse_250,match[1],match[2])
+          elsif size > 500
+            self._add_stat(:collapse_500,match[1],match[2])
+          elsif size > 1000
+            self._add_stat(:collapse_1000,match[1],match[2])
+          end
+          :collapse
+        end
       end
 
       def evt_kill(msg)

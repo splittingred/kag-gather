@@ -22,9 +22,9 @@ module KAG
         :loss => 2.0,
         :inactive_penalty_multiplier => 20,
         :inactive_penalty_days => 5.00,
-        :match_percentage_multiplier => 400,
-        :minimum_matches => 3,
-        :member_bonus => 10
+        :match_percentage_multiplier => 100,
+        :minimum_matches => 10,
+        :member_bonus => 2
       })
     end
 
@@ -75,19 +75,11 @@ module KAG
           puts "#{@clan.name}:  (#{wins.to_s} * #{@ratios[:win_ratio].to_s}) - (#{losses.to_s} * #{@ratios[:loss_ratio].to_s}) + (#{percentage_of_matches.to_s} * #{@ratios[:match_percentage_multiplier].to_s}) == #{win_adder.to_s} * #{win_multiplier.to_s} == #{win_adder2.to_s}"
         end
 
-        #last_match = @clan.matches.where('end_votes = 0 AND ended_at IS NOT NULL').last
-        #if last_match
-        #  days_since_last_match = (Time.now - last_match.ended_at) / 86400
-        #  if days_since_last_match > 4.00
-        #    score -= (days_since_last_match * @ratios[:inactive_penalty_multiplier])
-        #  end
-        #end
-
         average_members = ActiveRecord::Base.connection.execute('SELECT AVG(`clanCount`) AS `cc` FROM (SELECT COUNT(`clan_id`) AS `clanCount` FROM `users` WHERE `clan_id` != 0 AND `score` > 0 GROUP BY `clan_id`) `c`')
         if average_members
           average_members = average_members.first.first.to_f
           if average_members > 0
-            clan_members = @clan.users.count.to_f
+            clan_members = @clan.users.where('score > 0').count.to_f
             team_bonus = @ratios[:member_bonus] * (clan_members / average_members)
             puts "Clan/Avg Members: (#{clan_members.to_s} / #{average_members.to_s}) * #{@ratios[:member_bonus]} == #{team_bonus.to_s}"
             score += team_bonus
@@ -104,8 +96,8 @@ module KAG
         score += calc_kr_add(@ratios[:archer_kill],@ratios[:archer_death],stats['archer.kills'].to_i,stats['archer.deaths'].to_i)
         score += calc_kr_add(@ratios[:builder_kill],@ratios[:builder_death],stats['builder.kills'].to_i,stats['builder.deaths'].to_i)
 
-        #user_count = ::User.where('kag_user IS NOT NULL').count
-        #score = (score*user_count.to_f)/((user_count/7.2)*3.1337)
+        #clan_count = ::Clan.count
+        #score = (score*clan_count.to_f)/((clan_count/7.2)*3.1337)
         #score = score * win_multiplier
       else
         score = 0.00

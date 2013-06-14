@@ -1,6 +1,6 @@
 {
   "command_not_authed":"Hi! To get started, you must either login to Gather with !login, or AUTH on the IRC server via Q and !link up before you can use this bot. See !help for more info."
   ,"general_not_authed": "Hi [[+nick]]! You're not currently AUTHed or logged in, and therefore won't be able to use the bot. You can either temporarily log in for 1 hour, or AUTH up to IRC and link your KAG account permanently. To do a temporary login, type !login. Type !help_auth for more info on using AUTH to permanently login."
-  ,"general_help": "Hi [[+nick]]! You can get started by typing !add in the channel, and that will add you to the queue. See !h for a longer list of commands."
+  ,"general_help": "Hi [[+nick]]! You can get started by typing !add in the channel, and that will add you to the queue. See the website for more commands: http://gather.kag2d.nl/"
   ,"help_auth": "Hi [[+nick]]! To register for QuakeNet, see here: http://www.quakenet.org/help/q/how-to-register-an-account-with-q Once registered and AUTHed, do this: /mode mynickhere +x (of course, replace mynickhere with your nickname). Next, type !link to link your AUTH account to your KAG SSO account (you only have to link once). After that, you should be good!"
 }

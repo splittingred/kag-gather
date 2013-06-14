@@ -30,7 +30,7 @@ module KAG
             c.nick = config[:nick].to_s != "" ? config[:nick] : "KAGatherer"
             c.user = config[:user].to_s != "" ? config[:user] : c.nick
             c.realname = config[:realname].to_s != "" ? config[:realname] : "KAG Gatherer"
-            c.messages_per_second = (config[:messages_per_second] or 2)
+            c.messages_per_second = (config[:messages_per_second].to_f or 0.2)
             c.modes = %w(x)
             c.plugins.plugins = [
               Cinch::Commands::Help,

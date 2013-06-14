@@ -12,15 +12,15 @@ module Cinch
       include Cinch::Commands
       include KAG::Common
 
-      command :h, {command: :string},
-        summary:     %{Displays help information for the COMMAND},
-        method: :help,
-        description: %{Finds the COMMAND and prints the usage and description for the COMMAND.}
+      #command :h, {command: :string},
+      #  summary:     %{Displays help information for the COMMAND},
+      #  method: :help,
+      #  description: %{Finds the COMMAND and prints the usage and description for the COMMAND.}
 
-      command :h, {},
-        summary: "Lists available commands",
-        method: :help,
-        description: %{If no COMMAND argument is given, then all commands will be listed.}
+      #command :h, {},
+      #  summary: "Lists available commands",
+      #  method: :help,
+      #  description: %{If no COMMAND argument is given, then all commands will be listed.}
 
       #
       # Displays a list of commands or the help information for a specific

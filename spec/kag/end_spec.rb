@@ -3,7 +3,7 @@ require 'support/loader'
 ##
 # Testing for the IRC !end function
 #
-describe "IRC !end" do
+describe 'IRC !end' do
 
   subject do
     ms = KAG::Test::MatchSetup.new

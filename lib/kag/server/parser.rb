@@ -522,17 +522,17 @@ module KAG
         if match
           self._add_stat(:collapse,match[1],match[2])
           size = match[3].to_i
-          if size > 10
+          if size > 10 and size < 24
             self._add_stat(:collapse_10,match[1],match[2])
-          elsif size > 25
+          elsif size > 25 and size < 49
             self._add_stat(:collapse_25,match[1],match[2])
-          elsif size > 50
+          elsif size > 50 and size < 99
             self._add_stat(:collapse_50,match[1],match[2])
-          elsif size > 100
+          elsif size > 100 and size < 249
             self._add_stat(:collapse_100,match[1],match[2])
-          elsif size > 250
+          elsif size > 250 and size < 499
             self._add_stat(:collapse_250,match[1],match[2])
-          elsif size > 500
+          elsif size > 500 and size < 999
             self._add_stat(:collapse_500,match[1],match[2])
           elsif size > 1000
             self._add_stat(:collapse_1000,match[1],match[2])

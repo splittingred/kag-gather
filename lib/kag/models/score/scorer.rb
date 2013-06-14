@@ -23,7 +23,7 @@ module KAG
         :inactive_penalty_multiplier => 20,
         :inactive_penalty_days => 5.00,
         :match_percentage_multiplier => 400,
-        :minimum_matches => 8,
+        :minimum_matches => 5,
       })
     end
 
@@ -92,7 +92,7 @@ module KAG
         score += calc_kr_add(@ratios[:archer_kill],@ratios[:archer_death],stats['archer.kills'].to_i,stats['archer.deaths'].to_i)
         score += calc_kr_add(@ratios[:builder_kill],@ratios[:builder_death],stats['builder.kills'].to_i,stats['builder.deaths'].to_i)
 
-        #user_count = ::User.where('kag_user IS NOT NULL').count
+        #user_count = ::User.where('kag_user IS NOT NULL AND status = "active"').count
         #score = (score*user_count.to_f)/((user_count/7.2)*3.1337)
         #score = score * win_multiplier
       else

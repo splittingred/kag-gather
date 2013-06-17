@@ -4,7 +4,9 @@ module KAG
     module Controller
       class Rankings < GetOnly
         def get
-          list = ::User.rank_top(20,false)
+          limit = @params[:limit] || 20
+          offset = @params[:offset] || 0
+          list = ::User.rank_top(limit,offset,false)
           self.collection(list,20)
         end
       end

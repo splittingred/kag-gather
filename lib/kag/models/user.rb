@@ -83,8 +83,8 @@ class User < KAG::Model
       User.find_by_kag_user(user).do_score
     end
 
-    def rank_top(num,return_string = true)
-      users = User.select('GROUP_CONCAT(IFNULL(`clans`.`name`,""),"::",`kag_user`) AS `kag_user`, `users`.`score`').joins('LEFT JOIN `clans` ON `clans`.`id` = `users`.`clan_id`').where('`users`.`score` > 0').group('`users`.`score`').order('`users`.`score` DESC').limit(num)
+    def rank_top(limit = 20,offset = 0,return_string = true)
+      users = User.select('GROUP_CONCAT(IFNULL(`clans`.`name`,""),"::",`kag_user`) AS `kag_user`, `users`.`score`').joins('LEFT JOIN `clans` ON `clans`.`id` = `users`.`clan_id`').where('`users`.`score` > 0').group('`users`.`score`').order('`users`.`score` DESC').limit(limit).offset(offset)
       list = []
       idx = 1
       users.each do |u|

@@ -16,8 +16,8 @@ module KAG
         :builder_kill => 24,
         :builder_death => 12,
 
-        :builder_win => 1.5,
-        :builder_loss => 1.3,
+        :builder_win => 2.5,
+        :builder_loss => 1.75,
 
         :loss => 2.0,
         :inactive_penalty_multiplier => 20,

@@ -99,8 +99,6 @@ module KAG
         score = 0.00
       end
 
-      score = score - 1000 if @user.name == 'killatron46'
-
       score = score <= 0 ? 0 : score
       @user.score = score
       @user.save

@@ -117,6 +117,10 @@ class User < KAG::Model
       User.order('score DESC').each {|u| u.do_score}
     end
 
+    def rescore(limit = 10)
+      User.order('score DESC').limit(limit).each {|u| u.do_score}
+    end
+
     def clear_duplicates(username)
       return false if User.where(:kag_user => username.to_s).count < 2
 

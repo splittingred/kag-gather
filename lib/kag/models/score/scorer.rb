@@ -4,25 +4,25 @@ module KAG
     def initialize(user)
       @user = user
       @ratios = SymbolTable.new({
-        :win_ratio => 17,
-        :loss_ratio => 10,
+        :win_ratio => 16,
+        :loss_ratio => 8,
         :generic_kill => 8,
         :generic_death => 8,
 
         :knight_kill => 15,
         :knight_death => 8,
-        :archer_kill => 5,
-        :archer_death => 22,
-        :builder_kill => 18,
-        :builder_death => 10,
+        :archer_kill => 7,
+        :archer_death => 20,
+        :builder_kill => 22,
+        :builder_death => 8,
 
-        :builder_win => 2.00,
-        :builder_loss => 1.75,
+        :builder_win => 3.0,
+        :builder_loss => 1.5,
 
         :loss => 2.0,
         :inactive_penalty_multiplier => 25,
         :inactive_penalty_days => 5.00,
-        :match_percentage_multiplier => 100,
+        :match_percentage_multiplier => 200,
         :minimum_matches => 5,
       })
     end
@@ -87,10 +87,13 @@ module KAG
         score += (b_wins*@ratios[:builder_win]) # slight bonus to builder wins since builder is less dependent on k/d
         score -= (b_losses*@ratios[:builder_loss]) # slight detract to builder losses since builder is less dependent on k/d
 
+
         score += calc_kr_add(@ratios[:generic_kill],@ratios[:generic_death],generic_kills,generic_deaths)
         score += calc_kr_add(@ratios[:knight_kill],@ratios[:knight_death],stats['knight.kills'].to_i,stats['knight.deaths'].to_i)
         score += calc_kr_add(@ratios[:archer_kill],@ratios[:archer_death],stats['archer.kills'].to_i,stats['archer.deaths'].to_i)
-        score += calc_kr_add(@ratios[:builder_kill],@ratios[:builder_death],stats['builder.kills'].to_i,stats['builder.deaths'].to_i)
+        true_kills = (stats['builder.kills'].to_i - stats['kills.assisted'].to_i)
+        true_kills = true_kills + (stats['kills.assisted'].to_i * 0.8)
+        score += calc_kr_add(@ratios[:builder_kill],@ratios[:builder_death],true_kills,stats['builder.deaths'].to_i)
 
         #user_count = ::User.where('kag_user IS NOT NULL AND status = "active"').count
         #score = (score*user_count.to_f)/((user_count/7.2)*3.1337)
@@ -108,9 +111,10 @@ module KAG
     def calc_kr_add(kill_multiplier,death_multiplier,kills,deaths)
       add = 0
       if kills > 0 or deaths > 0
-        add += kills * (kill_multiplier / 50)
-        add -= deaths * (death_multiplier / 50)
+        add += kills * (kill_multiplier / 60.0)
+        add -= deaths * (death_multiplier / 60.0)
       end
+      #puts '('+kills.to_s+'*'+(kill_multiplier / 50.0).to_s+') - ('+deaths.to_s+'*'+(death_multiplier / 50.0).to_s+') : '+add.to_s
       add
     end
   end

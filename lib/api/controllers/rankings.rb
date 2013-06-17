@@ -7,7 +7,7 @@ module KAG
           limit = @params[:limit] || 20
           offset = @params[:offset] || 0
           list = ::User.rank_top(limit,offset,false)
-          self.collection(list,20)
+          self.collection(list[:results],list[:total])
         end
       end
     end

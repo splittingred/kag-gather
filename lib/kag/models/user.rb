@@ -84,7 +84,8 @@ class User < KAG::Model
     end
 
     def rank_top(limit = 20,offset = 0,return_string = true)
-      users = User.select('GROUP_CONCAT(IFNULL(`clans`.`name`,""),"::",`kag_user`) AS `kag_user`, `users`.`score`').joins('LEFT JOIN `clans` ON `clans`.`id` = `users`.`clan_id`').where('`users`.`score` > 0').group('`users`.`score`').order('`users`.`score` DESC').limit(limit).offset(offset)
+      users = User.select('GROUP_CONCAT(IFNULL(`clans`.`name`,""),"::",`kag_user`) AS `kag_user`, `users`.`score`').joins('LEFT JOIN `clans` ON `clans`.`id` = `users`.`clan_id`').where('`users`.`score` > 0 AND `users`.`status` = "active"').group('`users`.`score`').order('`users`.`score` DESC').limit(limit).offset(offset)
+      total = User.where('status = "active" AND score > 0').count
       list = []
       idx = 1
       users.each do |u|
@@ -109,7 +110,7 @@ class User < KAG::Model
         end
         idx += 1
       end
-      return_string ? "TOP 10: #{list.join(' | ')}" : list
+      return_string ? "TOP 10: #{list.join(' | ')}" : {:results => list,:total => total}
     end
 
     def rescore_all

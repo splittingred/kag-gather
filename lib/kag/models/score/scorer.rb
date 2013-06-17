@@ -4,8 +4,8 @@ module KAG
     def initialize(user)
       @user = user
       @ratios = SymbolTable.new({
-        :win_ratio => 20,
-        :loss_ratio => 7,
+        :win_ratio => 17,
+        :loss_ratio => 10,
         :generic_kill => 8,
         :generic_death => 8,
 
@@ -13,8 +13,8 @@ module KAG
         :knight_death => 8,
         :archer_kill => 5,
         :archer_death => 22,
-        :builder_kill => 26,
-        :builder_death => 14,
+        :builder_kill => 18,
+        :builder_death => 10,
 
         :builder_win => 2.00,
         :builder_loss => 1.75,
@@ -22,7 +22,7 @@ module KAG
         :loss => 2.0,
         :inactive_penalty_multiplier => 25,
         :inactive_penalty_days => 5.00,
-        :match_percentage_multiplier => 500,
+        :match_percentage_multiplier => 100,
         :minimum_matches => 5,
       })
     end

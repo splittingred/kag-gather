@@ -197,7 +197,7 @@ class Match < KAG::Model
       if player
         substitution = Substitution.request(self,player)
         if substitution
-          KAG.gather.send_channels_msg("Substitute requested for match #{self.id}, team #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.") if KAG.gather
+          KAG.gather.send_channels_msg("Substitute requested for match #{self.id}, player #{user.name}, #{substitution.team.name}. Type \"!sub #{self.id}\" to join up.") if KAG.gather
           user.inc_stat(:substitutions_requested)
           requested = substitution
         end
@@ -217,7 +217,7 @@ class Match < KAG::Model
     user = User.fetch(u)
     if user
       if Player.is_playing?(user)
-        u.send("You cannot sub into a match when you're already playing in one!") if u.class == ::Cinch::User
+        u.send('You cannot sub into a match when you\'re already playing in one!') if u.class == ::Cinch::User
       else
         substitution = Substitution.find_for(self)
         if substitution

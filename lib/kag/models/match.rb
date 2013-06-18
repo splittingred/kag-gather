@@ -82,8 +82,9 @@ class Match < KAG::Model
 
   def setup_teams(queue_players,sort_by_score = true)
     if sort_by_score
-      queue_players.sort do |a,b|
-        a.user.score <=> b.user.score
+      queue_players.shuffle!
+      queue_players = queue_players.sort do |a,b|
+        b.user.score <=> a.user.score
       end
     end
 
@@ -99,18 +100,23 @@ class Match < KAG::Model
        :players => []
     }
 
+    # 1r 2b 3b 4r 5r 6b 7b 8r 9r 10b
     idx = 0
     queue_players.each do |qp|
-      puts "Assigning #{qp.user.name}:#{qp.user.score} to #{teams.at(idx)[:name]}"
-      teams.at(idx)[:players] << Player.new({
+      team_idx = (idx == 1 or idx == 2) ? 1 : 0
+      puts "Assigning #{qp.user.name}:#{qp.user.score} to #{teams.at(team_idx)[:name]}"
+      teams.at(team_idx)[:players] << Player.new({
         :user_id => qp.user_id,
         :match => self
       })
+      teams.at(team_idx)[:score] = 0 unless teams.at(team_idx)[:score]
+      teams.at(team_idx)[:score] += qp.user.score
       idx += 1
-      idx = 0 if idx >= teams.length
+      idx = 0 if idx >= 4
     end
 
     teams.each do |t|
+      puts "#{t[:name]}: #{t[:score]}"
       self.teams << Team.new({
         :num_players => t[:players].length,
         :players => t[:players],

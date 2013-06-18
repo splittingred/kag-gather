@@ -16,16 +16,16 @@ module KAG
         self.queue = ::GatherQueue.first
 
         player_list = {
-            :killatron => 1933.78,
-            :warrfork => 1225.76,
-            :splittingred => 887.93,
-            :magnum357 => 866.13,
-            :cpa3y => 848.03,
+            :killatron => 1460.22,
+            :warrfork => 1000.82,
+            :magnum357 => 797.32,
+            :cpa3y => 894.9,
             :RaMmStEiN_2012 => 777.64,
             :SpideY => 757.17,
-            :Shadreki => 722.40,
             :CrystalClear => 715.23,
+            :splittingred => 665.11,
             :Urkeuse => 646.26,
+            :Black0ut => 512.85,
         }
         KAG::Config.instance[:match_size] = 10
 

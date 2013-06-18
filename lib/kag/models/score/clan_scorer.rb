@@ -4,25 +4,25 @@ module KAG
     def initialize(clan)
       @clan = clan
       @ratios = SymbolTable.new({
-        :win_ratio => 20,
-        :loss_ratio => 5,
-        :generic_kill => 6,
-        :generic_death => 6,
+        :win_ratio => 16.0,
+        :loss_ratio => 8.0,
+        :generic_kill => 6.0,
+        :generic_death => 6.0,
 
-        :knight_kill => 12,
-        :knight_death => 6,
-        :archer_kill => 3,
-        :archer_death => 18,
-        :builder_kill => 24,
-        :builder_death => 12,
+        :knight_kill => 12.0,
+        :knight_death => 8.0,
+        :archer_kill => 5.0,
+        :archer_death => 20.0,
+        :builder_kill => 18.0,
+        :builder_death => 6.0,
 
-        :builder_win => 5,
-        :builder_loss => 4,
+        :builder_win => 3.0,
+        :builder_loss => 1.5,
 
         :loss => 2.0,
-        :inactive_penalty_multiplier => 20,
+        :inactive_penalty_multiplier => 25,
         :inactive_penalty_days => 5.00,
-        :match_percentage_multiplier => 100,
+        :match_percentage_multiplier => 200,
         :minimum_matches => 10,
         :member_bonus => 2
       })
@@ -112,8 +112,8 @@ module KAG
     def calc_kr_add(kill_multiplier,death_multiplier,kills,deaths)
       add = 0
       if kills > 0 or deaths > 0
-        add += kills * (kill_multiplier / 50)
-        add -= deaths * (death_multiplier / 50)
+        add += kills * (kill_multiplier / 50.0)
+        add -= deaths * (death_multiplier / 50.0)
       end
       add
     end

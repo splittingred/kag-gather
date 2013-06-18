@@ -103,8 +103,11 @@ class User < KAG::Model
           l << z
         end
         if return_string
-          name = l.join(', ')
-          list << "##{idx}: #{name} - #{u.score.to_s}"
+          names = []
+          l.each do |tl|
+            names << (tl[:clan] ? tl[:clan]+' ' : '')+tl[:name]
+          end
+          list << "##{idx}: #{names.join(', ')} - #{u.score.to_s}"
         else
           list << {:users => l,:score => u.score}
         end

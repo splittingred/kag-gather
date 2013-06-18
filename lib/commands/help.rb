@@ -12,15 +12,17 @@ module Cinch
       include Cinch::Commands
       include KAG::Common
 
-      #command :h, {command: :string},
-      #  summary:     %{Displays help information for the COMMAND},
-      #  method: :help,
-      #  description: %{Finds the COMMAND and prints the usage and description for the COMMAND.}
+      command :h, {command: :string},
+        summary:     %{Displays help information for the COMMAND},
+        method: :help,
+        description: %{Finds the COMMAND and prints the usage and description for the COMMAND.},
+        admin: true
 
-      #command :h, {},
-      #  summary: "Lists available commands",
-      #  method: :help,
-      #  description: %{If no COMMAND argument is given, then all commands will be listed.}
+      command :h, {},
+        summary: "Lists available commands",
+        method: :help,
+        description: %{If no COMMAND argument is given, then all commands will be listed.},
+        admin: true
 
       #
       # Displays a list of commands or the help information for a specific
@@ -33,6 +35,7 @@ module Cinch
       #   The specific command to list help information for.
       #
       def help(m,command=nil)
+        return false unless is_admin(m.user)
         if command
           found = commands_named(command)
 

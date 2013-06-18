@@ -101,7 +101,7 @@ class Match < KAG::Model
 
     idx = 0
     queue_players.each do |qp|
-      #puts "Assigning #{qp.user.name}:#{qp.user.score} to #{teams.at(idx)[:name]}"
+      puts "Assigning #{qp.user.name}:#{qp.user.score} to #{teams.at(idx)[:name]}"
       teams.at(idx)[:players] << Player.new({
         :user_id => qp.user_id,
         :match => self

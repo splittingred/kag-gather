@@ -40,7 +40,7 @@ module KAG
         begin
           ::User.rescore_all
           ::Clan.rescore_all
-          ::Achievement.recalculate(match.users)
+          ::Achievement.recalculate(match.users,match.id)
         rescue Exception => e
           self.log.error e.message
           self.log.error e.backtrace.join("\n")

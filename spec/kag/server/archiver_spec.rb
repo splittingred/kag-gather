@@ -33,13 +33,11 @@ describe KAG::Server::Archiver do
     u.stat(:kills).should eq(4)
     u.stat('kills.gibbed').should eq(2)
     u.stat('kills.slew').should eq(2)
-    u.stat(:wins).should eq(1)
 
     c = ::Clan.fetch('[=]')
     c.stat(:kills).should eq(4)
     c.stat('kills.gibbed').should eq(2)
     c.stat('kills.slew').should eq(2)
-    c.stat(:wins).should eq(1)
   end
 
   it 'test killstreak/deathstreak' do

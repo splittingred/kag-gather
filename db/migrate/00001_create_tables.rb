@@ -138,10 +138,12 @@ class CreateTables < ActiveRecord::Migration
     create_table :user_achievements do |t|
       t.integer :achievement_id, :null => false, :default => 0
       t.integer :user_id, :null => false, :default => 0
+      t.integer :match_id, :null => false, :default => 0
       t.timestamps
     end
     add_index :user_achievements, :achievement_id
     add_index :user_achievements, :user_id
+    add_index :user_achievements, :match_id
 
     create_table :user_stats do |t|
       t.integer    :user_id, :null => false, :default => 0

@@ -6,7 +6,7 @@ class Achievement < KAG::Model
 
   class << self
 
-    def recalculate(users)
+    def recalculate(users,match_id = nil)
       granted = SymbolTable.new
       users.each do |user|
         granted[user.name.to_sym] = [] unless granted[user.name.to_sym]
@@ -19,7 +19,7 @@ class Achievement < KAG::Model
             value = ach.value.to_i
             op = ach.operator.to_sym
             if stats[ach.stat].send(op,value)
-              ach.grant(user)
+              ach.grant(user,match_id)
               granted[user.name.to_sym] << ach.code
             end
           end
@@ -28,10 +28,10 @@ class Achievement < KAG::Model
       granted
     end
 
-    def grant(achievement,user)
+    def grant(achievement,user,match_id = nil)
       achievement = Achievement.find_by_code(achievement,user)
       if achievement
-        achievement.grant(user)
+        achievement.grant(user,match_id)
       end
     end
 
@@ -40,13 +40,14 @@ class Achievement < KAG::Model
     end
   end
 
-  def grant(user)
+  def grant(user,match_id = nil)
     return false unless ::UserAchievement.where(:user_id => user.id,:achievement_id => self.id).count == 0
 
     puts "Granting #{self.code} to #{user.name}"
     ua = ::UserAchievement.new
     ua.user_id = user.id
     ua.achievement_id = self.id
+    ua.match_id = match_id unless match_id.nil?
     ua.save
   end
 

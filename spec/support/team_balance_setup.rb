@@ -3,7 +3,7 @@ module KAG
     class TeamBalanceSetup
       attr_accessor :server,:queue,:match,:players,:listener,:parser
 
-      def start_match(shuffle_teams = true)
+      def start_match(player_list = {},shuffle_teams = true)
         self.server = ::Server.new
         self.server.name = 'test'
         self.server.ip = '127.0.0.1'
@@ -15,18 +15,6 @@ module KAG
 
         self.queue = ::GatherQueue.first
 
-        player_list = {
-            :killatron => 1460.22,
-            :warrfork => 1000.82,
-            :magnum357 => 797.32,
-            :cpa3y => 894.9,
-            :RaMmStEiN_2012 => 777.64,
-            :SpideY => 757.17,
-            :CrystalClear => 715.23,
-            :splittingred => 665.11,
-            :Urkeuse => 646.26,
-            :Black0ut => 512.85,
-        }
         KAG::Config.instance[:match_size] = 10
 
         self.players = []

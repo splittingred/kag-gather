@@ -100,19 +100,25 @@ class Match < KAG::Model
        :players => []
     }
 
-    # 1r 2b 3b 4r 5r 6b 7b 8r 9r 10b
-    idx = 0
+    # new variance-based algo
+    half = queue_players.count / 2
     queue_players.each do |qp|
-      team_idx = (idx == 1 or idx == 2) ? 1 : 0
-      puts "Assigning #{qp.user.name}:#{qp.user.score} to #{teams.at(team_idx)[:name]}"
+      lowest = teams.sort_by{ |a| a[:score].to_i }.first
+      team_idx = teams.index(lowest)
+
+      if lowest.key?(:players) and lowest[:players].count >= half
+        team_idx = team_idx == 0 ? 1 : 0
+        lowest = teams[team_idx]
+      end
+
+      puts "Assigning #{qp.user.name}:#{qp.user.score} to #{lowest[:score].to_s}: #{teams.at(team_idx)[:name]}"
+
       teams.at(team_idx)[:players] << Player.new({
         :user_id => qp.user_id,
         :match => self
       })
       teams.at(team_idx)[:score] = 0 unless teams.at(team_idx)[:score]
       teams.at(team_idx)[:score] += qp.user.score
-      idx += 1
-      idx = 0 if idx >= 4
     end
 
     teams.each do |t|
@@ -285,7 +291,7 @@ class Match < KAG::Model
       .joins('INNER JOIN teams ON teams.id = players.team_id')
       .select('players.*')
       .select('teams.name AS team_name, teams.color AS team_color')
-      .select('users.kag_user AS kag_user')
+      .select('users.kag_user AS kag_user, users.score AS score')
       .where('players.match_id = ? AND players.deserted = ?',self.id,0)
       .order('teams.name ASC, users.kag_user ASC')
 
@@ -296,7 +302,7 @@ class Match < KAG::Model
     list
   end
 
-  def info_text
+  def info_text(with_score = false)
     inf = self.ended_at.nil? ? 'IN PROGRESS' : 'Ended at '+self.ended_at.to_s(:long)
     txt = []
     players = self.info
@@ -311,7 +317,7 @@ class Match < KAG::Model
           ct = p.team_name.to_s
           cc = p.team_color
         end
-        team_players << p.kag_user
+        team_players << p.kag_user+(with_score ? " #{p.score}" : '')
       end
     else
       cc = ''

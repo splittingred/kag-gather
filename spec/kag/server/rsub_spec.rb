@@ -19,9 +19,6 @@ describe 'Parser !rsub' do
     subject.parse('[00:00:00] <[Newb] Cpa3y> !rsub Kalikst').should eq(:request_sub) # should work
     subject.parse('[00:00:00] <Vidar> !rsub Geti').should eq(:request_sub)
     subject.parse('[00:00:00] <Cpa3y> !rsub Cpa3y').should eq(:request_sub)
-
-    #subject.parse('[00:00:00] <[Newb] Cpa3y> !rsub Geti').should_not eq(:request_sub) # should fail
-    #subject.parse('[00:00:00] <splittingred> !rsub Furai').should_not eq(:request_sub)
   end
 
   it 'test !teams' do

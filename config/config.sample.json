@@ -1,12 +1,12 @@
 {
   "server": "irc.quakenet.org"
-  ,"channels": ["#kag.gather"]
-  ,"nick": "KAGatherer"
-  ,"realname": "KAG Gatherer"
+  ,"channels": ["#channel"]
+  ,"nick": "BotName"
+  ,"realname": "BotName"
   ,"ssl": false
   ,"messages_per_second": 0.1
   ,"server_queue_size": 10
-  ,"owners": ["splittingred","tmewett","Kalikst","Downburst","SirSalami","Furai","Geti"]
+  ,"owners": ["splittingred"]
   ,"match_size": 10
   ,"match_type": "CTF"
   ,"pick_classes": true

@@ -8,7 +8,7 @@ describe Server do
     server = Server.new
     KAG::Server::Listener.new(server)
   end
-
+  # commented out for now to prevent automation issues
   #it "test players" do
     #match = KAG::Gather::Match.new
     #subject.start(match)

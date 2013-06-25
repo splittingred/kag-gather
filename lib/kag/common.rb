@@ -34,6 +34,9 @@ module KAG
       proceed
     end
 
+    ##
+    # Close the DB connection, mainly for threading so we dont have deprecated error
+    #
     def close_db_connection(m)
       begin
         ::ActiveRecord::Base.connection.close
@@ -44,6 +47,8 @@ module KAG
       true
     end
 
+    ##
+    # Reply to user in
     def reply(message,text,colorize = true)
       text = Format(:grey,text) if colorize
       message.reply text

@@ -1,11 +1,31 @@
-# KAGGather for Ruby
+# KAG Gather
 
-KAG Gather IRC bot in Ruby
+An IRC bot that does matchmaking, statistics, and achievements for the KAG Gather community.
+
+http://gather.kag2d.nl
+
+## Installation
+
+Create a database called `kag_gather`, and then copy config/config.sample.json to config.json. Edit the values within
+to setup the bot.
+
+Then run
+
+`bundle install`
+
+To setup the ruby gems needed. Finally, run:
+
+`rake db:migrate`
+
+To create the SQL tables needed.
 
 ## Usage
 
-First setup config file by copying config/config.sample.json to config/config.json.
+Run to start the bot:
 
-Then run:
+`ruby lib/gather.rb &`
 
-`sh gather.sh`
+Run to start the stats REST server:
+
+`ruby lib/server.rb &`
+

@@ -328,7 +328,7 @@ module KAG
           s.disconnect
         end
 
-        cmd = (KAG::Config.instance[:restart_method] or "nohup sh gather.sh &")
+      cmd = (KAG::Config.instance[:restart_method] or 'nohup ./bin/kag-gather &')
         debug cmd
         pid = spawn cmd
         debug "Restarting bot, new process ID is #{pid.to_s} ..."

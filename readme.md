@@ -23,9 +23,8 @@ To create the SQL tables needed.
 
 Run to start the bot:
 
-`ruby lib/gather.rb &`
+`./bin/kag-gather &`
 
 Run to start the stats REST server:
 
-`ruby lib/server.rb &`
-
+`./bin/kag-server &`

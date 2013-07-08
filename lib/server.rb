@@ -11,7 +11,7 @@ KAG.ensure_database
 
 env = KAG::Config.instance[:branch].to_sym
 set :environment, env
-set :root, File.dirname(__FILE__)+'/lib'
+set :root, File.dirname(__FILE__)+'/'
 
 if env == :production
   set :logging, false
@@ -20,18 +20,18 @@ end
 set :server, %w[thin mongrel webrick]
 set :port, 50313
 
-get "/*" do
+get '/*' do
   KAG::API::Controller::Base.route('get',params)
 end
 
-post "/*" do
+post '/*' do
   KAG::API::Controller::Base.route('post',params)
 end
 
-put "/*" do
+put '/*' do
   KAG::API::Controller::Base.route('put',params)
 end
 
-delete "/*" do
+delete '/*' do
   KAG::API::Controller::Base.route('delete',params)
 end

@@ -4,7 +4,7 @@ require 'bundler/setup'
 
 lib_path = File.expand_path('lib')
 
-if File.exists? lib_path
+if File.directory? lib_path
   $LOAD_PATH.unshift lib_path
 end
 

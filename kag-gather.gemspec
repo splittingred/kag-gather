@@ -16,6 +16,9 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version     = '>= 1.9.2'
   gem.required_rubygems_version = '>= 1.3.6'
 
+  gem.executables = ['kag-gather','kag-server']
+  gem.default_executable = 'kag-gather'
+
   gem.files        = Dir['readme.md', 'lib/**/*', 'config/config.sample.json']
   gem.require_path = 'lib'
 

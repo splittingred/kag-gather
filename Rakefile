@@ -2,8 +2,8 @@ require 'bundler/setup'
 require 'json'
 require 'logger'
 require 'kag/config'
-Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 require 'active_record'
+Dir.glob('lib/kag/models/*.rb').each {|f| load f.to_s }
 
 namespace :db do
   def create_database(config)
@@ -76,5 +76,18 @@ namespace :db do
   desc "Retrieves the current schema version number"
   task :version => :configure_connection do
     puts "Current version: #{ActiveRecord::Migrator.current_version}"
+  end
+end
+
+namespace :kag do
+  desc 'Launch Gather bot.'
+  task :gather do
+    require 'kag/bot'
+    KAG.bot = KAG::Bot::Bot.new
+  end
+
+  desc 'Launch REST stats server.'
+  task :server do
+    require 'server'
   end
 end

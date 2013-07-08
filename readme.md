@@ -23,8 +23,8 @@ To create the SQL tables needed.
 
 Run to start the bot:
 
-`./bin/kag-gather &`
+`rake kag:gather &`
 
 Run to start the stats REST server:
 
-`./bin/kag-server &`
+`rake kag:server &`

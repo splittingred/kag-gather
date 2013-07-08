@@ -9,29 +9,30 @@ require 'api/controllers/base'
 
 KAG.ensure_database
 
-env = KAG::Config.instance[:branch].to_sym
-set :environment, env
-set :root, File.dirname(__FILE__)+'/'
+KAG_BRANCH = KAG::Config.instance[:branch].to_sym
 
-if env == :production
-  set :logging, false
+class KagServer < ::Sinatra::Base
+  set :environment, KAG_BRANCH
+  set :root, File.dirname(__FILE__)+'/'
+  set :logging, KAG_BRANCH != :production
+  set :server, %w[thin mongrel webrick]
+  set :port, 50313
+
+  get '/*' do
+    KAG::API::Controller::Base.route('get',params)
+  end
+
+  post '/*' do
+    KAG::API::Controller::Base.route('post',params)
+  end
+
+  put '/*' do
+    KAG::API::Controller::Base.route('put',params)
+  end
+
+  delete '/*' do
+    KAG::API::Controller::Base.route('delete',params)
+  end
 end
 
-set :server, %w[thin mongrel webrick]
-set :port, 50313
-
-get '/*' do
-  KAG::API::Controller::Base.route('get',params)
-end
-
-post '/*' do
-  KAG::API::Controller::Base.route('post',params)
-end
-
-put '/*' do
-  KAG::API::Controller::Base.route('put',params)
-end
-
-delete '/*' do
-  KAG::API::Controller::Base.route('delete',params)
-end
+KagServer.run!

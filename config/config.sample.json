@@ -15,7 +15,7 @@
   ,"end_vote_threshold": 3
   ,"report_threshold": 7
   ,"killstreak": 5
-  ,"restart_method": "nohup ./bin/kag-gather &"
+  ,"restart_method": "nohup rake kag:gather &"
   ,"idle": {
     "max": 1800
     ,"check_period": 150
